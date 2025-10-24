@@ -79,7 +79,7 @@ export const invoiceItems = pgTable("invoice_items", {
   productId: varchar("product_id").notNull(),
   productName: text("product_name").notNull(),
   hsn: text("hsn").notNull(),
-  quantity: integer("quantity").notNull(),
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   gstRate: decimal("gst_rate", { precision: 5, scale: 2 }).notNull().default("0"),
