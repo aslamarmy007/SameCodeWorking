@@ -908,6 +908,34 @@ export default function BillingPage() {
                             />
                           </div>
                         </div>
+                        <Button
+                          onClick={() => {
+                            if (!shippingData.shopName.trim()) {
+                              toast({
+                                title: "Validation Error",
+                                description: "Shop name is required",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            saveCustomerMutation.mutate(shippingData);
+                          }}
+                          disabled={saveCustomerMutation.isPending || !shippingData.shopName.trim()}
+                          className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
+                          data-testid="button-save-shipping-customer"
+                        >
+                          {saveCustomerMutation.isPending ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4 mr-2" />
+                              Save Customer
+                            </>
+                          )}
+                        </Button>
                         </>
                         )}
                       </>
