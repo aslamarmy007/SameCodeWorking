@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, FileText, Star, Circle, Weight, Hash } from "lucide-react";
+import { Trash2, FileText, Star, Circle, Weight, Hash, Plus, Minus } from "lucide-react";
 
 interface BillItem {
   productId: string;
@@ -96,18 +96,45 @@ export function BillSummary({
                       </div>
                     </td>
                     <td className="p-2 text-center">
-                      <Input
-                        type="number"
-                        min="0.01"
-                        step={isWeightBased ? "0.01" : "1"}
-                        value={item.quantity}
-                        onChange={(e) =>
-                          onUpdateQuantity(item.productId, parseFloat(e.target.value) || 0)
-                        }
-                        className="w-16 h-8 text-center text-sm p-0"
-                        data-testid={`input-quantity-${item.productId}`}
-                        placeholder={isWeightBased ? "Kg" : "Qty"}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => {
+                            const step = isWeightBased ? 0.5 : 1;
+                            const newQty = Math.max(0, item.quantity - step);
+                            onUpdateQuantity(item.productId, newQty);
+                          }}
+                          className="h-7 w-7"
+                          data-testid={`button-decrease-${item.productId}`}
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0.01"
+                          step={isWeightBased ? "0.01" : "1"}
+                          value={item.quantity}
+                          onChange={(e) =>
+                            onUpdateQuantity(item.productId, parseFloat(e.target.value) || 0)
+                          }
+                          className="w-16 h-7 text-center text-sm p-1"
+                          data-testid={`input-quantity-${item.productId}`}
+                          placeholder={isWeightBased ? "Kg" : "Qty"}
+                        />
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => {
+                            const step = isWeightBased ? 0.5 : 1;
+                            onUpdateQuantity(item.productId, item.quantity + step);
+                          }}
+                          className="h-7 w-7"
+                          data-testid={`button-increase-${item.productId}`}
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </td>
                     <td className="p-2 text-right text-sm">₹{item.price.toFixed(2)}</td>
                     <td className="p-2 text-right text-sm font-semibold">
@@ -133,8 +160,28 @@ export function BillSummary({
       </div>
 
       <div className="space-y-2 pt-4 border-t-2">
-        <div className="flex justify-between">
-          <span className="font-medium">Subtotal:</span>
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col">
+            <span className="font-medium">Subtotal:</span>
+            <span className="text-xs text-muted-foreground">
+              {(() => {
+                const summary = items.reduce((acc, item) => {
+                  const isWeightBased = item.unit?.toLowerCase() === "kg";
+                  if (isWeightBased) {
+                    acc.totalKg += item.quantity;
+                  } else {
+                    acc.totalQty += item.quantity;
+                  }
+                  return acc;
+                }, { totalKg: 0, totalQty: 0 });
+                
+                const parts = [];
+                if (summary.totalQty > 0) parts.push(`${summary.totalQty} qty`);
+                if (summary.totalKg > 0) parts.push(`${summary.totalKg.toFixed(2)} kg`);
+                return parts.length > 0 ? parts.join(', ') : '0 items';
+              })()}
+            </span>
+          </div>
           <span className="font-semibold" data-testid="text-subtotal">
             ₹{subtotal.toFixed(2)}
           </span>
