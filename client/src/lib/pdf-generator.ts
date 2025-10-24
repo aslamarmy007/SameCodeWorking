@@ -116,7 +116,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setTextColor(52, 73, 94);
   doc.text("BILL TO:", leftBoxX + 3, yPos + 5);
   
-  let billToY = yPos + 11;
+  let billToY = yPos + 13;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
@@ -160,7 +160,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setTextColor(52, 73, 94);
   doc.text("SHIP TO:", rightBoxX + 3, yPos + 5);
   
-  let shipToY = yPos + 11;
+  let shipToY = yPos + 13;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
