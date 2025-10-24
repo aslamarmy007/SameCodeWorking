@@ -94,54 +94,103 @@ export function generateInvoicePDF(data: InvoiceData) {
     year: 'numeric' 
   });
   doc.text("Date: " + formattedDate, pageWidth - margin - 5, yPos, { align: "right" });
-  yPos += 8;
+  yPos += 10;
 
-  // Customer details box with better styling
+  // Customer details boxes - Bill To and Ship To side by side
+  const boxWidth = (pageWidth - (2 * margin) - 5) / 2; // 5mm gap between boxes
+  const boxHeight = 45;
+  const leftBoxX = margin;
+  const rightBoxX = margin + boxWidth + 5;
+  
+  // BILL TO Box
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.3);
-  doc.rect(margin, yPos, pageWidth - (2 * margin), 40);
+  doc.rect(leftBoxX, yPos, boxWidth, boxHeight);
   
   // "Bill To" header with background
   doc.setFillColor(240, 240, 240);
-  doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "F");
+  doc.rect(leftBoxX, yPos, boxWidth, 8, "F");
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(52, 73, 94);
-  doc.text("BILL TO:", margin + 3, yPos + 5.5);
-  yPos += 11;
-
-  doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(52, 73, 94);
+  doc.text("BILL TO:", leftBoxX + 3, yPos + 5.5);
   
-  // Customer details
+  let billToY = yPos + 12;
   doc.setFont("helvetica", "bold");
-  doc.text(data.customer.name, margin + 3, yPos);
-  yPos += 5;
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text(data.customer.name, leftBoxX + 3, billToY);
+  billToY += 5;
   
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
   if (data.customer.shopName) {
-    doc.text(data.customer.shopName, margin + 3, yPos);
-    yPos += 5;
+    doc.text(data.customer.shopName, leftBoxX + 3, billToY);
+    billToY += 4;
   }
   
   if (data.customer.address) {
     const addressText = data.customer.address + ", " + data.customer.city + ", " + data.customer.state;
-    const splitAddress = doc.splitTextToSize(addressText, pageWidth - (2 * margin) - 6);
-    doc.text(splitAddress, margin + 3, yPos);
-    yPos += (splitAddress.length * 5);
+    const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
+    doc.text(splitAddress, leftBoxX + 3, billToY);
+    billToY += (splitAddress.length * 4);
   }
   
-  const contactInfo = [];
-  if (data.customer.phone) contactInfo.push("Ph: " + data.customer.phone);
-  if (data.customer.gstin) contactInfo.push("GSTIN: " + data.customer.gstin);
-  
-  if (contactInfo.length > 0) {
-    doc.text(contactInfo.join(' | '), margin + 3, yPos);
+  if (data.customer.phone) {
+    doc.text("Ph: " + data.customer.phone, leftBoxX + 3, billToY);
+    billToY += 4;
   }
   
-  yPos += 15;
+  if (data.customer.gstin) {
+    doc.text("GSTIN: " + data.customer.gstin, leftBoxX + 3, billToY);
+  }
+  
+  // SHIP TO Box
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.rect(rightBoxX, yPos, boxWidth, boxHeight);
+  
+  // "Ship To" header with background
+  doc.setFillColor(240, 240, 240);
+  doc.rect(rightBoxX, yPos, boxWidth, 8, "F");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(52, 73, 94);
+  doc.text("SHIP TO:", rightBoxX + 3, yPos + 5.5);
+  
+  let shipToY = yPos + 12;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text(data.customer.name, rightBoxX + 3, shipToY);
+  shipToY += 5;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  if (data.customer.shopName) {
+    doc.text(data.customer.shopName, rightBoxX + 3, shipToY);
+    shipToY += 4;
+  }
+  
+  if (data.customer.address) {
+    const addressText = data.customer.address + ", " + data.customer.city + ", " + data.customer.state;
+    const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
+    doc.text(splitAddress, rightBoxX + 3, shipToY);
+    shipToY += (splitAddress.length * 4);
+  }
+  
+  if (data.customer.phone) {
+    doc.text("Ph: " + data.customer.phone, rightBoxX + 3, shipToY);
+    shipToY += 4;
+  }
+  
+  if (data.customer.gstin) {
+    doc.text("GSTIN: " + data.customer.gstin, rightBoxX + 3, shipToY);
+  }
+  
+  yPos += boxHeight + 8;
 
   // Items table with professional styling
   const tableStartY = yPos;
@@ -152,7 +201,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   
   const col1 = margin + 3;
   const col2 = margin + 15;
@@ -161,12 +210,12 @@ export function generateInvoicePDF(data: InvoiceData) {
   const col5 = margin + 145;
   const col6 = pageWidth - margin - 5;
   
-  doc.text("S.No", col1, yPos + 7);
-  doc.text("Description", col2, yPos + 7);
-  doc.text("HSN", col3, yPos + 7);
-  doc.text("Qty", col4, yPos + 7, { align: "right" });
-  doc.text("Rate (Rs.)", col5, yPos + 7, { align: "right" });
-  doc.text("Amount (Rs.)", col6, yPos + 7, { align: "right" });
+  doc.text("S.No", col1, yPos + 6.5);
+  doc.text("Description", col2, yPos + 6.5);
+  doc.text("HSN", col3, yPos + 6.5);
+  doc.text("Qty", col4, yPos + 6.5, { align: "right" });
+  doc.text("Rate (Rs.)", col5, yPos + 6.5, { align: "right" });
+  doc.text("Amount (Rs.)", col6, yPos + 6.5, { align: "right" });
   yPos += 10;
 
   // Table items
@@ -185,13 +234,13 @@ export function generateInvoicePDF(data: InvoiceData) {
       doc.rect(margin, yPos, pageWidth - (2 * margin), 10, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text("S.No", col1, yPos + 7);
-      doc.text("Description", col2, yPos + 7);
-      doc.text("HSN", col3, yPos + 7);
-      doc.text("Qty", col4, yPos + 7, { align: "right" });
-      doc.text("Rate (Rs.)", col5, yPos + 7, { align: "right" });
-      doc.text("Amount (Rs.)", col6, yPos + 7, { align: "right" });
+      doc.setFontSize(9);
+      doc.text("S.No", col1, yPos + 6.5);
+      doc.text("Description", col2, yPos + 6.5);
+      doc.text("HSN", col3, yPos + 6.5);
+      doc.text("Qty", col4, yPos + 6.5, { align: "right" });
+      doc.text("Rate (Rs.)", col5, yPos + 6.5, { align: "right" });
+      doc.text("Amount (Rs.)", col6, yPos + 6.5, { align: "right" });
       yPos += 10;
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
@@ -219,18 +268,19 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.line(margin, yPos, pageWidth - margin, yPos);
   });
 
-  yPos += 5;
+  yPos += 8;
 
   // Totals section with professional styling
-  const totalsBoxX = pageWidth - 90;
-  const totalsBoxWidth = 75;
+  const totalsBoxX = pageWidth - 85;
+  const totalsBoxWidth = 70;
   
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.3);
-  
-  // Subtotal
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  
+  // Subtotal
   doc.text("Subtotal:", totalsBoxX, yPos);
   doc.text("Rs. " + data.subtotal.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
   yPos += 6;
@@ -259,19 +309,19 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setFont("helvetica", "bold");
     doc.text("GST (18%):", totalsBoxX, yPos);
     doc.text("Rs. " + data.gstAmount.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
-    yPos += 8;
+    yPos += 7;
   }
 
   // Grand total box
   doc.setFillColor(52, 73, 94);
-  doc.rect(totalsBoxX - 3, yPos - 3, totalsBoxWidth + 3, 12, "F");
+  doc.rect(totalsBoxX - 3, yPos - 2, totalsBoxWidth + 3, 10, "F");
   
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text("Grand Total:", totalsBoxX, yPos + 5);
   doc.text("Rs. " + data.grandTotal.toFixed(2), pageWidth - margin - 5, yPos + 5, { align: "right" });
-  yPos += 15;
+  yPos += 13;
 
   // Amount in words
   doc.setTextColor(0, 0, 0);
@@ -294,6 +344,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   // Terms & Conditions
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
   doc.text("Terms & Conditions:", margin, footerY);
   
   doc.setFont("helvetica", "normal");
