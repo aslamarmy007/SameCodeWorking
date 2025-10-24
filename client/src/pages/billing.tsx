@@ -354,6 +354,8 @@ export default function BillingPage() {
   const canProceedFromConfig = billConfig.billDate !== "";
   const canProceedFromCustomer = customerData.shopName.trim() !== "";
   const canProceedFromProducts = billItems.length > 0;
+  const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
+  const canGeneratePDF = billItems.length > 0 && allItemsHaveValidQuantity;
 
   const handleSaveCustomer = () => {
     if (!customerData.shopName.trim()) {
@@ -368,6 +370,16 @@ export default function BillingPage() {
   };
 
   const handleGeneratePDF = async () => {
+    // Validate all items have quantity >= 0.1
+    if (!allItemsHaveValidQuantity) {
+      toast({
+        title: "Invalid Quantity",
+        description: "All items must have a quantity of at least 0.1 to generate the PDF",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Ensure customer is saved before creating invoice
     if (!customerData.id && customerData.shopName.trim()) {
       try {
@@ -1202,7 +1214,7 @@ export default function BillingPage() {
                     </Button>
                     <Button
                       onClick={handleGeneratePDF}
-                      disabled={createInvoiceMutation.isPending}
+                      disabled={createInvoiceMutation.isPending || !canGeneratePDF}
                       className="flex-[3] text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                       data-testid="button-generate-pdf"
                     >
