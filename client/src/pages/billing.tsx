@@ -1231,6 +1231,8 @@ export default function BillingPage() {
             gstAmount={gstAmount}
             grandTotal={grandTotal}
             gstEnabled={billConfig.gstEnabled}
+            customerShopName={customerData.shopName}
+            billDate={billConfig.billDate}
             onUpdateQuantity={handleUpdateQuantity}
             onUpdatePrice={handleUpdatePrice}
             onRemoveItem={handleRemoveItem}

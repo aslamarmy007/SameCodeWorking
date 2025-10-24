@@ -22,6 +22,8 @@ interface BillSummaryProps {
   gstAmount: number;
   grandTotal: number;
   gstEnabled: boolean;
+  customerShopName?: string;
+  billDate?: string;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onUpdatePrice: (productId: string, price: number) => void;
   onRemoveItem: (productId: string) => void;
@@ -34,6 +36,8 @@ export function BillSummary({
   gstAmount,
   grandTotal,
   gstEnabled,
+  customerShopName,
+  billDate,
   onUpdateQuantity,
   onUpdatePrice,
   onRemoveItem,
@@ -44,6 +48,22 @@ export function BillSummary({
         <FileText className="w-6 h-6 text-primary" />
         <h3 className="text-2xl font-bold">Current Bill</h3>
       </div>
+      {(customerShopName || billDate) && (
+        <div className="mb-4 pb-4 border-b-2 space-y-1">
+          {customerShopName && (
+            <div className="text-sm">
+              <span className="font-semibold">Billing To:</span>{" "}
+              <span className="text-muted-foreground">{customerShopName}</span>
+            </div>
+          )}
+          {billDate && (
+            <div className="text-sm">
+              <span className="font-semibold">Date:</span>{" "}
+              <span className="text-muted-foreground">{new Date(billDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+            </div>
+          )}
+        </div>
+      )}
       <div className="overflow-x-auto mb-6">
         <table className="w-full">
           <thead>
