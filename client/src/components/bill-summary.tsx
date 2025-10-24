@@ -51,7 +51,7 @@ export function BillSummary({
               <th className="text-xs p-2 text-center rounded-tl-lg">S.No</th>
               <th className="text-xs p-2 text-left">Item</th>
               <th className="text-xs p-2 text-center">Qty/Kg</th>
-              <th className="text-xs p-2 text-right">Rate</th>
+              <th className="text-xs p-2 text-center">Rate</th>
               <th className="text-xs p-2 text-right">Amount</th>
               <th className="text-xs p-2 text-center rounded-tr-lg">Del</th>
             </tr>
@@ -156,7 +156,7 @@ export function BillSummary({
                         </Button>
                       </div>
                     </td>
-                    <td className="p-2 text-right">
+                    <td className="p-2 text-center">
                       <Input
                         type="number"
                         min="0.01"
@@ -182,7 +182,7 @@ export function BillSummary({
                             }
                           }
                         }}
-                        className="w-20 h-7 text-right text-sm p-1"
+                        className="w-20 h-7 text-center text-sm p-1"
                         data-testid={`input-price-${item.productId}`}
                       />
                     </td>
