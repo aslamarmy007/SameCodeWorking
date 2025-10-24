@@ -17,6 +17,7 @@ export interface IStorage {
   createCustomer(customer: InsertCustomer): Promise<Customer>;
   updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
   deleteCustomer(id: string): Promise<boolean>;
+  findDuplicateCustomer(name: string, shopName: string | null): Promise<Customer | undefined>;
 
   // Product operations
   getAllProducts(): Promise<Product[]>;
@@ -169,6 +170,18 @@ export class MemStorage implements IStorage {
 
   async deleteCustomer(id: string): Promise<boolean> {
     return this.customers.delete(id);
+  }
+
+  async findDuplicateCustomer(name: string, shopName: string | null): Promise<Customer | undefined> {
+    const normalizedName = name.trim().toLowerCase();
+    const normalizedShopName = shopName?.trim().toLowerCase() || null;
+    
+    return Array.from(this.customers.values()).find(customer => {
+      const customerName = customer.name.trim().toLowerCase();
+      const customerShopName = customer.shopName?.trim().toLowerCase() || null;
+      
+      return customerName === normalizedName && customerShopName === normalizedShopName;
+    });
   }
 
   // Product operations

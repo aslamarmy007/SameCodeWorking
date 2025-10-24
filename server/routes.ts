@@ -29,9 +29,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/customers", async (req, res) => {
     try {
       const validated = insertCustomerSchema.parse(req.body);
+      
+      // Check for duplicate customer
+      const duplicate = await storage.findDuplicateCustomer(
+        validated.name,
+        validated.shopName || null
+      );
+      
+      if (duplicate) {
+        return res.status(409).json({ 
+          error: "Customer already exists",
+          message: "A customer with this name and shop name already exists" 
+        });
+      }
+      
       const customer = await storage.createCustomer(validated);
       res.status(201).json(customer);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Validation error",
+          message: error.errors[0]?.message || "Invalid customer data",
+          details: error.errors
+        });
+      }
       res.status(400).json({ error: "Invalid customer data" });
     }
   });

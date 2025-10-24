@@ -15,7 +15,31 @@ export const customers = pgTable("customers", {
   state: text("state"),
 });
 
-export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true });
+export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true }).extend({
+  name: z.string()
+    .min(1, "Customer name is required")
+    .regex(/^[a-zA-Z\s]+$/, "Customer name must contain only letters"),
+  shopName: z.string()
+    .optional()
+    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
+      message: "Shop name must contain only letters"
+    }),
+  phone: z.string()
+    .optional()
+    .refine((val) => !val || /^\d{10}$/.test(val), {
+      message: "Phone number must be exactly 10 digits"
+    }),
+  city: z.string()
+    .optional()
+    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
+      message: "City must contain only letters"
+    }),
+  state: z.string()
+    .optional()
+    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
+      message: "State must contain only letters"
+    }),
+});
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type Customer = typeof customers.$inferSelect;
 

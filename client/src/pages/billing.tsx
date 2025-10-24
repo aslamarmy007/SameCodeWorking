@@ -113,12 +113,27 @@ export default function BillingPage() {
         description: "Customer has been saved successfully",
       });
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to save customer",
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      const errorData = error.body;
+      if (errorData?.error === "Customer already exists") {
+        toast({
+          title: "Customer Already Exists",
+          description: errorData.message || "A customer with this name and shop name already exists",
+          variant: "destructive",
+        });
+      } else if (errorData?.error === "Validation error") {
+        toast({
+          title: "Validation Error",
+          description: errorData.message || "Please check all fields and try again",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to save customer",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -352,20 +367,74 @@ export default function BillingPage() {
   };
 
   const canProceedFromConfig = billConfig.billDate !== "";
-  const canProceedFromCustomer = customerData.shopName.trim() !== "";
+  const canProceedFromCustomer = customerData.name.trim() !== "";
   const canProceedFromProducts = billItems.length > 0;
   const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
   const canGeneratePDF = billItems.length > 0 && allItemsHaveValidQuantity;
 
   const handleSaveCustomer = () => {
-    if (!customerData.shopName.trim()) {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    const phoneRegex = /^\d{10}$/;
+    
+    // Validate customer name
+    if (!customerData.name.trim()) {
       toast({
         title: "Validation Error",
-        description: "Shop name is required",
+        description: "Customer name is required",
         variant: "destructive",
       });
       return;
     }
+    
+    if (!nameRegex.test(customerData.name.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate shop name
+    if (customerData.shopName.trim() && !nameRegex.test(customerData.shopName.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Shop name must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate phone
+    if (customerData.phone.trim() && !phoneRegex.test(customerData.phone.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Phone number must be exactly 10 digits",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate city
+    if (customerData.city.trim() && !nameRegex.test(customerData.city.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "City must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate state
+    if (customerData.state.trim() && !nameRegex.test(customerData.state.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "State must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     saveCustomerMutation.mutate(customerData);
   };
 
@@ -707,7 +776,7 @@ export default function BillingPage() {
                     </div>
                     <Button
                       onClick={handleSaveCustomer}
-                      disabled={saveCustomerMutation.isPending || !customerData.shopName.trim()}
+                      disabled={saveCustomerMutation.isPending || !customerData.name.trim()}
                       className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                       data-testid="button-save-customer"
                     >
@@ -970,17 +1039,71 @@ export default function BillingPage() {
                         </div>
                         <Button
                           onClick={() => {
-                            if (!shippingData.shopName.trim()) {
+                            const nameRegex = /^[a-zA-Z\s]+$/;
+                            const phoneRegex = /^\d{10}$/;
+                            
+                            // Validate customer name
+                            if (!shippingData.name.trim()) {
                               toast({
                                 title: "Validation Error",
-                                description: "Shop name is required",
+                                description: "Customer name is required",
                                 variant: "destructive",
                               });
                               return;
                             }
+                            
+                            if (!nameRegex.test(shippingData.name.trim())) {
+                              toast({
+                                title: "Validation Error",
+                                description: "Customer name must contain only letters",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // Validate shop name
+                            if (shippingData.shopName.trim() && !nameRegex.test(shippingData.shopName.trim())) {
+                              toast({
+                                title: "Validation Error",
+                                description: "Shop name must contain only letters",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // Validate phone
+                            if (shippingData.phone.trim() && !phoneRegex.test(shippingData.phone.trim())) {
+                              toast({
+                                title: "Validation Error",
+                                description: "Phone number must be exactly 10 digits",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // Validate city
+                            if (shippingData.city.trim() && !nameRegex.test(shippingData.city.trim())) {
+                              toast({
+                                title: "Validation Error",
+                                description: "City must contain only letters",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // Validate state
+                            if (shippingData.state.trim() && !nameRegex.test(shippingData.state.trim())) {
+                              toast({
+                                title: "Validation Error",
+                                description: "State must contain only letters",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
                             saveCustomerMutation.mutate(shippingData);
                           }}
-                          disabled={saveCustomerMutation.isPending || !shippingData.shopName.trim()}
+                          disabled={saveCustomerMutation.isPending || !shippingData.name.trim()}
                           className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                           data-testid="button-save-shipping-customer"
                         >
