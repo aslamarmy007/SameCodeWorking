@@ -70,6 +70,7 @@ export default function BillingPage() {
     state: "",
   });
   const [isNewCustomer, setIsNewCustomer] = useState(true);
+  const [isNewShippingCustomer, setIsNewShippingCustomer] = useState(true);
   const [sameAsbilling, setSameAsBinding] = useState(true);
   const [shippingData, setShippingData] = useState<CustomerData>({
     name: "",
@@ -427,7 +428,6 @@ export default function BillingPage() {
                   <h2 className="text-3xl font-bold text-foreground">Customer Information</h2>
                 </div>
                 <div className="space-y-6">
-                  <>
                   <div>
                     <Label className="text-base font-semibold mb-2 block">
                       Customer Type
@@ -459,29 +459,82 @@ export default function BillingPage() {
                     </Select>
                   </div>
 
-                  {!isNewCustomer && (
-                    <div>
-                      <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
-                        Select Customer
-                      </Label>
-                      <Select onValueChange={handleCustomerSelect}>
-                        <SelectTrigger className="text-base" data-testid="select-customer">
-                          <SelectValue placeholder="Select a customer..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {customers.map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>
-                              {customer.shopName || customer.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+                  <div className="border-t-2 pt-6">
+                    <h3 className="text-xl font-bold mb-4">Billing To</h3>
+                    
+                    {!isNewCustomer && (
+                      <div>
+                        <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
+                          Select Customer
+                        </Label>
+                        <Select onValueChange={handleCustomerSelect}>
+                          <SelectTrigger className="text-base" data-testid="select-customer">
+                            <SelectValue placeholder="Select a customer..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {customers.map((customer) => (
+                              <SelectItem key={customer.id} value={customer.id}>
+                                {customer.shopName || customer.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {!isNewCustomer && customerData.shopName && (
+                      <div className="mt-4 p-4 bg-muted rounded-lg space-y-2" data-testid="display-billing-info">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {customerData.shopName && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Shop Name</p>
+                              <p className="font-semibold">{customerData.shopName}</p>
+                            </div>
+                          )}
+                          {customerData.name && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Customer Name</p>
+                              <p className="font-semibold">{customerData.name}</p>
+                            </div>
+                          )}
+                          {customerData.phone && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Phone</p>
+                              <p className="font-semibold">{customerData.phone}</p>
+                            </div>
+                          )}
+                          {customerData.gstin && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">GSTIN</p>
+                              <p className="font-semibold">{customerData.gstin}</p>
+                            </div>
+                          )}
+                        </div>
+                        {customerData.address && (
+                          <div className="mt-2">
+                            <p className="text-sm text-muted-foreground">Address</p>
+                            <p className="font-semibold">{customerData.address}</p>
+                          </div>
+                        )}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {customerData.city && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">City</p>
+                              <p className="font-semibold">{customerData.city}</p>
+                            </div>
+                          )}
+                          {customerData.state && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">State</p>
+                              <p className="font-semibold">{customerData.state}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                   {isNewCustomer && (
-                  <div className="border-t-2 pt-6">
-                    <h3 className="text-xl font-bold mb-4">Add New Customer</h3>
+                  <div>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="shopName" className="text-base font-semibold mb-2 block">
@@ -612,13 +665,17 @@ export default function BillingPage() {
                     </Button>
                   </div>
                   )}
+                  </div>
 
                   <div className="border-t-2 pt-6 mt-6">
+                    <h3 className="text-xl font-bold mb-4">Shipping To</h3>
+                    
                     <div className="flex items-center space-x-2 mb-4">
                       <Checkbox
                         id="sameAsBilling"
                         checked={sameAsbilling}
                         onCheckedChange={(checked) => setSameAsBinding(checked as boolean)}
+                        data-testid="checkbox-same-as-billing"
                       />
                       <Label
                         htmlFor="sameAsBilling"
@@ -630,38 +687,124 @@ export default function BillingPage() {
 
                     {!sameAsbilling && (
                       <>
-                        <h3 className="text-xl font-bold mb-4">Shipping Address</h3>
                         <div className="mb-4">
-                          <Label htmlFor="shippingCustomerSelect" className="text-base font-semibold mb-2 block">
-                            Select Existing Customer for Shipping
+                          <Label className="text-base font-semibold mb-2 block">
+                            Shipping Customer Type
                           </Label>
-                          <Select onValueChange={(customerId) => {
-                            const customer = customers.find((c) => c.id === customerId);
-                            if (customer) {
-                              setShippingData({
-                                id: customer.id,
-                                name: customer.name,
-                                shopName: customer.shopName || "",
-                                phone: customer.phone || "",
-                                gstin: customer.gstin || "",
-                                address: customer.address || "",
-                                city: customer.city || "",
-                                state: customer.state || "",
-                              });
-                            }
-                          }}>
-                            <SelectTrigger className="text-base">
-                              <SelectValue placeholder="Select shipping customer..." />
+                          <Select 
+                            value={isNewShippingCustomer ? "new" : "existing"} 
+                            onValueChange={(value) => {
+                              setIsNewShippingCustomer(value === "new");
+                              if (value === "new") {
+                                setShippingData({
+                                  name: "",
+                                  shopName: "",
+                                  phone: "",
+                                  gstin: "",
+                                  address: "",
+                                  city: "",
+                                  state: "",
+                                });
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="text-base" data-testid="select-shipping-customer-type">
+                              <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {customers.map((customer) => (
-                                <SelectItem key={customer.id} value={customer.id}>
-                                  {customer.name}
-                                </SelectItem>
-                              ))}
+                              <SelectItem value="existing">Existing Customer</SelectItem>
+                              <SelectItem value="new">New Customer</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
+
+                        {!isNewShippingCustomer && (
+                          <div className="mb-4">
+                            <Label htmlFor="shippingCustomerSelect" className="text-base font-semibold mb-2 block">
+                              Select Customer
+                            </Label>
+                            <Select onValueChange={(customerId) => {
+                              const customer = customers.find((c) => c.id === customerId);
+                              if (customer) {
+                                setShippingData({
+                                  id: customer.id,
+                                  name: customer.name,
+                                  shopName: customer.shopName || "",
+                                  phone: customer.phone || "",
+                                  gstin: customer.gstin || "",
+                                  address: customer.address || "",
+                                  city: customer.city || "",
+                                  state: customer.state || "",
+                                });
+                              }
+                            }}>
+                              <SelectTrigger className="text-base" data-testid="select-shipping-customer">
+                                <SelectValue placeholder="Select shipping customer..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {customers.map((customer) => (
+                                  <SelectItem key={customer.id} value={customer.id}>
+                                    {customer.shopName || customer.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
+                        {!isNewShippingCustomer && shippingData.shopName && (
+                          <div className="mb-4 p-4 bg-muted rounded-lg space-y-2" data-testid="display-shipping-info">
+                            <div className="grid md:grid-cols-2 gap-4">
+                              {shippingData.shopName && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Shop Name</p>
+                                  <p className="font-semibold">{shippingData.shopName}</p>
+                                </div>
+                              )}
+                              {shippingData.name && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Customer Name</p>
+                                  <p className="font-semibold">{shippingData.name}</p>
+                                </div>
+                              )}
+                              {shippingData.phone && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Phone</p>
+                                  <p className="font-semibold">{shippingData.phone}</p>
+                                </div>
+                              )}
+                              {shippingData.gstin && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">GSTIN</p>
+                                  <p className="font-semibold">{shippingData.gstin}</p>
+                                </div>
+                              )}
+                            </div>
+                            {shippingData.address && (
+                              <div className="mt-2">
+                                <p className="text-sm text-muted-foreground">Address</p>
+                                <p className="font-semibold">{shippingData.address}</p>
+                              </div>
+                            )}
+                            <div className="grid md:grid-cols-2 gap-4">
+                              {shippingData.city && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">City</p>
+                                  <p className="font-semibold">{shippingData.city}</p>
+                                </div>
+                              )}
+                              {shippingData.state && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">State</p>
+                                  <p className="font-semibold">{shippingData.state}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {isNewShippingCustomer && (
+                        <>
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="shippingShopName" className="text-base font-semibold mb-2 block">
@@ -765,6 +908,8 @@ export default function BillingPage() {
                             />
                           </div>
                         </div>
+                        </>
+                        )}
                       </>
                     )}
                   </div>
@@ -787,7 +932,6 @@ export default function BillingPage() {
                       Next: Products →
                     </Button>
                   </div>
-                  </>
                 </div>
               </Card>
             )}
