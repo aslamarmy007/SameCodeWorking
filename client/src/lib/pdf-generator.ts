@@ -126,23 +126,26 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("BILL TO:", leftBoxX + 3, yPos + 5);
   
   let billToY = yPos + 13;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  
   if (data.customer.shopName) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
     doc.text(data.customer.shopName, leftBoxX + 3, billToY);
     billToY += 4.5;
   }
   
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(0, 0, 0);
-  doc.text(data.customer.name, leftBoxX + 3, billToY);
-  billToY += 4.5;
+  if (data.customer.name) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text(data.customer.name, leftBoxX + 3, billToY);
+    billToY += 4.5;
+  }
   
-  doc.setFont("helvetica", "normal");
-  
-  if (data.customer.address) {
-    const addressText = data.customer.address + ", " + data.customer.city + ", " + data.customer.state;
+  if (data.customer.address || data.customer.city || data.customer.state) {
+    doc.setFont("helvetica", "normal");
+    const addressParts = [data.customer.address, data.customer.city, data.customer.state].filter(Boolean);
+    const addressText = addressParts.join(", ");
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, leftBoxX + 3, billToY);
     billToY += (splitAddress.length * 4);
@@ -178,23 +181,26 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("SHIP TO:", rightBoxX + 3, yPos + 5);
   
   let shipToY = yPos + 13;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  
   if (data.shipping.shopName) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
     doc.text(data.shipping.shopName, rightBoxX + 3, shipToY);
     shipToY += 4.5;
   }
   
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(0, 0, 0);
-  doc.text(data.shipping.name, rightBoxX + 3, shipToY);
-  shipToY += 4.5;
+  if (data.shipping.name) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text(data.shipping.name, rightBoxX + 3, shipToY);
+    shipToY += 4.5;
+  }
   
-  doc.setFont("helvetica", "normal");
-  
-  if (data.shipping.address) {
-    const addressText = data.shipping.address + ", " + data.shipping.city + ", " + data.shipping.state;
+  if (data.shipping.address || data.shipping.city || data.shipping.state) {
+    doc.setFont("helvetica", "normal");
+    const addressParts = [data.shipping.address, data.shipping.city, data.shipping.state].filter(Boolean);
+    const addressText = addressParts.join(", ");
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, rightBoxX + 3, shipToY);
     shipToY += (splitAddress.length * 4);
