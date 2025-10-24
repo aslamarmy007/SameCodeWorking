@@ -81,18 +81,19 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("TAX INVOICE", margin + 5, yPos + 8);
   
   doc.setFontSize(10);
-  doc.text(`Invoice No: ${data.invoiceNumber}`, pageWidth - margin - 5, yPos + 8, { align: "right" });
+  doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 5, yPos + 8, { align: "right" });
   yPos += 15;
 
   // Date
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Date: ${new Date(data.billDate).toLocaleDateString('en-IN', { 
+  const formattedDate = new Date(data.billDate).toLocaleDateString('en-IN', { 
     day: '2-digit', 
     month: 'short', 
     year: 'numeric' 
-  })}`, pageWidth - margin - 5, yPos, { align: "right" });
+  });
+  doc.text("Date: " + formattedDate, pageWidth - margin - 5, yPos, { align: "right" });
   yPos += 8;
 
   // Customer details box with better styling
@@ -126,15 +127,15 @@ export function generateInvoicePDF(data: InvoiceData) {
   }
   
   if (data.customer.address) {
-    const addressText = `${data.customer.address}, ${data.customer.city}, ${data.customer.state}`;
+    const addressText = data.customer.address + ", " + data.customer.city + ", " + data.customer.state;
     const splitAddress = doc.splitTextToSize(addressText, pageWidth - (2 * margin) - 6);
     doc.text(splitAddress, margin + 3, yPos);
     yPos += (splitAddress.length * 5);
   }
   
   const contactInfo = [];
-  if (data.customer.phone) contactInfo.push(`Ph: ${data.customer.phone}`);
-  if (data.customer.gstin) contactInfo.push(`GSTIN: ${data.customer.gstin}`);
+  if (data.customer.phone) contactInfo.push("Ph: " + data.customer.phone);
+  if (data.customer.gstin) contactInfo.push("GSTIN: " + data.customer.gstin);
   
   if (contactInfo.length > 0) {
     doc.text(contactInfo.join(' | '), margin + 3, yPos);
@@ -164,8 +165,8 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("Description", col2, yPos + 7);
   doc.text("HSN", col3, yPos + 7);
   doc.text("Qty", col4, yPos + 7, { align: "right" });
-  doc.text("Rate (₹)", col5, yPos + 7, { align: "right" });
-  doc.text("Amount (₹)", col6, yPos + 7, { align: "right" });
+  doc.text("Rate (Rs.)", col5, yPos + 7, { align: "right" });
+  doc.text("Amount (Rs.)", col6, yPos + 7, { align: "right" });
   yPos += 10;
 
   // Table items
@@ -189,8 +190,8 @@ export function generateInvoicePDF(data: InvoiceData) {
       doc.text("Description", col2, yPos + 7);
       doc.text("HSN", col3, yPos + 7);
       doc.text("Qty", col4, yPos + 7, { align: "right" });
-      doc.text("Rate (₹)", col5, yPos + 7, { align: "right" });
-      doc.text("Amount (₹)", col6, yPos + 7, { align: "right" });
+      doc.text("Rate (Rs.)", col5, yPos + 7, { align: "right" });
+      doc.text("Amount (Rs.)", col6, yPos + 7, { align: "right" });
       yPos += 10;
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
@@ -231,25 +232,25 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.text("Subtotal:", totalsBoxX, yPos);
-  doc.text(`₹ ${data.subtotal.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
+  doc.text("Rs. " + data.subtotal.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
   yPos += 6;
 
   // Additional charges
   if (data.transport > 0) {
     doc.text("Transport:", totalsBoxX, yPos);
-    doc.text(`₹ ${data.transport.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
+    doc.text("Rs. " + data.transport.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 6;
   }
 
   if (data.packaging > 0) {
     doc.text("Packaging:", totalsBoxX, yPos);
-    doc.text(`₹ ${data.packaging.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
+    doc.text("Rs. " + data.packaging.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 6;
   }
 
   if (data.other > 0) {
     doc.text("Other Charges:", totalsBoxX, yPos);
-    doc.text(`₹ ${data.other.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
+    doc.text("Rs. " + data.other.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 6;
   }
 
@@ -257,7 +258,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.gstAmount > 0) {
     doc.setFont("helvetica", "bold");
     doc.text("GST (18%):", totalsBoxX, yPos);
-    doc.text(`₹ ${data.gstAmount.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
+    doc.text("Rs. " + data.gstAmount.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 8;
   }
 
@@ -269,7 +270,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text("Grand Total:", totalsBoxX, yPos + 5);
-  doc.text(`₹ ${data.grandTotal.toFixed(2)}`, pageWidth - margin - 5, yPos + 5, { align: "right" });
+  doc.text("Rs. " + data.grandTotal.toFixed(2), pageWidth - margin - 5, yPos + 5, { align: "right" });
   yPos += 15;
 
   // Amount in words
@@ -277,13 +278,13 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFontSize(9);
   doc.setFont("helvetica", "italic");
   const amountInWords = numberToWords(data.grandTotal);
-  doc.text(`Amount in words: ${amountInWords} only`, margin, yPos);
+  doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
   yPos += 8;
 
   // Lorry number if provided
   if (data.lorryNumber) {
     doc.setFont("helvetica", "normal");
-    doc.text(`Vehicle/Lorry No: ${data.lorryNumber}`, margin, yPos);
+    doc.text("Vehicle/Lorry No: " + data.lorryNumber, margin, yPos);
     yPos += 10;
   }
 
@@ -314,7 +315,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("Authorized Signatory", pageWidth - margin - 5, footerY + 19, { align: "right" });
 
   // Save and download the PDF
-  const fileName = `Invoice-${data.invoiceNumber}-${new Date().getTime()}.pdf`;
+  const fileName = "Invoice-" + data.invoiceNumber + "-" + new Date().getTime() + ".pdf";
   doc.save(fileName);
   
   return true;
