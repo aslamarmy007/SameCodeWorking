@@ -27,6 +27,8 @@ interface InvoiceData {
     quantity: number;
     price: number;
     total: number;
+    gstRate: number;
+    gstAmount: number;
   }>;
   subtotal: number;
   transport: number;
@@ -349,10 +351,17 @@ export function generateInvoicePDF(data: InvoiceData) {
     yPos += 5.5;
   }
 
-  // GST
+  // GST - Calculate unique GST rates from items
   if (data.gstAmount > 0) {
+    const gstRates = Array.from(new Set(data.items.map(item => item.gstRate).filter(rate => rate > 0)));
     doc.setFont("helvetica", "bold");
-    doc.text("GST (18%):", totalsBoxX, yPos);
+    if (gstRates.length === 1) {
+      doc.text(`GST (${gstRates[0]}%):`, totalsBoxX, yPos);
+    } else if (gstRates.length > 1) {
+      doc.text(`GST (${gstRates.join('%, ')}%):`, totalsBoxX, yPos);
+    } else {
+      doc.text("GST:", totalsBoxX, yPos);
+    }
     doc.text("Rs. " + data.gstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
     yPos += 6.5;
   }
