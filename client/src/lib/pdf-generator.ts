@@ -351,17 +351,31 @@ export function generateInvoicePDF(data: InvoiceData) {
     yPos += 5.5;
   }
 
-  // GST - Calculate unique GST rates from items (including 0%)
+  // GST - Split into SGST and CGST (half of total GST each)
   const allGstRates = Array.from(new Set(data.items.map(item => item.gstRate)));
   if (allGstRates.length > 0) {
     const sortedRates = allGstRates.sort((a, b) => a - b);
+    const sgstCgstRates = sortedRates.map(rate => rate / 2);
+    const halfGstAmount = data.gstAmount / 2;
+    
     doc.setFont("helvetica", "bold");
-    if (sortedRates.length === 1) {
-      doc.text(`GST (${sortedRates[0]}%):`, totalsBoxX, yPos);
+    
+    // SGST
+    if (sgstCgstRates.length === 1) {
+      doc.text(`SGST (${sgstCgstRates[0]}%):`, totalsBoxX, yPos);
     } else {
-      doc.text(`GST (${sortedRates.join('%, ')}%):`, totalsBoxX, yPos);
+      doc.text(`SGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX, yPos);
     }
-    doc.text("Rs. " + data.gstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
+    doc.text("Rs. " + halfGstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
+    yPos += 5.5;
+    
+    // CGST
+    if (sgstCgstRates.length === 1) {
+      doc.text(`CGST (${sgstCgstRates[0]}%):`, totalsBoxX, yPos);
+    } else {
+      doc.text(`CGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX, yPos);
+    }
+    doc.text("Rs. " + halfGstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
     yPos += 6.5;
   }
 
