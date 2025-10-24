@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayesh Coco Pith - Billing System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .step-indicator {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+        .step-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .step-inactive {
+            background: #e5e7eb;
+            color: #9ca3af;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 500px;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+        }
+        tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.3s ease;
+        }
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .summary-box {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .hidden {
+            display: none !important;
+        }
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">🥥 AYESHA Coco Pith</h1>
+        <p style="font-size: 1.1rem; opacity: 0.9;">Professional Billing System</p>
+    </div>
+
+    <div style="max-width: 1400px; margin: 0 auto; padding: 0 1rem;">
+        <!-- Progress Indicators -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div id="stepIndicator1" class="step-indicator step-active">1</div>
+                <span style="font-weight: 600; color: white;">Config</span>
+            </div>
+            <div style="width: 50px; height: 3px; background: rgba(255,255,255,0.3);"></div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div id="stepIndicator2" class="step-indicator step-inactive">2</div>
+                <span style="font-weight: 600; color: white;">Customer</span>
+            </div>
+            <div style="width: 50px; height: 3px; background: rgba(255,255,255,0.3);"></div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div id="stepIndicator3" class="step-indicator step-inactive">3</div>
+                <span style="font-weight: 600; color: white;">Products</span>
+            </div>
+            <div style="width: 50px; height: 3px; background: rgba(255,255,255,0.3);"></div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div id="stepIndicator4" class="step-indicator step-inactive">4</div>
+                <span style="font-weight: 600; color: white;">Review</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: start;">
+            <!-- Main Content -->
+            <div>
+                <!-- Step 1: Configuration -->
+                <div id="step1" class="card">
+                    <h2 style="font-size: 2rem; font-weight: bold; margin-bottom: 1.5rem; color: #1f2937;">⚙️ Bill Configuration</h2>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label>Bill Date</label>
+                        <input type="date" id="billDate">
+                    </div>
+                    <div style="background: #f0f9ff; padding: 1rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; font-size: 1.1rem;">Apply GST (18%)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="gstToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <button id="nextToCustomer" class="btn-primary" style="margin-top: 2rem;">Next: Customer Information →</button>
+                </div>
+
+                <!-- Step 2: Customer -->
+                <div id="step2" class="card hidden">
+                    <h2 style="font-size: 2rem; font-weight: bold; margin-bottom: 1.5rem; color: #1f2937;">👤 Customer Information</h2>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label>Existing Customer</label>
+                        <select id="customerSelect">
+                            <option value="">Select a customer...</option>
+                        </select>
+                    </div>
+                    <div style="border-top: 2px solid #e5e7eb; padding-top: 1.5rem; margin-top: 1.5rem;">
+                        <h3 style="font-size: 1.3rem; font-weight: bold; margin-bottom: 1rem;">Add New Customer</h3>
+                        <div class="grid-2" style="margin-bottom: 1rem;">
+                            <div>
+                                <label>Customer Name *</label>
+                                <input type="text" id="customerName" placeholder="Enter name">
+                            </div>
+                            <div>
+                                <label>Shop Name</label>
+                                <input type="text" id="shopName" placeholder="Enter shop name">
+                            </div>
+                            <div>
+                                <label>Phone</label>
+                                <input type="tel" id="phone" placeholder="Enter phone">
+                            </div>
+                            <div>
+                                <label>GSTIN</label>
+                                <input type="text" id="gstin" placeholder="Enter GSTIN">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label>Address</label>
+                            <input type="text" id="address" placeholder="Enter address">
+                        </div>
+                        <div class="grid-2">
+                            <div>
+                                <label>City</label>
+                                <input type="text" id="city" placeholder="Enter city">
+                            </div>
+                            <div>
+                                <label>State</label>
+                                <input type="text" id="state" placeholder="Enter state">
+                            </div>
+                        </div>
+                        <button id="saveCustomer" class="btn-success" style="margin-top: 1rem;">💾 Save Customer</button>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button id="backToConfig" class="btn-secondary" style="width: 50%;">← Back</button>
+                        <button id="nextToProducts" class="btn-primary" style="width: 50%;">Next: Products →</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Products -->
+                <div id="step3" class="card hidden">
+                    <h2 style="font-size: 2rem; font-weight: bold; margin-bottom: 1.5rem; color: #1f2937;">📦 Add Products</h2>
+                    <div id="productsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="backToCustomer" class="btn-secondary" style="width: 50%;">← Back</button>
+                        <button id="nextToReview" class="btn-primary" style="width: 50%;">Next: Review →</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review -->
+                <div id="step4" class="card hidden">
+                    <h2 style="font-size: 2rem; font-weight: bold; margin-bottom: 1.5rem; color: #1f2937;">✅ Additional Charges & Review</h2>
+                    <div class="grid-2" style="margin-bottom: 1.5rem;">
+                        <div>
+                            <label>Transport (₹)</label>
+                            <input type="number" id="transport" value="0" step="0.01">
+                        </div>
+                        <div>
+                            <label>Packaging (₹)</label>
+                            <input type="number" id="packaging" value="0" step="0.01">
+                        </div>
+                        <div>
+                            <label>Other Charges (₹)</label>
+                            <input type="number" id="other" value="0" step="0.01">
+                        </div>
+                        <div>
+                            <label>Lorry / Vehicle No.</label>
+                            <input type="text" id="lorryNo" placeholder="e.g. TN 01 AB 1234">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="backToProducts" class="btn-secondary" style="width: 40%;">← Back</button>
+                        <button id="generatePDF" class="btn-success" style="width: 60%;">📄 Generate & Download PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bill Summary Sidebar -->
+            <div class="summary-box">
+                <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #1f2937;">📋 Current Bill</h3>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="font-size: 0.8rem;">Item</th>
+                                <th style="font-size: 0.8rem; text-align: center;">Qty</th>
+                                <th style="font-size: 0.8rem; text-align: right;">Price</th>
+                                <th style="font-size: 0.8rem; text-align: right;">Total</th>
+                                <th style="font-size: 0.8rem; text-align: center;">Del</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billItems">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: #9ca3af;">No items yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e5e7eb;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Subtotal:</span>
+                        <span id="subtotal" style="font-weight: 600;">₹0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Charges:</span>
+                        <span id="charges" style="font-weight: 600;">₹0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>GST (18%):</span>
+                        <span id="gstAmount" style="font-weight: 600;">₹0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 2px solid #e5e7eb; font-size: 1.25rem; font-weight: bold;">
+                        <span>Grand Total:</span>
+                        <span id="grandTotal">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden PDF Template -->
+    <div id="billToPrint" class="hidden" style="position: fixed; top: -10000px; left: 0; width: 210mm; background: white; padding: 20mm;">
+        <div style="border: 4px solid black; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <h1 style="font-size: 36px; font-weight: bold; margin: 0;">AYESHA Coco Pith</h1>
+                <p style="margin: 5px 0;">Premium Coir Products</p>
+                <p style="font-size: 12px; margin: 3px 0;">123 Garden Street, Chennai - 600001</p>
+                <p style="font-size: 12px; margin: 3px 0;">Phone: +91 98765 43210 | Email: info@ayeshacoco.com</p>
+            </div>
+            <div style="border-top: 2px solid black; margin: 15px 0;"></div>
+            <div style="margin-bottom: 15px;">
+                <p><strong>Date:</strong> <span id="pdfDate"></span></p>
+            </div>
+            <div style="border: 2px solid black; padding: 10px; margin-bottom: 15px;">
+                <p><strong>Customer:</strong> <span id="pdfCustomerName"></span></p>
+                <p><strong>Shop:</strong> <span id="pdfShop"></span></p>
+                <p><strong>Phone:</strong> <span id="pdfPhone"></span></p>
+                <p><strong>GSTIN:</strong> <span id="pdfGSTIN"></span></p>
+                <p><strong>Address:</strong> <span id="pdfAddress"></span></p>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; border: 2px solid black; margin-bottom: 15px;">
+                <thead>
+                    <tr style="background: #e5e7eb;">
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">S.No</th>
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">Description</th>
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">HSN</th>
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">Qty</th>
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">Rate Rs.</th>
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">Ps.</th>
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">Amt Rs.</th>
+                        <th style="border: 1px solid black; padding: 8px; font-size: 12px;">Ps.</th>
+                    </tr>
+                </thead>
+                <tbody id="pdfItems"></tbody>
+            </table>
+            <div style="float: right; width: 300px;">
+                <table style="width: 100%; border-collapse: collapse; border: 2px solid black;">
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px; font-weight: bold;">Subtotal</td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfSubtotal"></span></td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfSubtotalPs"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px; font-weight: bold;">Transport</td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfTransport"></span></td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfTransportPs"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px; font-weight: bold;">Packaging</td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfPackaging"></span></td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfPackagingPs"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px; font-weight: bold;">Other</td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfOther"></span></td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfOtherPs"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px; font-weight: bold;">GST (18%)</td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfGST"></span></td>
+                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><span id="pdfGSTPs"></span></td>
+                    </tr>
+                    <tr style="background: #e5e7eb;">
+                        <td style="border: 1px solid black; padding: 8px; font-weight: bold;">GRAND TOTAL</td>
+                        <td style="border: 1px solid black; padding: 8px; text-align: right; font-weight: bold;"><span id="pdfGrandTotal"></span></td>
+                        <td style="border: 1px solid black; padding: 8px; text-align: right; font-weight: bold;"><span id="pdfGrandTotalPs"></span></td>
+                    </tr>
+                </table>
+            </div>
+            <div style="clear: both; padding-top: 50px; border-top: 2px solid black; margin-top: 20px;">
+                <p><strong>Lorry No:</strong> <span id="pdfLorryNo"></span></p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <p>Thank you for your business!</p>
+                    <p style="margin-top: 20px;"><strong>Authorized Signature</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="modal">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <p style="font-size: 1.2rem; font-weight: 600;">Generating PDF...</p>
+        </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <div id="modalIcon" style="font-size: 3rem; margin-bottom: 1rem;"></div>
+            <h3 id="modalTitle" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;"></h3>
+            <p id="modalMessage" style="margin-bottom: 1.5rem; color: #6b7280;"></p>
+            <button onclick="closeModal()" class="btn-primary">Close</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Global state
+        let currentStep = 1;
+        let billData = {
+            date: new Date().toISOString().split('T')[0],
+            applyGST: true,
+            customer: null,
+            items: [],
+            transport: 0,
+            packaging: 0,
+            other: 0,
+            lorryNo: ''
+        };
+
+        const masterProducts = [
+            { id: 'p1', name: 'Coco Peat Block', price: 150.00, hsn: '5305' },
+            { id: 'p2', name: 'Coir Fiber Mat', price: 220.00, hsn: '5305' },
+            { id: 'p3', name: 'Coir Pith Disc', price: 85.50, hsn: '5305' },
+            { id: 'p4', name: 'Coir Grow Bag', price: 500.00, hsn: '5305' },
+            { id: 'p5', name: 'Coco Chips', price: 1200.00, hsn: '5305' }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            updateBillSummary();
+            loadCustomers();
+            renderProducts();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('nextToCustomer').addEventListener('click', () => goToStep(2));
+            document.getElementById('backToConfig').addEventListener('click', () => goToStep(1));
+            document.getElementById('nextToProducts').addEventListener('click', () => goToStep(3));
+            document.getElementById('backToCustomer').addEventListener('click', () => goToStep(2));
+            document.getElementById('nextToReview').addEventListener('click', () => goToStep(4));
+            document.getElementById('backToProducts').addEventListener('click', () => goToStep(3));
+
+            document.getElementById('billDate').value = billData.date;
+            document.getElementById('billDate').addEventListener('change', (e) => {
+                billData.date = e.target.value;
+            });
+            document.getElementById('gstToggle').addEventListener('change', (e) => {
+                billData.applyGST = e.target.checked;
+                updateBillSummary();
+            });
+
+            document.getElementById('customerSelect').addEventListener('change', (e) => {
+                const customerId = e.target.value;
+                if (customerId) {
+                    const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+                    billData.customer = customers.find(c => c.id === customerId);
+                }
+            });
+
+            document.getElementById('saveCustomer').addEventListener('click', saveCustomer);
+
+            ['transport', 'packaging', 'other'].forEach(field => {
