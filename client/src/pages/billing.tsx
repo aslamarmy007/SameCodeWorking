@@ -69,6 +69,7 @@ export default function BillingPage() {
     city: "",
     state: "",
   });
+  const [isNewCustomer, setIsNewCustomer] = useState(true);
   const [sameAsbilling, setSameAsBinding] = useState(true);
   const [shippingData, setShippingData] = useState<CustomerData>({
     name: "",
@@ -212,6 +213,7 @@ export default function BillingPage() {
         city: "",
         state: "",
       });
+      setIsNewCustomer(true);
       setSameAsBinding(true);
       setShippingData({
         name: "",
@@ -425,24 +427,59 @@ export default function BillingPage() {
                   <h2 className="text-3xl font-bold text-foreground">Customer Information</h2>
                 </div>
                 <div className="space-y-6">
+                  <>
                   <div>
-                    <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
-                      Existing Customer
+                    <Label className="text-base font-semibold mb-2 block">
+                      Customer Type
                     </Label>
-                    <Select onValueChange={handleCustomerSelect}>
-                      <SelectTrigger className="text-base" data-testid="select-customer">
-                        <SelectValue placeholder="Select a customer..." />
+                    <Select 
+                      value={isNewCustomer ? "new" : "existing"} 
+                      onValueChange={(value) => {
+                        setIsNewCustomer(value === "new");
+                        if (value === "new") {
+                          setCustomerData({
+                            name: "",
+                            shopName: "",
+                            phone: "",
+                            gstin: "",
+                            address: "",
+                            city: "",
+                            state: "",
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="text-base" data-testid="select-customer-type">
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.name}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="existing">Existing Customer</SelectItem>
+                        <SelectItem value="new">New Customer</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
+                  {!isNewCustomer && (
+                    <div>
+                      <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
+                        Select Customer
+                      </Label>
+                      <Select onValueChange={handleCustomerSelect}>
+                        <SelectTrigger className="text-base" data-testid="select-customer">
+                          <SelectValue placeholder="Select a customer..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                              {customer.shopName || customer.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {isNewCustomer && (
                   <div className="border-t-2 pt-6">
                     <h3 className="text-xl font-bold mb-4">Add New Customer</h3>
                     <div className="grid md:grid-cols-2 gap-4">
@@ -574,6 +611,7 @@ export default function BillingPage() {
                       )}
                     </Button>
                   </div>
+                  )}
 
                   <div className="border-t-2 pt-6 mt-6">
                     <div className="flex items-center space-x-2 mb-4">
@@ -749,6 +787,7 @@ export default function BillingPage() {
                       Next: Products →
                     </Button>
                   </div>
+                  </>
                 </div>
               </Card>
             )}
