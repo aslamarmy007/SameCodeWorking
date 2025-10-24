@@ -29,161 +29,341 @@ interface InvoiceData {
 }
 
 export function generateInvoicePDF(data: InvoiceData) {
-  const doc = new jsPDF();
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+  
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
   let yPos = 20;
 
-  // Company header
-  doc.setFontSize(24);
+  // Professional border around the page
+  doc.setDrawColor(100, 100, 100);
+  doc.setLineWidth(0.5);
+  doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+
+  // Company header with better styling
+  doc.setFontSize(28);
+  doc.setTextColor(52, 73, 94);
   doc.setFont("helvetica", "bold");
   doc.text("AYESHA Coco Pith", pageWidth / 2, yPos, { align: "center" });
-  yPos += 8;
+  yPos += 10;
 
-  doc.setFontSize(10);
+  doc.setFontSize(11);
+  doc.setTextColor(100, 100, 100);
   doc.setFont("helvetica", "normal");
   doc.text("Premium Coir Products", pageWidth / 2, yPos, { align: "center" });
   yPos += 5;
+  doc.setFontSize(9);
   doc.text("123 Garden Street, Chennai - 600001", pageWidth / 2, yPos, { align: "center" });
   yPos += 5;
   doc.text("Phone: +91 98765 43210 | Email: info@ayeshacoco.com", pageWidth / 2, yPos, { align: "center" });
+  yPos += 5;
+  doc.text("GSTIN: 33AAACA0000A1Z5", pageWidth / 2, yPos, { align: "center" });
   yPos += 10;
 
-  // Border line
-  doc.setLineWidth(0.5);
-  doc.line(15, yPos, pageWidth - 15, yPos);
-  yPos += 8;
+  // Thick separator line
+  doc.setDrawColor(52, 73, 94);
+  doc.setLineWidth(0.8);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
 
-  // Invoice details
+  // Invoice title and details in a box
+  doc.setFillColor(52, 73, 94);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 12, "F");
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("TAX INVOICE", margin + 5, yPos + 8);
+  
   doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Invoice No: ${data.invoiceNumber}`, 15, yPos);
-  doc.text(`Date: ${data.billDate}`, pageWidth - 15, yPos, { align: "right" });
-  yPos += 10;
-
-  // Customer details box
-  doc.rect(15, yPos, pageWidth - 30, 35);
-  yPos += 6;
-  doc.setFont("helvetica", "bold");
-  doc.text("Bill To:", 18, yPos);
-  yPos += 5;
-  doc.setFont("helvetica", "normal");
-  doc.text(`Customer: ${data.customer.name}`, 18, yPos);
-  yPos += 5;
-  if (data.customer.shopName) {
-    doc.text(`Shop: ${data.customer.shopName}`, 18, yPos);
-    yPos += 5;
-  }
-  doc.text(`Phone: ${data.customer.phone}`, 18, yPos);
-  yPos += 5;
-  if (data.customer.gstin) {
-    doc.text(`GSTIN: ${data.customer.gstin}`, 18, yPos);
-    yPos += 5;
-  }
-  if (data.customer.address) {
-    doc.text(`Address: ${data.customer.address}, ${data.customer.city}, ${data.customer.state}`, 18, yPos);
-  }
+  doc.text(`Invoice No: ${data.invoiceNumber}`, pageWidth - margin - 5, yPos + 8, { align: "right" });
   yPos += 15;
 
-  // Table header
-  const startY = yPos;
-  doc.setFillColor(230, 230, 230);
-  doc.rect(15, yPos, pageWidth - 30, 8, "F");
-  
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.text("S.No", 18, yPos + 5);
-  doc.text("Description", 35, yPos + 5);
-  doc.text("HSN", 100, yPos + 5);
-  doc.text("Qty", 125, yPos + 5, { align: "right" });
-  doc.text("Rate", 145, yPos + 5, { align: "right" });
-  doc.text("Amount", pageWidth - 20, yPos + 5, { align: "right" });
+  // Date
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Date: ${new Date(data.billDate).toLocaleDateString('en-IN', { 
+    day: '2-digit', 
+    month: 'short', 
+    year: 'numeric' 
+  })}`, pageWidth - margin - 5, yPos, { align: "right" });
   yPos += 8;
 
-  // Table items
+  // Customer details box with better styling
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 40);
+  
+  // "Bill To" header with background
+  doc.setFillColor(240, 240, 240);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "F");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(52, 73, 94);
+  doc.text("BILL TO:", margin + 3, yPos + 5.5);
+  yPos += 11;
+
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  data.items.forEach((item, index) => {
-    if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
-    }
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  
+  // Customer details
+  doc.setFont("helvetica", "bold");
+  doc.text(data.customer.name, margin + 3, yPos);
+  yPos += 5;
+  
+  doc.setFont("helvetica", "normal");
+  if (data.customer.shopName) {
+    doc.text(data.customer.shopName, margin + 3, yPos);
+    yPos += 5;
+  }
+  
+  if (data.customer.address) {
+    const addressText = `${data.customer.address}, ${data.customer.city}, ${data.customer.state}`;
+    const splitAddress = doc.splitTextToSize(addressText, pageWidth - (2 * margin) - 6);
+    doc.text(splitAddress, margin + 3, yPos);
+    yPos += (splitAddress.length * 5);
+  }
+  
+  const contactInfo = [];
+  if (data.customer.phone) contactInfo.push(`Ph: ${data.customer.phone}`);
+  if (data.customer.gstin) contactInfo.push(`GSTIN: ${data.customer.gstin}`);
+  
+  if (contactInfo.length > 0) {
+    doc.text(contactInfo.join(' | '), margin + 3, yPos);
+  }
+  
+  yPos += 15;
 
-    doc.text(String(index + 1), 18, yPos + 5);
-    doc.text(item.productName, 35, yPos + 5);
-    doc.text(item.hsn, 100, yPos + 5);
-    doc.text(String(item.quantity), 125, yPos + 5, { align: "right" });
-    doc.text(item.price.toFixed(2), 145, yPos + 5, { align: "right" });
-    doc.text(item.total.toFixed(2), pageWidth - 20, yPos + 5, { align: "right" });
-    
-    yPos += 7;
-    doc.line(15, yPos, pageWidth - 15, yPos);
-    yPos += 1;
-  });
-
+  // Items table with professional styling
+  const tableStartY = yPos;
+  
+  // Table header
+  doc.setFillColor(52, 73, 94);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 10, "F");
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  
+  const col1 = margin + 3;
+  const col2 = margin + 15;
+  const col3 = margin + 100;
+  const col4 = margin + 125;
+  const col5 = margin + 145;
+  const col6 = pageWidth - margin - 5;
+  
+  doc.text("S.No", col1, yPos + 7);
+  doc.text("Description", col2, yPos + 7);
+  doc.text("HSN", col3, yPos + 7);
+  doc.text("Qty", col4, yPos + 7, { align: "right" });
+  doc.text("Rate (₹)", col5, yPos + 7, { align: "right" });
+  doc.text("Amount (₹)", col6, yPos + 7, { align: "right" });
   yPos += 10;
 
-  // Totals section
-  const totalsX = pageWidth - 80;
-  doc.setFont("helvetica", "bold");
-  doc.text("Subtotal:", totalsX, yPos);
-  doc.text(`₹${data.subtotal.toFixed(2)}`, pageWidth - 20, yPos, { align: "right" });
+  // Table items
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  
+  data.items.forEach((item, index) => {
+    // Check if we need a new page
+    if (yPos > pageHeight - 80) {
+      doc.addPage();
+      yPos = 20;
+      
+      // Redraw table header on new page
+      doc.setFillColor(52, 73, 94);
+      doc.rect(margin, yPos, pageWidth - (2 * margin), 10, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text("S.No", col1, yPos + 7);
+      doc.text("Description", col2, yPos + 7);
+      doc.text("HSN", col3, yPos + 7);
+      doc.text("Qty", col4, yPos + 7, { align: "right" });
+      doc.text("Rate (₹)", col5, yPos + 7, { align: "right" });
+      doc.text("Amount (₹)", col6, yPos + 7, { align: "right" });
+      yPos += 10;
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+    }
+
+    // Alternate row colors
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "F");
+    }
+
+    doc.text(String(index + 1), col1, yPos + 5.5);
+    doc.text(item.productName, col2, yPos + 5.5);
+    doc.text(item.hsn, col3, yPos + 5.5);
+    doc.text(String(item.quantity), col4, yPos + 5.5, { align: "right" });
+    doc.text(item.price.toFixed(2), col5, yPos + 5.5, { align: "right" });
+    doc.text(item.total.toFixed(2), col6, yPos + 5.5, { align: "right" });
+    
+    yPos += 8;
+    
+    // Light separator line
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.1);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+  });
+
+  yPos += 5;
+
+  // Totals section with professional styling
+  const totalsBoxX = pageWidth - 90;
+  const totalsBoxWidth = 75;
+  
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  
+  // Subtotal
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Subtotal:", totalsBoxX, yPos);
+  doc.text(`₹ ${data.subtotal.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
   yPos += 6;
 
+  // Additional charges
   if (data.transport > 0) {
-    doc.setFont("helvetica", "normal");
-    doc.text("Transport:", totalsX, yPos);
-    doc.text(`₹${data.transport.toFixed(2)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text("Transport:", totalsBoxX, yPos);
+    doc.text(`₹ ${data.transport.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 6;
   }
 
   if (data.packaging > 0) {
-    doc.text("Packaging:", totalsX, yPos);
-    doc.text(`₹${data.packaging.toFixed(2)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text("Packaging:", totalsBoxX, yPos);
+    doc.text(`₹ ${data.packaging.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 6;
   }
 
   if (data.other > 0) {
-    doc.text("Other Charges:", totalsX, yPos);
-    doc.text(`₹${data.other.toFixed(2)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text("Other Charges:", totalsBoxX, yPos);
+    doc.text(`₹ ${data.other.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 6;
   }
 
+  // GST
   if (data.gstAmount > 0) {
     doc.setFont("helvetica", "bold");
-    doc.text("GST (18%):", totalsX, yPos);
-    doc.text(`₹${data.gstAmount.toFixed(2)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text("GST (18%):", totalsBoxX, yPos);
+    doc.text(`₹ ${data.gstAmount.toFixed(2)}`, pageWidth - margin - 5, yPos, { align: "right" });
     yPos += 8;
   }
 
-  doc.setLineWidth(0.5);
-  doc.line(totalsX, yPos, pageWidth - 15, yPos);
-  yPos += 6;
-
+  // Grand total box
+  doc.setFillColor(52, 73, 94);
+  doc.rect(totalsBoxX - 3, yPos - 3, totalsBoxWidth + 3, 12, "F");
+  
+  doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.text("Grand Total:", totalsX, yPos);
-  doc.text(`₹${data.grandTotal.toFixed(2)}`, pageWidth - 20, yPos, { align: "right" });
+  doc.text("Grand Total:", totalsBoxX, yPos + 5);
+  doc.text(`₹ ${data.grandTotal.toFixed(2)}`, pageWidth - margin - 5, yPos + 5, { align: "right" });
+  yPos += 15;
 
+  // Amount in words
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  const amountInWords = numberToWords(data.grandTotal);
+  doc.text(`Amount in words: ${amountInWords} only`, margin, yPos);
+  yPos += 8;
+
+  // Lorry number if provided
   if (data.lorryNumber) {
-    yPos += 15;
-    doc.setFontSize(10);
-    doc.text(`Lorry/Vehicle No: ${data.lorryNumber}`, 15, yPos);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Vehicle/Lorry No: ${data.lorryNumber}`, margin, yPos);
+    yPos += 10;
   }
 
-  // Footer
-  yPos = doc.internal.pageSize.getHeight() - 30;
+  // Footer section
+  const footerY = pageHeight - 35;
+  
+  // Terms & Conditions
   doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("Terms & Conditions:", 15, yPos);
-  yPos += 5;
-  doc.setFontSize(8);
-  doc.text("1. Payment due within 30 days", 15, yPos);
-  yPos += 4;
-  doc.text("2. Goods once sold cannot be returned", 15, yPos);
-  yPos += 10;
   doc.setFont("helvetica", "bold");
-  doc.text("Authorized Signature", pageWidth - 15, yPos, { align: "right" });
+  doc.text("Terms & Conditions:", margin, footerY);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("1. Payment due within 30 days from the date of invoice", margin, footerY + 5);
+  doc.text("2. Goods once sold cannot be returned or exchanged", margin, footerY + 9);
+  doc.text("3. Interest @ 18% p.a. will be charged on delayed payments", margin, footerY + 13);
+  
+  // Signature section
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("For AYESHA Coco Pith", pageWidth - margin - 5, footerY + 10, { align: "right" });
+  
+  doc.setLineWidth(0.3);
+  doc.line(pageWidth - 60, footerY + 15, pageWidth - margin - 5, footerY + 15);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("Authorized Signatory", pageWidth - margin - 5, footerY + 19, { align: "right" });
 
-  // Save PDF
-  doc.save(`Invoice-${data.invoiceNumber}.pdf`);
+  // Save and download the PDF
+  const fileName = `Invoice-${data.invoiceNumber}-${new Date().getTime()}.pdf`;
+  doc.save(fileName);
+  
+  return true;
+}
+
+// Helper function to convert number to words (Indian system)
+function numberToWords(num: number): string {
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+
+  if (num === 0) return 'Zero';
+
+  const crore = Math.floor(num / 10000000);
+  const lakh = Math.floor((num % 10000000) / 100000);
+  const thousand = Math.floor((num % 100000) / 1000);
+  const hundred = Math.floor((num % 1000) / 100);
+  const remainder = Math.floor(num % 100);
+  const paise = Math.round((num % 1) * 100);
+
+  let words = '';
+
+  if (crore > 0) {
+    words += convertTwoDigit(crore) + ' Crore ';
+  }
+  if (lakh > 0) {
+    words += convertTwoDigit(lakh) + ' Lakh ';
+  }
+  if (thousand > 0) {
+    words += convertTwoDigit(thousand) + ' Thousand ';
+  }
+  if (hundred > 0) {
+    words += ones[hundred] + ' Hundred ';
+  }
+  if (remainder > 0) {
+    words += convertTwoDigit(remainder) + ' ';
+  }
+
+  words += 'Rupees';
+
+  if (paise > 0) {
+    words += ' and ' + convertTwoDigit(paise) + ' Paise';
+  }
+
+  return words.trim();
+
+  function convertTwoDigit(n: number): string {
+    if (n < 10) return ones[n];
+    if (n >= 10 && n < 20) return teens[n - 10];
+    return tens[Math.floor(n / 10)] + (n % 10 > 0 ? ' ' + ones[n % 10] : '');
+  }
 }
