@@ -81,10 +81,10 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("TAX INVOICE", margin + 5, yPos + 8);
   
   doc.setFontSize(10);
-  doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 5, yPos + 8, { align: "right" });
-  yPos += 15;
+  doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 3, yPos + 8, { align: "right" });
+  yPos += 14;
 
-  // Date
+  // Date - positioned properly within margins
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
@@ -93,7 +93,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     month: 'short', 
     year: 'numeric' 
   });
-  doc.text("Date: " + formattedDate, pageWidth - margin - 5, yPos, { align: "right" });
+  doc.text("Date: " + formattedDate, pageWidth - margin - 3, yPos, { align: "right" });
   yPos += 10;
 
   // Customer details boxes - Bill To and Ship To side by side
