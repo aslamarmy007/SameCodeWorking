@@ -38,7 +38,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
-  let yPos = 20;
+  let yPos = 18;
 
   // Professional border around the page
   doc.setDrawColor(100, 100, 100);
@@ -46,61 +46,61 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
 
   // Company header with better styling
-  doc.setFontSize(28);
+  doc.setFontSize(26);
   doc.setTextColor(52, 73, 94);
   doc.setFont("helvetica", "bold");
   doc.text("AYESHA Coco Pith", pageWidth / 2, yPos, { align: "center" });
-  yPos += 10;
+  yPos += 9;
 
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.setFont("helvetica", "normal");
   doc.text("Premium Coir Products", pageWidth / 2, yPos, { align: "center" });
   yPos += 5;
   doc.setFontSize(9);
   doc.text("123 Garden Street, Chennai - 600001", pageWidth / 2, yPos, { align: "center" });
-  yPos += 5;
+  yPos += 4.5;
   doc.text("Phone: +91 98765 43210 | Email: info@ayeshacoco.com", pageWidth / 2, yPos, { align: "center" });
-  yPos += 5;
+  yPos += 4.5;
   doc.text("GSTIN: 33AAACA0000A1Z5", pageWidth / 2, yPos, { align: "center" });
-  yPos += 10;
+  yPos += 8;
 
   // Thick separator line
   doc.setDrawColor(52, 73, 94);
   doc.setLineWidth(0.8);
   doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 10;
+  yPos += 8;
 
   // Invoice title and details in a box
   doc.setFillColor(52, 73, 94);
-  doc.rect(margin, yPos, pageWidth - (2 * margin), 12, "F");
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 11, "F");
   
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("TAX INVOICE", margin + 5, yPos + 8);
+  doc.text("TAX INVOICE", margin + 4, yPos + 7.5);
   
   doc.setFontSize(10);
-  doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 3, yPos + 8, { align: "right" });
-  yPos += 14;
+  doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 4, yPos + 7.5, { align: "right" });
+  yPos += 13;
 
   // Date - positioned properly within margins
   doc.setTextColor(0, 0, 0);
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   const formattedDate = new Date(data.billDate).toLocaleDateString('en-IN', { 
     day: '2-digit', 
     month: 'short', 
     year: 'numeric' 
   });
-  doc.text("Date: " + formattedDate, pageWidth - margin - 3, yPos, { align: "right" });
-  yPos += 10;
+  doc.text("Date: " + formattedDate, pageWidth - margin - 4, yPos, { align: "right" });
+  yPos += 8;
 
   // Customer details boxes - Bill To and Ship To side by side
-  const boxWidth = (pageWidth - (2 * margin) - 5) / 2; // 5mm gap between boxes
-  const boxHeight = 45;
+  const boxWidth = (pageWidth - (2 * margin) - 4) / 2; // 4mm gap between boxes
+  const boxHeight = 42;
   const leftBoxX = margin;
-  const rightBoxX = margin + boxWidth + 5;
+  const rightBoxX = margin + boxWidth + 4;
   
   // BILL TO Box
   doc.setDrawColor(200, 200, 200);
@@ -109,19 +109,19 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   // "Bill To" header with background
   doc.setFillColor(240, 240, 240);
-  doc.rect(leftBoxX, yPos, boxWidth, 8, "F");
+  doc.rect(leftBoxX, yPos, boxWidth, 7, "F");
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setTextColor(52, 73, 94);
-  doc.text("BILL TO:", leftBoxX + 3, yPos + 5.5);
+  doc.text("BILL TO:", leftBoxX + 3, yPos + 5);
   
-  let billToY = yPos + 12;
+  let billToY = yPos + 11;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   doc.text(data.customer.name, leftBoxX + 3, billToY);
-  billToY += 5;
+  billToY += 4.5;
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -153,19 +153,19 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   // "Ship To" header with background
   doc.setFillColor(240, 240, 240);
-  doc.rect(rightBoxX, yPos, boxWidth, 8, "F");
+  doc.rect(rightBoxX, yPos, boxWidth, 7, "F");
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setTextColor(52, 73, 94);
-  doc.text("SHIP TO:", rightBoxX + 3, yPos + 5.5);
+  doc.text("SHIP TO:", rightBoxX + 3, yPos + 5);
   
-  let shipToY = yPos + 12;
+  let shipToY = yPos + 11;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   doc.text(data.customer.name, rightBoxX + 3, shipToY);
-  shipToY += 5;
+  shipToY += 4.5;
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -190,14 +190,14 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.text("GSTIN: " + data.customer.gstin, rightBoxX + 3, shipToY);
   }
   
-  yPos += boxHeight + 8;
+  yPos += boxHeight + 6;
 
   // Items table with professional styling
   const tableStartY = yPos;
   
   // Table header
   doc.setFillColor(52, 73, 94);
-  doc.rect(margin, yPos, pageWidth - (2 * margin), 10, "F");
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
   
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
@@ -205,18 +205,18 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   const col1 = margin + 3;
   const col2 = margin + 15;
-  const col3 = margin + 100;
-  const col4 = margin + 125;
-  const col5 = margin + 145;
-  const col6 = pageWidth - margin - 5;
+  const col3 = pageWidth / 2 + 5;
+  const col4 = pageWidth / 2 + 30;
+  const col5 = pageWidth / 2 + 50;
+  const col6 = pageWidth - margin - 3;
   
-  doc.text("S.No", col1, yPos + 6.5);
-  doc.text("Description", col2, yPos + 6.5);
-  doc.text("HSN", col3, yPos + 6.5);
-  doc.text("Qty", col4, yPos + 6.5, { align: "right" });
-  doc.text("Rate (Rs.)", col5, yPos + 6.5, { align: "right" });
-  doc.text("Amount (Rs.)", col6, yPos + 6.5, { align: "right" });
-  yPos += 10;
+  doc.text("S.No", col1, yPos + 6);
+  doc.text("Description", col2, yPos + 6);
+  doc.text("HSN", col3, yPos + 6);
+  doc.text("Qty", col4, yPos + 6, { align: "center" });
+  doc.text("Rate (Rs.)", col5, yPos + 6, { align: "right" });
+  doc.text("Amount (Rs.)", col6, yPos + 6, { align: "right" });
+  yPos += 9;
 
   // Table items
   doc.setTextColor(0, 0, 0);
@@ -231,17 +231,17 @@ export function generateInvoicePDF(data: InvoiceData) {
       
       // Redraw table header on new page
       doc.setFillColor(52, 73, 94);
-      doc.rect(margin, yPos, pageWidth - (2 * margin), 10, "F");
+      doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.text("S.No", col1, yPos + 6.5);
-      doc.text("Description", col2, yPos + 6.5);
-      doc.text("HSN", col3, yPos + 6.5);
-      doc.text("Qty", col4, yPos + 6.5, { align: "right" });
-      doc.text("Rate (Rs.)", col5, yPos + 6.5, { align: "right" });
-      doc.text("Amount (Rs.)", col6, yPos + 6.5, { align: "right" });
-      yPos += 10;
+      doc.text("S.No", col1, yPos + 6);
+      doc.text("Description", col2, yPos + 6);
+      doc.text("HSN", col3, yPos + 6);
+      doc.text("Qty", col4, yPos + 6, { align: "center" });
+      doc.text("Rate (Rs.)", col5, yPos + 6, { align: "right" });
+      doc.text("Amount (Rs.)", col6, yPos + 6, { align: "right" });
+      yPos += 9;
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
@@ -250,17 +250,17 @@ export function generateInvoicePDF(data: InvoiceData) {
     // Alternate row colors
     if (index % 2 === 0) {
       doc.setFillColor(250, 250, 250);
-      doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "F");
+      doc.rect(margin, yPos, pageWidth - (2 * margin), 7, "F");
     }
 
-    doc.text(String(index + 1), col1, yPos + 5.5);
-    doc.text(item.productName, col2, yPos + 5.5);
-    doc.text(item.hsn, col3, yPos + 5.5);
-    doc.text(String(item.quantity), col4, yPos + 5.5, { align: "right" });
-    doc.text(item.price.toFixed(2), col5, yPos + 5.5, { align: "right" });
-    doc.text(item.total.toFixed(2), col6, yPos + 5.5, { align: "right" });
+    doc.text(String(index + 1), col1, yPos + 5);
+    doc.text(item.productName, col2, yPos + 5);
+    doc.text(item.hsn, col3, yPos + 5);
+    doc.text(String(item.quantity), col4, yPos + 5, { align: "center" });
+    doc.text(item.price.toFixed(2), col5, yPos + 5, { align: "right" });
+    doc.text(item.total.toFixed(2), col6, yPos + 5, { align: "right" });
     
-    yPos += 8;
+    yPos += 7;
     
     // Light separator line
     doc.setDrawColor(230, 230, 230);
@@ -268,11 +268,11 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.line(margin, yPos, pageWidth - margin, yPos);
   });
 
-  yPos += 8;
+  yPos += 6;
 
   // Totals section with professional styling
-  const totalsBoxX = pageWidth - 85;
-  const totalsBoxWidth = 70;
+  const totalsBoxX = pageWidth - 80;
+  const totalsBoxWidth = 65;
   
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.3);
@@ -282,64 +282,65 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   // Subtotal
   doc.text("Subtotal:", totalsBoxX, yPos);
-  doc.text("Rs. " + data.subtotal.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
-  yPos += 6;
+  doc.text("Rs. " + data.subtotal.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
+  yPos += 5.5;
 
   // Additional charges
   if (data.transport > 0) {
     doc.text("Transport:", totalsBoxX, yPos);
-    doc.text("Rs. " + data.transport.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
-    yPos += 6;
+    doc.text("Rs. " + data.transport.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
+    yPos += 5.5;
   }
 
   if (data.packaging > 0) {
     doc.text("Packaging:", totalsBoxX, yPos);
-    doc.text("Rs. " + data.packaging.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
-    yPos += 6;
+    doc.text("Rs. " + data.packaging.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
+    yPos += 5.5;
   }
 
   if (data.other > 0) {
     doc.text("Other Charges:", totalsBoxX, yPos);
-    doc.text("Rs. " + data.other.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
-    yPos += 6;
+    doc.text("Rs. " + data.other.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
+    yPos += 5.5;
   }
 
   // GST
   if (data.gstAmount > 0) {
     doc.setFont("helvetica", "bold");
     doc.text("GST (18%):", totalsBoxX, yPos);
-    doc.text("Rs. " + data.gstAmount.toFixed(2), pageWidth - margin - 5, yPos, { align: "right" });
-    yPos += 7;
+    doc.text("Rs. " + data.gstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
+    yPos += 6.5;
   }
 
   // Grand total box
   doc.setFillColor(52, 73, 94);
-  doc.rect(totalsBoxX - 3, yPos - 2, totalsBoxWidth + 3, 10, "F");
+  doc.rect(totalsBoxX - 2, yPos - 2, totalsBoxWidth + 2, 9, "F");
   
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text("Grand Total:", totalsBoxX, yPos + 5);
-  doc.text("Rs. " + data.grandTotal.toFixed(2), pageWidth - margin - 5, yPos + 5, { align: "right" });
-  yPos += 13;
+  doc.text("Grand Total:", totalsBoxX, yPos + 4.5);
+  doc.text("Rs. " + data.grandTotal.toFixed(2), pageWidth - margin - 3, yPos + 4.5, { align: "right" });
+  yPos += 12;
 
   // Amount in words
   doc.setTextColor(0, 0, 0);
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont("helvetica", "italic");
   const amountInWords = numberToWords(data.grandTotal);
   doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
-  yPos += 8;
+  yPos += 7;
 
   // Lorry number if provided
   if (data.lorryNumber) {
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
     doc.text("Vehicle/Lorry No: " + data.lorryNumber, margin, yPos);
-    yPos += 10;
+    yPos += 8;
   }
 
   // Footer section
-  const footerY = pageHeight - 35;
+  const footerY = pageHeight - 32;
   
   // Terms & Conditions
   doc.setFontSize(9);
@@ -349,21 +350,21 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.text("1. Payment due within 30 days from the date of invoice", margin, footerY + 5);
-  doc.text("2. Goods once sold cannot be returned or exchanged", margin, footerY + 9);
-  doc.text("3. Interest @ 18% p.a. will be charged on delayed payments", margin, footerY + 13);
+  doc.text("1. Payment due within 30 days from the date of invoice", margin, footerY + 4.5);
+  doc.text("2. Goods once sold cannot be returned or exchanged", margin, footerY + 8.5);
+  doc.text("3. Interest @ 18% p.a. will be charged on delayed payments", margin, footerY + 12.5);
   
   // Signature section
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("For AYESHA Coco Pith", pageWidth - margin - 5, footerY + 10, { align: "right" });
+  doc.setFontSize(9);
+  doc.text("For AYESHA Coco Pith", pageWidth - margin - 3, footerY + 8, { align: "right" });
   
   doc.setLineWidth(0.3);
-  doc.line(pageWidth - 60, footerY + 15, pageWidth - margin - 5, footerY + 15);
+  doc.line(pageWidth - 55, footerY + 13, pageWidth - margin - 3, footerY + 13);
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.text("Authorized Signatory", pageWidth - margin - 5, footerY + 19, { align: "right" });
+  doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 17, { align: "right" });
 
   // Save and download the PDF
   const fileName = "Invoice-" + data.invoiceNumber + "-" + new Date().getTime() + ".pdf";
