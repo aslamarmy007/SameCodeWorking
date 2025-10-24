@@ -12,6 +12,15 @@ interface InvoiceData {
     city: string;
     state: string;
   };
+  shipping: {
+    name: string;
+    shopName: string;
+    phone: string;
+    gstin: string;
+    address: string;
+    city: string;
+    state: string;
+  };
   items: Array<{
     productName: string;
     hsn: string;
@@ -171,39 +180,39 @@ export function generateInvoicePDF(data: InvoiceData) {
   let shipToY = yPos + 13;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  if (data.customer.shopName) {
-    doc.text(data.customer.shopName, rightBoxX + 3, shipToY);
+  if (data.shipping.shopName) {
+    doc.text(data.shipping.shopName, rightBoxX + 3, shipToY);
     shipToY += 4.5;
   }
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
-  doc.text(data.customer.name, rightBoxX + 3, shipToY);
+  doc.text(data.shipping.name, rightBoxX + 3, shipToY);
   shipToY += 4.5;
   
   doc.setFont("helvetica", "normal");
   
-  if (data.customer.address) {
-    const addressText = data.customer.address + ", " + data.customer.city + ", " + data.customer.state;
+  if (data.shipping.address) {
+    const addressText = data.shipping.address + ", " + data.shipping.city + ", " + data.shipping.state;
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, rightBoxX + 3, shipToY);
     shipToY += (splitAddress.length * 4);
   }
   
-  if (data.customer.phone) {
+  if (data.shipping.phone) {
     doc.setFont("helvetica", "bold");
     doc.text("Ph: ", rightBoxX + 3, shipToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.phone, rightBoxX + 3 + doc.getTextWidth("Ph: "), shipToY);
+    doc.text(data.shipping.phone, rightBoxX + 3 + doc.getTextWidth("Ph: "), shipToY);
     shipToY += 4;
   }
   
-  if (data.customer.gstin) {
+  if (data.shipping.gstin) {
     doc.setFont("helvetica", "bold");
     doc.text("GSTIN: ", rightBoxX + 3, shipToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.gstin, rightBoxX + 3 + doc.getTextWidth("GSTIN: "), shipToY);
+    doc.text(data.shipping.gstin, rightBoxX + 3 + doc.getTextWidth("GSTIN: "), shipToY);
   }
   
   yPos += boxHeight + 4;

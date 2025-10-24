@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { StepProgress } from "@/components/step-progress";
 import { BillSummary } from "@/components/bill-summary";
@@ -68,6 +69,16 @@ export default function BillingPage() {
     city: "",
     state: "",
   });
+  const [sameAsbilling, setSameAsBinding] = useState(true);
+  const [shippingData, setShippingData] = useState<CustomerData>({
+    name: "",
+    shopName: "",
+    phone: "",
+    gstin: "",
+    address: "",
+    city: "",
+    state: "",
+  });
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [additionalCharges, setAdditionalCharges] = useState<AdditionalCharges>({
     transport: 0,
@@ -108,6 +119,7 @@ export default function BillingPage() {
 
   const createInvoiceMutation = useMutation({
     mutationFn: async () => {
+      const finalShippingData = sameAsbilling ? customerData : shippingData;
       const invoiceData = {
         billDate: billConfig.billDate,
         customerId: customerData.id || "",
@@ -118,6 +130,13 @@ export default function BillingPage() {
         address: customerData.address,
         city: customerData.city,
         state: customerData.state,
+        shippingName: finalShippingData.name,
+        shippingShopName: finalShippingData.shopName,
+        shippingPhone: finalShippingData.phone,
+        shippingGstin: finalShippingData.gstin,
+        shippingAddress: finalShippingData.address,
+        shippingCity: finalShippingData.city,
+        shippingState: finalShippingData.state,
         subtotal: subtotal.toString(),
         transport: additionalCharges.transport.toString(),
         packaging: additionalCharges.packaging.toString(),
@@ -139,6 +158,7 @@ export default function BillingPage() {
     },
     onSuccess: (response: { invoice: any; items: any[] }) => {
       const { invoice } = response;
+      const finalShippingData = sameAsbilling ? customerData : shippingData;
       
       // Generate PDF
       generateInvoicePDF({
@@ -152,6 +172,15 @@ export default function BillingPage() {
           address: customerData.address,
           city: customerData.city,
           state: customerData.state,
+        },
+        shipping: {
+          name: finalShippingData.name,
+          shopName: finalShippingData.shopName,
+          phone: finalShippingData.phone,
+          gstin: finalShippingData.gstin,
+          address: finalShippingData.address,
+          city: finalShippingData.city,
+          state: finalShippingData.state,
         },
         items: billItems,
         subtotal,
@@ -175,6 +204,16 @@ export default function BillingPage() {
         gstEnabled: true,
       });
       setCustomerData({
+        name: "",
+        shopName: "",
+        phone: "",
+        gstin: "",
+        address: "",
+        city: "",
+        state: "",
+      });
+      setSameAsBinding(true);
+      setShippingData({
         name: "",
         shopName: "",
         phone: "",
@@ -536,7 +575,163 @@ export default function BillingPage() {
                     </Button>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="border-t-2 pt-6 mt-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Checkbox
+                        id="sameAsBilling"
+                        checked={sameAsbilling}
+                        onCheckedChange={(checked) => setSameAsBinding(checked as boolean)}
+                      />
+                      <Label
+                        htmlFor="sameAsBilling"
+                        className="text-base font-semibold cursor-pointer"
+                      >
+                        Shipping address is same as billing address
+                      </Label>
+                    </div>
+
+                    {!sameAsbilling && (
+                      <>
+                        <h3 className="text-xl font-bold mb-4">Shipping Address</h3>
+                        <div className="mb-4">
+                          <Label htmlFor="shippingCustomerSelect" className="text-base font-semibold mb-2 block">
+                            Select Existing Customer for Shipping
+                          </Label>
+                          <Select onValueChange={(customerId) => {
+                            const customer = customers.find((c) => c.id === customerId);
+                            if (customer) {
+                              setShippingData({
+                                id: customer.id,
+                                name: customer.name,
+                                shopName: customer.shopName || "",
+                                phone: customer.phone || "",
+                                gstin: customer.gstin || "",
+                                address: customer.address || "",
+                                city: customer.city || "",
+                                state: customer.state || "",
+                              });
+                            }
+                          }}>
+                            <SelectTrigger className="text-base">
+                              <SelectValue placeholder="Select shipping customer..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {customers.map((customer) => (
+                                <SelectItem key={customer.id} value={customer.id}>
+                                  {customer.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="shippingCustomerName" className="text-base font-semibold mb-2 block">
+                              Customer Name *
+                            </Label>
+                            <Input
+                              id="shippingCustomerName"
+                              value={shippingData.name}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, name: e.target.value })
+                              }
+                              placeholder="Enter name"
+                              className="text-base"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="shippingShopName" className="text-base font-semibold mb-2 block">
+                              Shop Name
+                            </Label>
+                            <Input
+                              id="shippingShopName"
+                              value={shippingData.shopName}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, shopName: e.target.value })
+                              }
+                              placeholder="Enter shop name"
+                              className="text-base"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="shippingPhone" className="text-base font-semibold mb-2 block">
+                              Phone
+                            </Label>
+                            <Input
+                              id="shippingPhone"
+                              type="tel"
+                              value={shippingData.phone}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, phone: e.target.value })
+                              }
+                              placeholder="Enter phone"
+                              className="text-base"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="shippingGstin" className="text-base font-semibold mb-2 block">
+                              GSTIN
+                            </Label>
+                            <Input
+                              id="shippingGstin"
+                              value={shippingData.gstin}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, gstin: e.target.value })
+                              }
+                              placeholder="Enter GSTIN"
+                              className="text-base"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <Label htmlFor="shippingAddress" className="text-base font-semibold mb-2 block">
+                            Address
+                          </Label>
+                          <Input
+                            id="shippingAddress"
+                            value={shippingData.address}
+                            onChange={(e) =>
+                              setShippingData({ ...shippingData, address: e.target.value })
+                            }
+                            placeholder="Enter address"
+                            className="text-base"
+                          />
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <Label htmlFor="shippingCity" className="text-base font-semibold mb-2 block">
+                              City
+                            </Label>
+                            <Input
+                              id="shippingCity"
+                              value={shippingData.city}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, city: e.target.value })
+                              }
+                              placeholder="Enter city"
+                              className="text-base"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="shippingState" className="text-base font-semibold mb-2 block">
+                              State
+                            </Label>
+                            <Input
+                              id="shippingState"
+                              value={shippingData.state}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, state: e.target.value })
+                              }
+                              placeholder="Enter state"
+                              className="text-base"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex gap-4 mt-6">
                     <Button
                       variant="secondary"
                       onClick={() => setCurrentStep(1)}
