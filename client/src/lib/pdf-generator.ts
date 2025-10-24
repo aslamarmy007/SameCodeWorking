@@ -355,7 +355,11 @@ export function generateInvoicePDF(data: InvoiceData) {
   const allGstRates = Array.from(new Set(data.items.map(item => item.gstRate)));
   if (allGstRates.length > 0) {
     const sortedRates = allGstRates.sort((a, b) => a - b);
-    const sgstCgstRates = sortedRates.map(rate => rate / 2);
+    
+    // Filter out 0% unless all rates are 0%
+    const nonZeroRates = sortedRates.filter(rate => rate > 0);
+    const ratesToShow = nonZeroRates.length > 0 ? nonZeroRates : sortedRates;
+    const sgstCgstRates = ratesToShow.map(rate => rate / 2);
     const halfGstAmount = data.gstAmount / 2;
     
     doc.setFont("helvetica", "bold");
