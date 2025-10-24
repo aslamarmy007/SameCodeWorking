@@ -123,12 +123,13 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text(data.customer.name, leftBoxX + 3, billToY);
   billToY += 4.5;
   
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   if (data.customer.shopName) {
     doc.text(data.customer.shopName, leftBoxX + 3, billToY);
     billToY += 4;
   }
+  doc.setFont("helvetica", "normal");
   
   if (data.customer.address) {
     const addressText = data.customer.address + ", " + data.customer.city + ", " + data.customer.state;
@@ -138,12 +139,18 @@ export function generateInvoicePDF(data: InvoiceData) {
   }
   
   if (data.customer.phone) {
-    doc.text("Ph: " + data.customer.phone, leftBoxX + 3, billToY);
+    doc.setFont("helvetica", "bold");
+    doc.text("Ph: ", leftBoxX + 3, billToY);
+    doc.setFont("helvetica", "normal");
+    doc.text(data.customer.phone, leftBoxX + 3 + doc.getTextWidth("Ph: "), billToY);
     billToY += 4;
   }
   
   if (data.customer.gstin) {
-    doc.text("GSTIN: " + data.customer.gstin, leftBoxX + 3, billToY);
+    doc.setFont("helvetica", "bold");
+    doc.text("GSTIN: ", leftBoxX + 3, billToY);
+    doc.setFont("helvetica", "normal");
+    doc.text(data.customer.gstin, leftBoxX + 3 + doc.getTextWidth("GSTIN: "), billToY);
   }
   
   // SHIP TO Box
@@ -167,12 +174,13 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text(data.customer.name, rightBoxX + 3, shipToY);
   shipToY += 4.5;
   
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   if (data.customer.shopName) {
     doc.text(data.customer.shopName, rightBoxX + 3, shipToY);
     shipToY += 4;
   }
+  doc.setFont("helvetica", "normal");
   
   if (data.customer.address) {
     const addressText = data.customer.address + ", " + data.customer.city + ", " + data.customer.state;
@@ -182,12 +190,18 @@ export function generateInvoicePDF(data: InvoiceData) {
   }
   
   if (data.customer.phone) {
-    doc.text("Ph: " + data.customer.phone, rightBoxX + 3, shipToY);
+    doc.setFont("helvetica", "bold");
+    doc.text("Ph: ", rightBoxX + 3, shipToY);
+    doc.setFont("helvetica", "normal");
+    doc.text(data.customer.phone, rightBoxX + 3 + doc.getTextWidth("Ph: "), shipToY);
     shipToY += 4;
   }
   
   if (data.customer.gstin) {
-    doc.text("GSTIN: " + data.customer.gstin, rightBoxX + 3, shipToY);
+    doc.setFont("helvetica", "bold");
+    doc.text("GSTIN: ", rightBoxX + 3, shipToY);
+    doc.setFont("helvetica", "normal");
+    doc.text(data.customer.gstin, rightBoxX + 3 + doc.getTextWidth("GSTIN: "), shipToY);
   }
   
   yPos += boxHeight + 4;
