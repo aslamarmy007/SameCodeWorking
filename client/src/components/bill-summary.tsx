@@ -23,6 +23,7 @@ interface BillSummaryProps {
   grandTotal: number;
   gstEnabled: boolean;
   onUpdateQuantity: (productId: string, quantity: number) => void;
+  onUpdatePrice: (productId: string, price: number) => void;
   onRemoveItem: (productId: string) => void;
 }
 
@@ -34,6 +35,7 @@ export function BillSummary({
   grandTotal,
   gstEnabled,
   onUpdateQuantity,
+  onUpdatePrice,
   onRemoveItem,
 }: BillSummaryProps) {
   return (
@@ -140,7 +142,19 @@ export function BillSummary({
                         </Button>
                       </div>
                     </td>
-                    <td className="p-2 text-right text-sm">₹{item.price.toFixed(2)}</td>
+                    <td className="p-2 text-right">
+                      <Input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={item.price}
+                        onChange={(e) =>
+                          onUpdatePrice(item.productId, parseFloat(e.target.value) || 0)
+                        }
+                        className="w-20 h-7 text-right text-sm p-1"
+                        data-testid={`input-price-${item.productId}`}
+                      />
+                    </td>
                     <td className="p-2 text-right text-sm font-semibold">
                       ₹{item.total.toFixed(2)}
                     </td>

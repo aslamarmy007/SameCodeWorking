@@ -333,6 +333,24 @@ export default function BillingPage() {
     );
   };
 
+  const handleUpdatePrice = (productId: string, price: number) => {
+    if (price < 0) {
+      return;
+    }
+    setBillItems(
+      billItems.map((item) =>
+        item.productId === productId
+          ? { 
+              ...item, 
+              price, 
+              total: item.quantity * price,
+              gstAmount: billConfig.gstEnabled ? (item.quantity * price * item.gstRate) / 100 : 0,
+            }
+          : item
+      )
+    );
+  };
+
   const handleRemoveItem = (productId: string) => {
     setBillItems(billItems.filter((item) => item.productId !== productId));
   };
@@ -1209,6 +1227,7 @@ export default function BillingPage() {
             grandTotal={grandTotal}
             gstEnabled={billConfig.gstEnabled}
             onUpdateQuantity={handleUpdateQuantity}
+            onUpdatePrice={handleUpdatePrice}
             onRemoveItem={handleRemoveItem}
           />
         </div>
