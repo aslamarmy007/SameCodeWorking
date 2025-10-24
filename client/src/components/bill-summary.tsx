@@ -10,6 +10,8 @@ interface BillItem {
   quantity: number;
   price: number;
   total: number;
+  gstRate: number;
+  gstAmount: number;
 }
 
 interface BillSummaryProps {
@@ -116,9 +118,9 @@ export function BillSummary({
             ₹{charges.toFixed(2)}
           </span>
         </div>
-        {gstEnabled && (
+        {gstEnabled && gstAmount > 0 && (
           <div className="flex justify-between">
-            <span className="font-medium">GST (18%):</span>
+            <span className="font-medium">GST:</span>
             <span className="font-semibold" data-testid="text-gst">
               ₹{gstAmount.toFixed(2)}
             </span>

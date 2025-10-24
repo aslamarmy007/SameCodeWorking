@@ -59,6 +59,7 @@ export class MemStorage implements IStorage {
         hsn: "53082010",
         defaultPrice: "450.00",
         unit: "Block",
+        gstRate: "5.00",
       },
       {
         name: "Grow Bag - Small",
@@ -66,6 +67,7 @@ export class MemStorage implements IStorage {
         hsn: "53082010",
         defaultPrice: "25.00",
         unit: "Piece",
+        gstRate: "5.00",
       },
       {
         name: "Grow Bag - Medium",
@@ -73,6 +75,7 @@ export class MemStorage implements IStorage {
         hsn: "53082010",
         defaultPrice: "35.00",
         unit: "Piece",
+        gstRate: "5.00",
       },
       {
         name: "Grow Bag - Large",
@@ -80,6 +83,7 @@ export class MemStorage implements IStorage {
         hsn: "53082010",
         defaultPrice: "50.00",
         unit: "Piece",
+        gstRate: "5.00",
       },
       {
         name: "Coco Peat Powder",
@@ -87,6 +91,7 @@ export class MemStorage implements IStorage {
         hsn: "53082010",
         defaultPrice: "120.00",
         unit: "Kg",
+        gstRate: "0.00",
       },
       {
         name: "Coir Disc",
@@ -94,6 +99,7 @@ export class MemStorage implements IStorage {
         hsn: "53082010",
         defaultPrice: "15.00",
         unit: "Piece",
+        gstRate: "0.00",
       },
       {
         name: "Coco Chips",
@@ -101,6 +107,7 @@ export class MemStorage implements IStorage {
         hsn: "53082010",
         defaultPrice: "180.00",
         unit: "Kg",
+        gstRate: "5.00",
       },
       {
         name: "Coir Rope",
@@ -108,6 +115,7 @@ export class MemStorage implements IStorage {
         hsn: "56072900",
         defaultPrice: "80.00",
         unit: "Roll",
+        gstRate: "5.00",
       },
     ];
 
@@ -181,6 +189,7 @@ export class MemStorage implements IStorage {
       hsn: insertProduct.hsn,
       defaultPrice: insertProduct.defaultPrice,
       unit: insertProduct.unit,
+      gstRate: insertProduct.gstRate || "0",
     };
     this.products.set(id, product);
     return product;
@@ -209,11 +218,18 @@ export class MemStorage implements IStorage {
       address: insertInvoice.address || null,
       city: insertInvoice.city || null,
       state: insertInvoice.state || null,
+      shippingName: insertInvoice.shippingName || null,
+      shippingShopName: insertInvoice.shippingShopName || null,
+      shippingPhone: insertInvoice.shippingPhone || null,
+      shippingGstin: insertInvoice.shippingGstin || null,
+      shippingAddress: insertInvoice.shippingAddress || null,
+      shippingCity: insertInvoice.shippingCity || null,
+      shippingState: insertInvoice.shippingState || null,
       subtotal: insertInvoice.subtotal,
       transport: insertInvoice.transport || "0",
       packaging: insertInvoice.packaging || "0",
       otherCharges: insertInvoice.otherCharges || "0",
-      gstEnabled: insertInvoice.gstEnabled,
+      gstEnabled: insertInvoice.gstEnabled ?? true,
       gstAmount: insertInvoice.gstAmount || "0",
       grandTotal: insertInvoice.grandTotal,
       lorryNumber: insertInvoice.lorryNumber || null,
@@ -232,7 +248,12 @@ export class MemStorage implements IStorage {
   // Invoice items operations
   async createInvoiceItem(insertItem: InsertInvoiceItem): Promise<InvoiceItem> {
     const id = randomUUID();
-    const item: InvoiceItem = { ...insertItem, id };
+    const item: InvoiceItem = { 
+      ...insertItem, 
+      id,
+      gstRate: insertItem.gstRate || "0",
+      gstAmount: insertItem.gstAmount || "0",
+    };
     this.invoiceItems.set(id, item);
     return item;
   }

@@ -27,6 +27,7 @@ export const products = pgTable("products", {
   hsn: text("hsn").notNull(),
   defaultPrice: decimal("default_price", { precision: 10, scale: 2 }).notNull(),
   unit: text("unit").notNull(),
+  gstRate: decimal("gst_rate", { precision: 5, scale: 2 }).notNull().default("0"),
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
@@ -81,6 +82,8 @@ export const invoiceItems = pgTable("invoice_items", {
   quantity: integer("quantity").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  gstRate: decimal("gst_rate", { precision: 5, scale: 2 }).notNull().default("0"),
+  gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }).notNull().default("0"),
 });
 
 export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({ id: true });

@@ -28,6 +28,8 @@ type BillItem = {
   quantity: number;
   price: number;
   total: number;
+  gstRate: number;
+  gstAmount: number;
 };
 
 type BillConfig = {
@@ -154,6 +156,8 @@ export default function BillingPage() {
           quantity: item.quantity,
           price: item.price.toString(),
           total: item.total.toString(),
+          gstRate: item.gstRate.toString(),
+          gstAmount: item.gstAmount.toString(),
         })),
       };
       return await apiRequest<{ invoice: any; items: any[] }>("POST", "/api/invoices", invoiceData);
@@ -244,7 +248,8 @@ export default function BillingPage() {
 
   const subtotal = billItems.reduce((sum, item) => sum + item.total, 0);
   const totalCharges = additionalCharges.transport + additionalCharges.packaging + additionalCharges.other;
-  const gstAmount = billConfig.gstEnabled ? (subtotal + totalCharges) * 0.18 : 0;
+  const itemsGstAmount = billItems.reduce((sum, item) => sum + (item.gstAmount || 0), 0);
+  const gstAmount = billConfig.gstEnabled ? itemsGstAmount : 0;
   const grandTotal = subtotal + totalCharges + gstAmount;
 
   const handleCustomerSelect = (customerId: string) => {
@@ -265,6 +270,7 @@ export default function BillingPage() {
 
   const handleAddProduct = (product: Product) => {
     const existing = billItems.find((item) => item.productId === product.id);
+    const gstRate = parseFloat(product.gstRate || "0");
     if (existing) {
       setBillItems(
         billItems.map((item) =>
@@ -273,11 +279,13 @@ export default function BillingPage() {
                 ...item,
                 quantity: item.quantity + 1,
                 total: (item.quantity + 1) * item.price,
+                gstAmount: billConfig.gstEnabled ? ((item.quantity + 1) * item.price * item.gstRate) / 100 : 0,
               }
             : item
         )
       );
     } else {
+      const itemTotal = parseFloat(product.defaultPrice);
       setBillItems([
         ...billItems,
         {
@@ -286,7 +294,9 @@ export default function BillingPage() {
           hsn: product.hsn,
           quantity: 1,
           price: parseFloat(product.defaultPrice),
-          total: parseFloat(product.defaultPrice),
+          total: itemTotal,
+          gstRate: gstRate,
+          gstAmount: billConfig.gstEnabled ? (itemTotal * gstRate) / 100 : 0,
         },
       ]);
     }
@@ -304,7 +314,12 @@ export default function BillingPage() {
     setBillItems(
       billItems.map((item) =>
         item.productId === productId
-          ? { ...item, quantity, total: quantity * item.price }
+          ? { 
+              ...item, 
+              quantity, 
+              total: quantity * item.price,
+              gstAmount: billConfig.gstEnabled ? (quantity * item.price * item.gstRate) / 100 : 0,
+            }
           : item
       )
     );
@@ -400,12 +415,23 @@ export default function BillingPage() {
                     />
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl flex items-center justify-between">
-                    <span className="text-base font-semibold">Apply GST (18%)</span>
+                    <div>
+                      <span className="text-base font-semibold block">
+                        {billConfig.gstEnabled ? "With GST" : "Without GST"}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        GST rates vary by product (0%, 5%, etc.)
+                      </span>
+                    </div>
                     <Switch
                       checked={billConfig.gstEnabled}
-                      onCheckedChange={(checked) =>
-                        setBillConfig({ ...billConfig, gstEnabled: checked })
-                      }
+                      onCheckedChange={(checked) => {
+                        setBillConfig({ ...billConfig, gstEnabled: checked });
+                        setBillItems(billItems.map(item => ({
+                          ...item,
+                          gstAmount: checked ? (item.total * item.gstRate) / 100 : 0,
+                        })));
+                      }}
                       data-testid="switch-gst"
                     />
                   </div>
