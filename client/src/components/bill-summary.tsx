@@ -192,13 +192,31 @@ export function BillSummary({
             ₹{charges.toFixed(2)}
           </span>
         </div>
-        {gstEnabled && gstAmount > 0 && (
-          <div className="flex justify-between">
-            <span className="font-medium">GST:</span>
-            <span className="font-semibold" data-testid="text-gst">
-              ₹{gstAmount.toFixed(2)}
-            </span>
-          </div>
+        {gstEnabled && items.length > 0 && (
+          <>
+            <div className="flex justify-between">
+              <span className="font-medium">
+                SGST ({(() => {
+                  const rates = Array.from(new Set(items.map(item => item.gstRate).filter(rate => rate > 0)));
+                  return rates.length > 0 ? rates.map(r => r / 2).join('%, ') + '%' : '0%';
+                })()}):
+              </span>
+              <span className="font-semibold" data-testid="text-sgst">
+                ₹{(gstAmount / 2).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">
+                CGST ({(() => {
+                  const rates = Array.from(new Set(items.map(item => item.gstRate).filter(rate => rate > 0)));
+                  return rates.length > 0 ? rates.map(r => r / 2).join('%, ') + '%' : '0%';
+                })()}):
+              </span>
+              <span className="font-semibold" data-testid="text-cgst">
+                ₹{(gstAmount / 2).toFixed(2)}
+              </span>
+            </div>
+          </>
         )}
         <div className="flex justify-between pt-3 border-t-2 text-xl font-bold">
           <span>Grand Total:</span>
