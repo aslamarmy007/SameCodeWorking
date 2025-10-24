@@ -118,14 +118,14 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   let billToY = yPos + 13;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(10);
   if (data.customer.shopName) {
     doc.text(data.customer.shopName, leftBoxX + 3, billToY);
-    billToY += 4;
+    billToY += 4.5;
   }
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
   doc.text(data.customer.name, leftBoxX + 3, billToY);
   billToY += 4.5;
@@ -170,14 +170,14 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   let shipToY = yPos + 13;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(10);
   if (data.customer.shopName) {
     doc.text(data.customer.shopName, rightBoxX + 3, shipToY);
-    shipToY += 4;
+    shipToY += 4.5;
   }
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
   doc.text(data.customer.name, rightBoxX + 3, shipToY);
   shipToY += 4.5;
