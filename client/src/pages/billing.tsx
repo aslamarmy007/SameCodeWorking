@@ -1112,15 +1112,18 @@ export default function BillingPage() {
                       </Label>
                       <Input
                         id="transport"
-                        type="number"
-                        step="0.01"
-                        value={additionalCharges.transport}
-                        onChange={(e) =>
-                          setAdditionalCharges({
-                            ...additionalCharges,
-                            transport: parseFloat(e.target.value) || 0,
-                          })
-                        }
+                        type="text"
+                        value={additionalCharges.transport || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                            setAdditionalCharges({
+                              ...additionalCharges,
+                              transport: value === "" ? 0 : parseFloat(value) || 0,
+                            });
+                          }
+                        }}
+                        placeholder="0"
                         className="text-base"
                         data-testid="input-transport"
                       />
@@ -1131,15 +1134,18 @@ export default function BillingPage() {
                       </Label>
                       <Input
                         id="packaging"
-                        type="number"
-                        step="0.01"
-                        value={additionalCharges.packaging}
-                        onChange={(e) =>
-                          setAdditionalCharges({
-                            ...additionalCharges,
-                            packaging: parseFloat(e.target.value) || 0,
-                          })
-                        }
+                        type="text"
+                        value={additionalCharges.packaging || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                            setAdditionalCharges({
+                              ...additionalCharges,
+                              packaging: value === "" ? 0 : parseFloat(value) || 0,
+                            });
+                          }
+                        }}
+                        placeholder="0"
                         className="text-base"
                         data-testid="input-packaging"
                       />
@@ -1150,15 +1156,18 @@ export default function BillingPage() {
                       </Label>
                       <Input
                         id="other"
-                        type="number"
-                        step="0.01"
-                        value={additionalCharges.other}
-                        onChange={(e) =>
-                          setAdditionalCharges({
-                            ...additionalCharges,
-                            other: parseFloat(e.target.value) || 0,
-                          })
-                        }
+                        type="text"
+                        value={additionalCharges.other || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                            setAdditionalCharges({
+                              ...additionalCharges,
+                              other: value === "" ? 0 : parseFloat(value) || 0,
+                            });
+                          }
+                        }}
+                        placeholder="0"
                         className="text-base"
                         data-testid="input-other"
                       />
