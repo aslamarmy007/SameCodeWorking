@@ -16,7 +16,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { StepProgress } from "@/components/step-progress";
 import { BillSummary } from "@/components/bill-summary";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle } from "lucide-react";
+import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle, Hash, Weight } from "lucide-react";
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
@@ -30,6 +30,7 @@ type BillItem = {
   total: number;
   gstRate: number;
   gstAmount: number;
+  unit: string;
 };
 
 type BillConfig = {
@@ -271,43 +272,50 @@ export default function BillingPage() {
   const handleAddProduct = (product: Product) => {
     const existing = billItems.find((item) => item.productId === product.id);
     const gstRate = parseFloat(product.gstRate || "0");
+    const isWeightBased = product.unit.toLowerCase() === "kg";
+    const defaultQty = isWeightBased ? 0 : 1;
+    
     if (existing) {
       setBillItems(
         billItems.map((item) =>
           item.productId === product.id
             ? {
                 ...item,
-                quantity: item.quantity + 1,
-                total: (item.quantity + 1) * item.price,
-                gstAmount: billConfig.gstEnabled ? ((item.quantity + 1) * item.price * item.gstRate) / 100 : 0,
+                quantity: isWeightBased ? item.quantity : item.quantity + 1,
+                total: isWeightBased ? item.total : (item.quantity + 1) * item.price,
+                gstAmount: isWeightBased ? item.gstAmount : billConfig.gstEnabled ? ((item.quantity + 1) * item.price * item.gstRate) / 100 : 0,
               }
             : item
         )
       );
     } else {
-      const itemTotal = parseFloat(product.defaultPrice);
+      const itemTotal = isWeightBased ? 0 : parseFloat(product.defaultPrice);
       setBillItems([
         ...billItems,
         {
           productId: product.id,
           productName: product.name,
           hsn: product.hsn,
-          quantity: 1,
+          quantity: defaultQty,
           price: parseFloat(product.defaultPrice),
           total: itemTotal,
           gstRate: gstRate,
           gstAmount: billConfig.gstEnabled ? (itemTotal * gstRate) / 100 : 0,
+          unit: product.unit,
         },
       ]);
     }
     toast({
       title: "Product Added",
-      description: `${product.name} added to bill`,
+      description: isWeightBased ? `${product.name} added - enter weight manually` : `${product.name} added to bill`,
     });
   };
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
+    if (quantity < 0) {
+      return;
+    }
+    if (quantity === 0) {
       setBillItems(billItems.filter((item) => item.productId !== productId));
       return;
     }
@@ -1006,6 +1014,7 @@ export default function BillingPage() {
                     {products.map((product) => {
                       const gstRate = parseFloat(product.gstRate || "0");
                       const hasGST = gstRate > 0;
+                      const isWeightBased = product.unit.toLowerCase() === "kg";
                       return (
                       <Card
                         key={product.id}
@@ -1024,7 +1033,20 @@ export default function BillingPage() {
                             <span>0% GST</span>
                           </div>
                         )}
-                        <h3 className="font-bold text-lg mb-2 pr-20">{product.name}</h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          {isWeightBased ? (
+                            <div className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-1 rounded-full text-xs font-semibold">
+                              <Weight className="w-3 h-3" />
+                              <span>Kg</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-1 rounded-full text-xs font-semibold">
+                              <Hash className="w-3 h-3" />
+                              <span>Qty</span>
+                            </div>
+                          )}
+                          <h3 className="font-bold text-lg pr-20">{product.name}</h3>
+                        </div>
                         {product.description && (
                           <p className="text-sm text-muted-foreground mb-3">
                             {product.description}
@@ -1033,7 +1055,7 @@ export default function BillingPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">HSN: {product.hsn}</span>
                           <span className="font-bold text-primary text-lg">
-                            ₹{parseFloat(product.defaultPrice).toFixed(2)}
+                            ₹{parseFloat(product.defaultPrice).toFixed(2)}/{product.unit}
                           </span>
                         </div>
                       </Card>

@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, FileText, Star, Circle } from "lucide-react";
+import { Trash2, FileText, Star, Circle, Weight, Hash } from "lucide-react";
 
 interface BillItem {
   productId: string;
@@ -12,6 +12,7 @@ interface BillItem {
   total: number;
   gstRate: number;
   gstAmount: number;
+  unit?: string;
 }
 
 interface BillSummaryProps {
@@ -66,6 +67,7 @@ export function BillSummary({
             ) : (
               items.map((item) => {
                 const hasGST = item.gstRate > 0;
+                const isWeightBased = item.unit?.toLowerCase() === "kg";
                 return (
                   <tr
                     key={item.productId}
@@ -73,7 +75,12 @@ export function BillSummary({
                     data-testid={`row-item-${item.productId}`}
                   >
                     <td className="p-2 text-sm font-medium">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {isWeightBased ? (
+                          <Weight className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                        ) : (
+                          <Hash className="w-3 h-3 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                        )}
                         <span>{item.productName}</span>
                         {hasGST ? (
                           <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded text-xs font-semibold">
@@ -91,13 +98,15 @@ export function BillSummary({
                     <td className="p-2 text-center">
                       <Input
                         type="number"
-                        min="1"
+                        min="0.01"
+                        step={isWeightBased ? "0.01" : "1"}
                         value={item.quantity}
                         onChange={(e) =>
-                          onUpdateQuantity(item.productId, parseInt(e.target.value) || 0)
+                          onUpdateQuantity(item.productId, parseFloat(e.target.value) || 0)
                         }
                         className="w-16 h-8 text-center text-sm p-0"
                         data-testid={`input-quantity-${item.productId}`}
+                        placeholder={isWeightBased ? "Kg" : "Qty"}
                       />
                     </td>
                     <td className="p-2 text-right text-sm">₹{item.price.toFixed(2)}</td>
