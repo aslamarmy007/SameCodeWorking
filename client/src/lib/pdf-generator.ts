@@ -190,7 +190,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.text("GSTIN: " + data.customer.gstin, rightBoxX + 3, shipToY);
   }
   
-  yPos += boxHeight + 6;
+  yPos += boxHeight + 4;
 
   // Items table with professional styling
   const tableStartY = yPos;
