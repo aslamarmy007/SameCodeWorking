@@ -94,7 +94,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     year: 'numeric' 
   });
   doc.text("Date: " + formattedDate, pageWidth - margin - 4, yPos, { align: "right" });
-  yPos += 8;
+  yPos += 5;
 
   // Customer details boxes - Bill To and Ship To side by side
   const boxWidth = (pageWidth - (2 * margin) - 4) / 2; // 4mm gap between boxes
