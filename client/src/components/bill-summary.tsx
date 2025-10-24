@@ -51,7 +51,7 @@ export function BillSummary({
               <th className="text-xs p-2 text-center rounded-tl-lg">S.No</th>
               <th className="text-xs p-2 text-left">Item</th>
               <th className="text-xs p-2 text-center">Qty/Kg</th>
-              <th className="text-xs p-2 text-center">Rate</th>
+              <th className="text-xs p-2 text-center">₹ Rate</th>
               <th className="text-xs p-2 text-right">Amount</th>
               <th className="text-xs p-2 text-center rounded-tr-lg">Del</th>
             </tr>
