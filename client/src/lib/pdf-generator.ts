@@ -413,9 +413,29 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   // Save and download the PDF
   const fileName = "Invoice-" + data.invoiceNumber + "-" + new Date().getTime() + ".pdf";
-  doc.save(fileName);
   
-  return true;
+  try {
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    try {
+      doc.save(fileName);
+      return true;
+    } catch (fallbackError) {
+      console.error('Fallback PDF save error:', fallbackError);
+      return false;
+    }
+  }
 }
 
 // Helper function to convert number to words (Indian system)
