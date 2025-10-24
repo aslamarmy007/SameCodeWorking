@@ -312,14 +312,14 @@ export default function BillingPage() {
   };
 
   const canProceedFromConfig = billConfig.billDate !== "";
-  const canProceedFromCustomer = customerData.name.trim() !== "";
+  const canProceedFromCustomer = customerData.shopName.trim() !== "";
   const canProceedFromProducts = billItems.length > 0;
 
   const handleSaveCustomer = () => {
-    if (!customerData.name.trim()) {
+    if (!customerData.shopName.trim()) {
       toast({
         title: "Validation Error",
-        description: "Customer name is required",
+        description: "Shop name is required",
         variant: "destructive",
       });
       return;
@@ -329,7 +329,7 @@ export default function BillingPage() {
 
   const handleGeneratePDF = async () => {
     // Ensure customer is saved before creating invoice
-    if (!customerData.id && customerData.name.trim()) {
+    if (!customerData.id && customerData.shopName.trim()) {
       try {
         const savedCustomer = await apiRequest<Customer>("POST", "/api/customers", {
           name: customerData.name,
@@ -447,23 +447,8 @@ export default function BillingPage() {
                     <h3 className="text-xl font-bold mb-4">Add New Customer</h3>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="customerName" className="text-base font-semibold mb-2 block">
-                          Customer Name *
-                        </Label>
-                        <Input
-                          id="customerName"
-                          value={customerData.name}
-                          onChange={(e) =>
-                            setCustomerData({ ...customerData, name: e.target.value })
-                          }
-                          placeholder="Enter name"
-                          className="text-base"
-                          data-testid="input-customer-name"
-                        />
-                      </div>
-                      <div>
                         <Label htmlFor="shopName" className="text-base font-semibold mb-2 block">
-                          Shop Name
+                          Shop Name *
                         </Label>
                         <Input
                           id="shopName"
@@ -474,6 +459,21 @@ export default function BillingPage() {
                           placeholder="Enter shop name"
                           className="text-base"
                           data-testid="input-shop-name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customerName" className="text-base font-semibold mb-2 block">
+                          Customer Name
+                        </Label>
+                        <Input
+                          id="customerName"
+                          value={customerData.name}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, name: e.target.value })
+                          }
+                          placeholder="Enter name"
+                          className="text-base"
+                          data-testid="input-customer-name"
                         />
                       </div>
                       <div>
@@ -557,7 +557,7 @@ export default function BillingPage() {
                     </div>
                     <Button
                       onClick={handleSaveCustomer}
-                      disabled={saveCustomerMutation.isPending || !customerData.name.trim()}
+                      disabled={saveCustomerMutation.isPending || !customerData.shopName.trim()}
                       className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                       data-testid="button-save-customer"
                     >
@@ -626,22 +626,8 @@ export default function BillingPage() {
                         </div>
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="shippingCustomerName" className="text-base font-semibold mb-2 block">
-                              Customer Name *
-                            </Label>
-                            <Input
-                              id="shippingCustomerName"
-                              value={shippingData.name}
-                              onChange={(e) =>
-                                setShippingData({ ...shippingData, name: e.target.value })
-                              }
-                              placeholder="Enter name"
-                              className="text-base"
-                            />
-                          </div>
-                          <div>
                             <Label htmlFor="shippingShopName" className="text-base font-semibold mb-2 block">
-                              Shop Name
+                              Shop Name *
                             </Label>
                             <Input
                               id="shippingShopName"
@@ -650,6 +636,20 @@ export default function BillingPage() {
                                 setShippingData({ ...shippingData, shopName: e.target.value })
                               }
                               placeholder="Enter shop name"
+                              className="text-base"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="shippingCustomerName" className="text-base font-semibold mb-2 block">
+                              Customer Name
+                            </Label>
+                            <Input
+                              id="shippingCustomerName"
+                              value={shippingData.name}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, name: e.target.value })
+                              }
+                              placeholder="Enter name"
                               className="text-base"
                             />
                           </div>
