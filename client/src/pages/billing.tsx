@@ -16,7 +16,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { StepProgress } from "@/components/step-progress";
 import { BillSummary } from "@/components/bill-summary";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout } from "lucide-react";
+import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle } from "lucide-react";
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
@@ -1003,27 +1003,42 @@ export default function BillingPage() {
                   </div>
                 ) : (
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    {products.map((product) => (
-                    <Card
-                      key={product.id}
-                      className="p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-primary border-2 cursor-pointer hover-elevate active-elevate-2"
-                      onClick={() => handleAddProduct(product)}
-                      data-testid={`card-product-${product.id}`}
-                    >
-                      <h3 className="font-bold text-lg mb-2">{product.name}</h3>
-                      {product.description && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {product.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">HSN: {product.hsn}</span>
-                        <span className="font-bold text-primary text-lg">
-                          ₹{parseFloat(product.defaultPrice).toFixed(2)}
-                        </span>
-                      </div>
-                    </Card>
-                    ))}
+                    {products.map((product) => {
+                      const gstRate = parseFloat(product.gstRate || "0");
+                      const hasGST = gstRate > 0;
+                      return (
+                      <Card
+                        key={product.id}
+                        className="p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-primary border-2 cursor-pointer hover-elevate active-elevate-2 relative"
+                        onClick={() => handleAddProduct(product)}
+                        data-testid={`card-product-${product.id}`}
+                      >
+                        {hasGST ? (
+                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full text-xs font-semibold">
+                            <Star className="w-3 h-3 fill-current" />
+                            <span>{gstRate}% GST</span>
+                          </div>
+                        ) : (
+                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full text-xs font-semibold">
+                            <Circle className="w-3 h-3 fill-current" />
+                            <span>0% GST</span>
+                          </div>
+                        )}
+                        <h3 className="font-bold text-lg mb-2 pr-20">{product.name}</h3>
+                        {product.description && (
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {product.description}
+                          </p>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">HSN: {product.hsn}</span>
+                          <span className="font-bold text-primary text-lg">
+                            ₹{parseFloat(product.defaultPrice).toFixed(2)}
+                          </span>
+                        </div>
+                      </Card>
+                      );
+                    })}
                   </div>
                 )}
                 <div className="flex gap-4">

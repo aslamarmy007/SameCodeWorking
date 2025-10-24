@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, FileText } from "lucide-react";
+import { Trash2, FileText, Star, Circle } from "lucide-react";
 
 interface BillItem {
   productId: string;
@@ -64,42 +64,60 @@ export function BillSummary({
                 </td>
               </tr>
             ) : (
-              items.map((item) => (
-                <tr
-                  key={item.productId}
-                  className="border-b hover:bg-muted/50 transition-colors"
-                  data-testid={`row-item-${item.productId}`}
-                >
-                  <td className="p-2 text-sm font-medium">{item.productName}</td>
-                  <td className="p-2 text-center">
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) =>
-                        onUpdateQuantity(item.productId, parseInt(e.target.value) || 0)
-                      }
-                      className="w-16 h-8 text-center text-sm p-0"
-                      data-testid={`input-quantity-${item.productId}`}
-                    />
-                  </td>
-                  <td className="p-2 text-right text-sm">₹{item.price.toFixed(2)}</td>
-                  <td className="p-2 text-right text-sm font-semibold">
-                    ₹{item.total.toFixed(2)}
-                  </td>
-                  <td className="p-2 text-center">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => onRemoveItem(item.productId)}
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      data-testid={`button-delete-${item.productId}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))
+              items.map((item) => {
+                const hasGST = item.gstRate > 0;
+                return (
+                  <tr
+                    key={item.productId}
+                    className="border-b hover:bg-muted/50 transition-colors"
+                    data-testid={`row-item-${item.productId}`}
+                  >
+                    <td className="p-2 text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <span>{item.productName}</span>
+                        {hasGST ? (
+                          <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded text-xs font-semibold">
+                            <Star className="w-2.5 h-2.5 fill-current" />
+                            <span>{item.gstRate}%</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded text-xs font-semibold">
+                            <Circle className="w-2.5 h-2.5 fill-current" />
+                            <span>0%</span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-2 text-center">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          onUpdateQuantity(item.productId, parseInt(e.target.value) || 0)
+                        }
+                        className="w-16 h-8 text-center text-sm p-0"
+                        data-testid={`input-quantity-${item.productId}`}
+                      />
+                    </td>
+                    <td className="p-2 text-right text-sm">₹{item.price.toFixed(2)}</td>
+                    <td className="p-2 text-right text-sm font-semibold">
+                      ₹{item.total.toFixed(2)}
+                    </td>
+                    <td className="p-2 text-center">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onRemoveItem(item.productId)}
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        data-testid={`button-delete-${item.productId}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
