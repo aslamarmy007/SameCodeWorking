@@ -29,6 +29,9 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
    - Save customer details (name, shop, phone, GSTIN, address)
    - Quick selection from existing customers
    - Auto-fill customer information
+   - Input validation (name, shop name, city, state: letters only; phone: 10 digits)
+   - Duplicate customer detection (prevents saving customers with same name and shop name)
+   - Comprehensive error messages for validation failures
 
 3. **Product Catalog**
    - Pre-defined products with HSN codes
@@ -74,6 +77,9 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - [2025-01-24] Integrated jsPDF for invoice generation
 - [2025-01-24] Fixed customer auto-save and removed emoji usage
 - [2025-01-24] MVP completed and architect-approved
+- [2025-10-24] Added comprehensive input validation for customer fields
+- [2025-10-24] Implemented duplicate customer detection based on name and shop name
+- [2025-10-24] Enhanced error handling with user-friendly validation messages
 
 ## Development Status
 - ✅ Schema and data models defined
@@ -92,3 +98,5 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - **Purple gradient theme** - Beautiful, modern UI with smooth animations
 - **Responsive design** - Works perfectly on all screen sizes
 - **8 pre-seeded products** - Ready-to-use product catalog
+- **Input validation** - Both client and server-side validation for data integrity
+- **Duplicate prevention** - Smart duplicate detection to avoid data redundancy
