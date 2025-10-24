@@ -118,7 +118,7 @@ export default function BillingPage() {
       if (errorData?.error === "Customer already exists") {
         toast({
           title: "Customer Already Exists",
-          description: errorData.message || "A customer with this name and shop name already exists",
+          description: errorData.message || "A customer with this shop name already exists",
           variant: "destructive",
         });
       } else if (errorData?.error === "Validation error") {
@@ -374,7 +374,9 @@ export default function BillingPage() {
 
   const handleSaveCustomer = () => {
     const nameRegex = /^[a-zA-Z\s]+$/;
+    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
     const phoneRegex = /^\d{10}$/;
+    const gstinRegex = /^[a-zA-Z0-9]+$/;
     
     // Validate customer name
     if (!customerData.name.trim()) {
@@ -396,10 +398,10 @@ export default function BillingPage() {
     }
     
     // Validate shop name
-    if (customerData.shopName.trim() && !nameRegex.test(customerData.shopName.trim())) {
+    if (customerData.shopName.trim() && !shopNameRegex.test(customerData.shopName.trim())) {
       toast({
         title: "Validation Error",
-        description: "Shop name must contain only letters",
+        description: "Shop name can only contain letters and numbers",
         variant: "destructive",
       });
       return;
@@ -413,6 +415,26 @@ export default function BillingPage() {
         variant: "destructive",
       });
       return;
+    }
+    
+    // Validate GSTIN
+    if (customerData.gstin.trim()) {
+      if (!gstinRegex.test(customerData.gstin.trim())) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN can only contain letters and numbers",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (customerData.gstin.trim().length > 15) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN must be maximum 15 characters",
+          variant: "destructive",
+        });
+        return;
+      }
     }
     
     // Validate city
@@ -1040,7 +1062,9 @@ export default function BillingPage() {
                         <Button
                           onClick={() => {
                             const nameRegex = /^[a-zA-Z\s]+$/;
+                            const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
                             const phoneRegex = /^\d{10}$/;
+                            const gstinRegex = /^[a-zA-Z0-9]+$/;
                             
                             // Validate customer name
                             if (!shippingData.name.trim()) {
@@ -1062,10 +1086,10 @@ export default function BillingPage() {
                             }
                             
                             // Validate shop name
-                            if (shippingData.shopName.trim() && !nameRegex.test(shippingData.shopName.trim())) {
+                            if (shippingData.shopName.trim() && !shopNameRegex.test(shippingData.shopName.trim())) {
                               toast({
                                 title: "Validation Error",
-                                description: "Shop name must contain only letters",
+                                description: "Shop name can only contain letters and numbers",
                                 variant: "destructive",
                               });
                               return;
@@ -1079,6 +1103,26 @@ export default function BillingPage() {
                                 variant: "destructive",
                               });
                               return;
+                            }
+                            
+                            // Validate GSTIN
+                            if (shippingData.gstin.trim()) {
+                              if (!gstinRegex.test(shippingData.gstin.trim())) {
+                                toast({
+                                  title: "Validation Error",
+                                  description: "GSTIN can only contain letters and numbers",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              if (shippingData.gstin.trim().length > 15) {
+                                toast({
+                                  title: "Validation Error",
+                                  description: "GSTIN must be maximum 15 characters",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
                             }
                             
                             // Validate city

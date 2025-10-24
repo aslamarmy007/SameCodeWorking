@@ -39,7 +39,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (duplicate) {
         return res.status(409).json({ 
           error: "Customer already exists",
-          message: "A customer with this name and shop name already exists" 
+          message: "A customer with this shop name already exists" 
         });
       }
       

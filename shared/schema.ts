@@ -21,13 +21,21 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({ id: tru
     .regex(/^[a-zA-Z\s]+$/, "Customer name must contain only letters"),
   shopName: z.string()
     .optional()
-    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
-      message: "Shop name must contain only letters"
+    .refine((val) => !val || /^[a-zA-Z0-9\s]+$/.test(val), {
+      message: "Shop name can only contain letters and numbers"
     }),
   phone: z.string()
     .optional()
     .refine((val) => !val || /^\d{10}$/.test(val), {
       message: "Phone number must be exactly 10 digits"
+    }),
+  gstin: z.string()
+    .optional()
+    .refine((val) => !val || /^[a-zA-Z0-9]+$/.test(val), {
+      message: "GSTIN can only contain letters and numbers"
+    })
+    .refine((val) => !val || val.length <= 15, {
+      message: "GSTIN must be maximum 15 characters"
     }),
   city: z.string()
     .optional()

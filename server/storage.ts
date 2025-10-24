@@ -173,14 +173,16 @@ export class MemStorage implements IStorage {
   }
 
   async findDuplicateCustomer(name: string, shopName: string | null): Promise<Customer | undefined> {
-    const normalizedName = name.trim().toLowerCase();
-    const normalizedShopName = shopName?.trim().toLowerCase() || null;
+    if (!shopName || !shopName.trim()) {
+      return undefined;
+    }
+    
+    const normalizedShopName = shopName.trim().toLowerCase();
     
     return Array.from(this.customers.values()).find(customer => {
-      const customerName = customer.name.trim().toLowerCase();
       const customerShopName = customer.shopName?.trim().toLowerCase() || null;
       
-      return customerName === normalizedName && customerShopName === normalizedShopName;
+      return customerShopName === normalizedShopName;
     });
   }
 
