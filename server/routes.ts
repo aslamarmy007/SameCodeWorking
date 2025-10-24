@@ -127,6 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const validatedItem = insertInvoiceItemSchema.parse({
             ...item,
             invoiceId: invoice.id,
+            quantity: item.quantity.toString(),
           });
           await storage.createInvoiceItem(validatedItem);
         }
