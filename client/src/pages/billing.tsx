@@ -315,10 +315,6 @@ export default function BillingPage() {
     if (quantity < 0) {
       return;
     }
-    if (quantity === 0) {
-      setBillItems(billItems.filter((item) => item.productId !== productId));
-      return;
-    }
     setBillItems(
       billItems.map((item) =>
         item.productId === productId

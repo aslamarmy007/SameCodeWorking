@@ -120,10 +120,24 @@ export function BillSummary({
                           type="number"
                           min="0.01"
                           step={isWeightBased ? "0.01" : "1"}
-                          value={item.quantity}
-                          onChange={(e) =>
-                            onUpdateQuantity(item.productId, parseFloat(e.target.value) || 0)
-                          }
+                          value={item.quantity || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === "") {
+                              onUpdateQuantity(item.productId, 0);
+                            } else {
+                              const parsed = parseFloat(value);
+                              if (!isNaN(parsed)) {
+                                onUpdateQuantity(item.productId, parsed);
+                              }
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = parseFloat(e.target.value);
+                            if (isNaN(value) || value <= 0) {
+                              onRemoveItem(item.productId);
+                            }
+                          }}
                           className="w-16 h-7 text-center text-sm p-1"
                           data-testid={`input-quantity-${item.productId}`}
                           placeholder={isWeightBased ? "Kg" : "Qty"}
@@ -147,10 +161,27 @@ export function BillSummary({
                         type="number"
                         min="0.01"
                         step="0.01"
-                        value={item.price}
-                        onChange={(e) =>
-                          onUpdatePrice(item.productId, parseFloat(e.target.value) || 0)
-                        }
+                        value={item.price || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "") {
+                            onUpdatePrice(item.productId, 0);
+                          } else {
+                            const parsed = parseFloat(value);
+                            if (!isNaN(parsed)) {
+                              onUpdatePrice(item.productId, parsed);
+                            }
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (isNaN(value) || value <= 0) {
+                            const currentItem = items.find(i => i.productId === item.productId);
+                            if (currentItem) {
+                              onUpdatePrice(item.productId, currentItem.price);
+                            }
+                          }
+                        }}
                         className="w-20 h-7 text-right text-sm p-1"
                         data-testid={`input-price-${item.productId}`}
                       />
