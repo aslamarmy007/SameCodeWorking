@@ -82,7 +82,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   doc.setFontSize(10);
   doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 4, yPos + 7.5, { align: "right" });
-  yPos += 13;
+  yPos += 16;
 
   // Date - positioned properly within margins
   doc.setTextColor(0, 0, 0);
