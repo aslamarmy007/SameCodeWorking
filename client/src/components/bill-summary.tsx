@@ -47,9 +47,9 @@ export function BillSummary({
           <thead>
             <tr className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white">
               <th className="text-xs p-2 text-left rounded-tl-lg">Item</th>
-              <th className="text-xs p-2 text-center">Qty</th>
-              <th className="text-xs p-2 text-right">Price</th>
-              <th className="text-xs p-2 text-right">Total</th>
+              <th className="text-xs p-2 pr-4 text-center">Qty/Kg</th>
+              <th className="text-xs p-2 text-right">Rate</th>
+              <th className="text-xs p-2 text-right">Amount</th>
               <th className="text-xs p-2 text-center rounded-tr-lg">Del</th>
             </tr>
           </thead>
@@ -95,7 +95,7 @@ export function BillSummary({
                         )}
                       </div>
                     </td>
-                    <td className="p-2 text-center">
+                    <td className="p-2 pr-4 text-center">
                       <div className="flex items-center gap-1">
                         <Button
                           size="icon"
