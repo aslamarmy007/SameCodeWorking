@@ -260,9 +260,9 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("S.No", col1, yPos + 6);
   doc.text("Description", col2, yPos + 6);
   doc.text("HSN", col3, yPos + 6);
-  doc.text("Qty", col4, yPos + 6, { align: "center" });
-  doc.text("Rate (Rs.)", col5, yPos + 6, { align: "right" });
-  doc.text("Amount (Rs.)", col6, yPos + 6, { align: "right" });
+  doc.text("Qty/Kg", col4, yPos + 6, { align: "center" });
+  doc.text("Rate", col5, yPos + 6, { align: "right" });
+  doc.text("Amount", col6, yPos + 6, { align: "right" });
   yPos += 9;
 
   // Table items
@@ -285,9 +285,9 @@ export function generateInvoicePDF(data: InvoiceData) {
       doc.text("S.No", col1, yPos + 6);
       doc.text("Description", col2, yPos + 6);
       doc.text("HSN", col3, yPos + 6);
-      doc.text("Qty", col4, yPos + 6, { align: "center" });
-      doc.text("Rate (Rs.)", col5, yPos + 6, { align: "right" });
-      doc.text("Amount (Rs.)", col6, yPos + 6, { align: "right" });
+      doc.text("Qty/Kg", col4, yPos + 6, { align: "center" });
+      doc.text("Rate", col5, yPos + 6, { align: "right" });
+      doc.text("Amount", col6, yPos + 6, { align: "right" });
       yPos += 9;
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
