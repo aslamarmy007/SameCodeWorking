@@ -29,8 +29,13 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
    - Save customer details (name, shop, phone, GSTIN, address)
    - Quick selection from existing customers
    - Auto-fill customer information
-   - Input validation (name, shop name, city, state: letters only; phone: 10 digits)
-   - Duplicate customer detection (prevents saving customers with same name and shop name)
+   - Input validation rules:
+     - Name: letters only (required)
+     - Shop name: letters and numbers only
+     - Phone: exactly 10 digits
+     - GSTIN: letters and numbers only, max 15 characters
+     - City & State: letters only
+   - Duplicate customer detection (prevents saving customers with same shop name)
    - Comprehensive error messages for validation failures
 
 3. **Product Catalog**
@@ -78,8 +83,10 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - [2025-01-24] Fixed customer auto-save and removed emoji usage
 - [2025-01-24] MVP completed and architect-approved
 - [2025-10-24] Added comprehensive input validation for customer fields
-- [2025-10-24] Implemented duplicate customer detection based on name and shop name
+- [2025-10-24] Implemented duplicate customer detection based on shop name only
 - [2025-10-24] Enhanced error handling with user-friendly validation messages
+- [2025-10-24] Updated shop name validation to allow letters and numbers
+- [2025-10-24] Added GSTIN validation (alphanumeric only, max 15 characters)
 
 ## Development Status
 - ✅ Schema and data models defined
