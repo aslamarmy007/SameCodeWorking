@@ -118,17 +118,18 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   let billToY = yPos + 13;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(0, 0, 0);
-  doc.text(data.customer.name, leftBoxX + 3, billToY);
-  billToY += 4.5;
-  
-  doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   if (data.customer.shopName) {
     doc.text(data.customer.shopName, leftBoxX + 3, billToY);
     billToY += 4;
   }
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text(data.customer.name, leftBoxX + 3, billToY);
+  billToY += 4.5;
+  
   doc.setFont("helvetica", "normal");
   
   if (data.customer.address) {
@@ -169,17 +170,18 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   let shipToY = yPos + 13;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(0, 0, 0);
-  doc.text(data.customer.name, rightBoxX + 3, shipToY);
-  shipToY += 4.5;
-  
-  doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   if (data.customer.shopName) {
     doc.text(data.customer.shopName, rightBoxX + 3, shipToY);
     shipToY += 4;
   }
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text(data.customer.name, rightBoxX + 3, shipToY);
+  shipToY += 4.5;
+  
   doc.setFont("helvetica", "normal");
   
   if (data.customer.address) {
