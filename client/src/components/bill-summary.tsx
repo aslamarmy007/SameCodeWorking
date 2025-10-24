@@ -46,8 +46,9 @@ export function BillSummary({
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white">
-              <th className="text-xs p-2 text-left rounded-tl-lg">Item</th>
-              <th className="text-xs p-2 pr-4 text-center">Qty/Kg</th>
+              <th className="text-xs p-2 text-center rounded-tl-lg">S.No</th>
+              <th className="text-xs p-2 text-left">Item</th>
+              <th className="text-xs p-2 text-center">Qty/Kg</th>
               <th className="text-xs p-2 text-right">Rate</th>
               <th className="text-xs p-2 text-right">Amount</th>
               <th className="text-xs p-2 text-center rounded-tr-lg">Del</th>
@@ -57,7 +58,7 @@ export function BillSummary({
             {items.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-8 text-muted-foreground"
                   data-testid="text-no-items"
                 >
@@ -65,7 +66,7 @@ export function BillSummary({
                 </td>
               </tr>
             ) : (
-              items.map((item) => {
+              items.map((item, index) => {
                 const hasGST = item.gstRate > 0;
                 const isWeightBased = item.unit?.toLowerCase() === "kg";
                 return (
@@ -74,6 +75,9 @@ export function BillSummary({
                     className="border-b hover:bg-muted/50 transition-colors"
                     data-testid={`row-item-${item.productId}`}
                   >
+                    <td className="p-2 text-center text-sm font-semibold text-muted-foreground">
+                      {index + 1}
+                    </td>
                     <td className="p-2 text-sm font-medium">
                       <div className="flex items-center gap-1 flex-wrap">
                         {isWeightBased ? (
@@ -95,8 +99,8 @@ export function BillSummary({
                         )}
                       </div>
                     </td>
-                    <td className="p-2 pr-4 text-center">
-                      <div className="flex items-center gap-1">
+                    <td className="p-2 text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <Button
                           size="icon"
                           variant="outline"
