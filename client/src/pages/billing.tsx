@@ -1,0 +1,749 @@
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { StepProgress } from "@/components/step-progress";
+import { BillSummary } from "@/components/bill-summary";
+import { useToast } from "@/hooks/use-toast";
+import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout } from "lucide-react";
+import type { Customer, Product } from "@shared/schema";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { generateInvoicePDF } from "@/lib/pdf-generator";
+
+type BillItem = {
+  productId: string;
+  productName: string;
+  hsn: string;
+  quantity: number;
+  price: number;
+  total: number;
+};
+
+type BillConfig = {
+  billDate: string;
+  gstEnabled: boolean;
+};
+
+type CustomerData = {
+  id?: string;
+  name: string;
+  shopName: string;
+  phone: string;
+  gstin: string;
+  address: string;
+  city: string;
+  state: string;
+};
+
+type AdditionalCharges = {
+  transport: number;
+  packaging: number;
+  other: number;
+  lorryNumber: string;
+};
+
+export default function BillingPage() {
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [billConfig, setBillConfig] = useState<BillConfig>({
+    billDate: new Date().toISOString().split("T")[0],
+    gstEnabled: true,
+  });
+  const [customerData, setCustomerData] = useState<CustomerData>({
+    name: "",
+    shopName: "",
+    phone: "",
+    gstin: "",
+    address: "",
+    city: "",
+    state: "",
+  });
+  const [billItems, setBillItems] = useState<BillItem[]>([]);
+  const [additionalCharges, setAdditionalCharges] = useState<AdditionalCharges>({
+    transport: 0,
+    packaging: 0,
+    other: 0,
+    lorryNumber: "",
+  });
+
+  const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
+  });
+
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
+
+  const saveCustomerMutation = useMutation({
+    mutationFn: async (customer: CustomerData) => {
+      const { id, ...customerData } = customer;
+      return await apiRequest<Customer>("POST", "/api/customers", customerData);
+    },
+    onSuccess: (savedCustomer: Customer) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      setCustomerData({ ...customerData, id: savedCustomer.id });
+      toast({
+        title: "Customer Saved",
+        description: "Customer has been saved successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save customer",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createInvoiceMutation = useMutation({
+    mutationFn: async () => {
+      const invoiceData = {
+        billDate: billConfig.billDate,
+        customerId: customerData.id || "",
+        customerName: customerData.name,
+        shopName: customerData.shopName,
+        phone: customerData.phone,
+        gstin: customerData.gstin,
+        address: customerData.address,
+        city: customerData.city,
+        state: customerData.state,
+        subtotal: subtotal.toString(),
+        transport: additionalCharges.transport.toString(),
+        packaging: additionalCharges.packaging.toString(),
+        otherCharges: additionalCharges.other.toString(),
+        gstEnabled: billConfig.gstEnabled,
+        gstAmount: gstAmount.toString(),
+        grandTotal: grandTotal.toString(),
+        lorryNumber: additionalCharges.lorryNumber,
+        items: billItems.map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          hsn: item.hsn,
+          quantity: item.quantity,
+          price: item.price.toString(),
+          total: item.total.toString(),
+        })),
+      };
+      return await apiRequest<{ invoice: any; items: any[] }>("POST", "/api/invoices", invoiceData);
+    },
+    onSuccess: (response: { invoice: any; items: any[] }) => {
+      const { invoice } = response;
+      
+      // Generate PDF
+      generateInvoicePDF({
+        invoiceNumber: invoice.invoiceNumber,
+        billDate: billConfig.billDate,
+        customer: {
+          name: customerData.name,
+          shopName: customerData.shopName,
+          phone: customerData.phone,
+          gstin: customerData.gstin,
+          address: customerData.address,
+          city: customerData.city,
+          state: customerData.state,
+        },
+        items: billItems,
+        subtotal,
+        transport: additionalCharges.transport,
+        packaging: additionalCharges.packaging,
+        other: additionalCharges.other,
+        gstAmount,
+        grandTotal,
+        lorryNumber: additionalCharges.lorryNumber,
+      });
+
+      toast({
+        title: "Invoice Created",
+        description: `Invoice ${invoice.invoiceNumber} generated successfully`,
+      });
+
+      // Reset form
+      setCurrentStep(1);
+      setBillConfig({
+        billDate: new Date().toISOString().split("T")[0],
+        gstEnabled: true,
+      });
+      setCustomerData({
+        name: "",
+        shopName: "",
+        phone: "",
+        gstin: "",
+        address: "",
+        city: "",
+        state: "",
+      });
+      setBillItems([]);
+      setAdditionalCharges({
+        transport: 0,
+        packaging: 0,
+        other: 0,
+        lorryNumber: "",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create invoice",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const subtotal = billItems.reduce((sum, item) => sum + item.total, 0);
+  const totalCharges = additionalCharges.transport + additionalCharges.packaging + additionalCharges.other;
+  const gstAmount = billConfig.gstEnabled ? (subtotal + totalCharges) * 0.18 : 0;
+  const grandTotal = subtotal + totalCharges + gstAmount;
+
+  const handleCustomerSelect = (customerId: string) => {
+    const customer = customers.find((c) => c.id === customerId);
+    if (customer) {
+      setCustomerData({
+        id: customer.id,
+        name: customer.name,
+        shopName: customer.shopName || "",
+        phone: customer.phone || "",
+        gstin: customer.gstin || "",
+        address: customer.address || "",
+        city: customer.city || "",
+        state: customer.state || "",
+      });
+    }
+  };
+
+  const handleAddProduct = (product: Product) => {
+    const existing = billItems.find((item) => item.productId === product.id);
+    if (existing) {
+      setBillItems(
+        billItems.map((item) =>
+          item.productId === product.id
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                total: (item.quantity + 1) * item.price,
+              }
+            : item
+        )
+      );
+    } else {
+      setBillItems([
+        ...billItems,
+        {
+          productId: product.id,
+          productName: product.name,
+          hsn: product.hsn,
+          quantity: 1,
+          price: parseFloat(product.defaultPrice),
+          total: parseFloat(product.defaultPrice),
+        },
+      ]);
+    }
+    toast({
+      title: "Product Added",
+      description: `${product.name} added to bill`,
+    });
+  };
+
+  const handleUpdateQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      setBillItems(billItems.filter((item) => item.productId !== productId));
+      return;
+    }
+    setBillItems(
+      billItems.map((item) =>
+        item.productId === productId
+          ? { ...item, quantity, total: quantity * item.price }
+          : item
+      )
+    );
+  };
+
+  const handleRemoveItem = (productId: string) => {
+    setBillItems(billItems.filter((item) => item.productId !== productId));
+  };
+
+  const canProceedFromConfig = billConfig.billDate !== "";
+  const canProceedFromCustomer = customerData.name.trim() !== "";
+  const canProceedFromProducts = billItems.length > 0;
+
+  const handleSaveCustomer = () => {
+    if (!customerData.name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    saveCustomerMutation.mutate(customerData);
+  };
+
+  const handleGeneratePDF = async () => {
+    // Ensure customer is saved before creating invoice
+    if (!customerData.id && customerData.name.trim()) {
+      try {
+        const savedCustomer = await apiRequest<Customer>("POST", "/api/customers", {
+          name: customerData.name,
+          shopName: customerData.shopName,
+          phone: customerData.phone,
+          gstin: customerData.gstin,
+          address: customerData.address,
+          city: customerData.city,
+          state: customerData.state,
+        });
+        setCustomerData({ ...customerData, id: savedCustomer.id });
+        // Wait a bit to ensure state is updated
+        setTimeout(() => {
+          createInvoiceMutation.mutate();
+        }, 100);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save customer before creating invoice",
+          variant: "destructive",
+        });
+      }
+    } else {
+      createInvoiceMutation.mutate();
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#667eea] to-[#764ba2]">
+      <div className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white py-8 rounded-b-[30px] shadow-lg mb-8">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Sprout className="w-10 h-10" />
+            <h1 className="text-4xl font-bold">AYESHA Coco Pith</h1>
+          </div>
+          <p className="text-lg opacity-90">Professional Billing System</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 pb-8">
+        <StepProgress currentStep={currentStep} />
+
+        <div className="grid lg:grid-cols-[2fr,1fr] gap-8 items-start">
+          <div>
+            {currentStep === 1 && (
+              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-config">
+                <div className="flex items-center gap-3 mb-6">
+                  <Settings className="w-8 h-8 text-primary" />
+                  <h2 className="text-3xl font-bold text-foreground">Bill Configuration</h2>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="billDate" className="text-base font-semibold mb-2 block">
+                      Bill Date
+                    </Label>
+                    <Input
+                      id="billDate"
+                      type="date"
+                      value={billConfig.billDate}
+                      onChange={(e) =>
+                        setBillConfig({ ...billConfig, billDate: e.target.value })
+                      }
+                      className="text-base"
+                      data-testid="input-bill-date"
+                    />
+                  </div>
+                  <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl flex items-center justify-between">
+                    <span className="text-base font-semibold">Apply GST (18%)</span>
+                    <Switch
+                      checked={billConfig.gstEnabled}
+                      onCheckedChange={(checked) =>
+                        setBillConfig({ ...billConfig, gstEnabled: checked })
+                      }
+                      data-testid="switch-gst"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => setCurrentStep(2)}
+                    disabled={!canProceedFromConfig}
+                    className="w-full text-base py-6"
+                    data-testid="button-next-customer"
+                  >
+                    Next: Customer Information →
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {currentStep === 2 && (
+              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-customer">
+                <div className="flex items-center gap-3 mb-6">
+                  <User className="w-8 h-8 text-primary" />
+                  <h2 className="text-3xl font-bold text-foreground">Customer Information</h2>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
+                      Existing Customer
+                    </Label>
+                    <Select onValueChange={handleCustomerSelect}>
+                      <SelectTrigger className="text-base" data-testid="select-customer">
+                        <SelectValue placeholder="Select a customer..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="border-t-2 pt-6">
+                    <h3 className="text-xl font-bold mb-4">Add New Customer</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="customerName" className="text-base font-semibold mb-2 block">
+                          Customer Name *
+                        </Label>
+                        <Input
+                          id="customerName"
+                          value={customerData.name}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, name: e.target.value })
+                          }
+                          placeholder="Enter name"
+                          className="text-base"
+                          data-testid="input-customer-name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="shopName" className="text-base font-semibold mb-2 block">
+                          Shop Name
+                        </Label>
+                        <Input
+                          id="shopName"
+                          value={customerData.shopName}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, shopName: e.target.value })
+                          }
+                          placeholder="Enter shop name"
+                          className="text-base"
+                          data-testid="input-shop-name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone" className="text-base font-semibold mb-2 block">
+                          Phone
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={customerData.phone}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, phone: e.target.value })
+                          }
+                          placeholder="Enter phone"
+                          className="text-base"
+                          data-testid="input-phone"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="gstin" className="text-base font-semibold mb-2 block">
+                          GSTIN
+                        </Label>
+                        <Input
+                          id="gstin"
+                          value={customerData.gstin}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, gstin: e.target.value })
+                          }
+                          placeholder="Enter GSTIN"
+                          className="text-base"
+                          data-testid="input-gstin"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <Label htmlFor="address" className="text-base font-semibold mb-2 block">
+                        Address
+                      </Label>
+                      <Input
+                        id="address"
+                        value={customerData.address}
+                        onChange={(e) =>
+                          setCustomerData({ ...customerData, address: e.target.value })
+                        }
+                        placeholder="Enter address"
+                        className="text-base"
+                        data-testid="input-address"
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <Label htmlFor="city" className="text-base font-semibold mb-2 block">
+                          City
+                        </Label>
+                        <Input
+                          id="city"
+                          value={customerData.city}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, city: e.target.value })
+                          }
+                          placeholder="Enter city"
+                          className="text-base"
+                          data-testid="input-city"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state" className="text-base font-semibold mb-2 block">
+                          State
+                        </Label>
+                        <Input
+                          id="state"
+                          value={customerData.state}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, state: e.target.value })
+                          }
+                          placeholder="Enter state"
+                          className="text-base"
+                          data-testid="input-state"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleSaveCustomer}
+                      disabled={saveCustomerMutation.isPending || !customerData.name.trim()}
+                      className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
+                      data-testid="button-save-customer"
+                    >
+                      {saveCustomerMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Customer
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setCurrentStep(1)}
+                      className="flex-1 text-base py-6"
+                      data-testid="button-back-config"
+                    >
+                      ← Back
+                    </Button>
+                    <Button
+                      onClick={() => setCurrentStep(3)}
+                      disabled={!canProceedFromCustomer}
+                      className="flex-1 text-base py-6"
+                      data-testid="button-next-products"
+                    >
+                      Next: Products →
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {currentStep === 3 && (
+              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-products">
+                <div className="flex items-center gap-3 mb-6">
+                  <Package className="w-8 h-8 text-primary" />
+                  <h2 className="text-3xl font-bold text-foreground">Add Products</h2>
+                </div>
+                {productsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <span className="ml-3 text-lg">Loading products...</span>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    {products.map((product) => (
+                    <Card
+                      key={product.id}
+                      className="p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-primary border-2 cursor-pointer hover-elevate active-elevate-2"
+                      onClick={() => handleAddProduct(product)}
+                      data-testid={`card-product-${product.id}`}
+                    >
+                      <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+                      {product.description && (
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {product.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">HSN: {product.hsn}</span>
+                        <span className="font-bold text-primary text-lg">
+                          ₹{parseFloat(product.defaultPrice).toFixed(2)}
+                        </span>
+                      </div>
+                    </Card>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setCurrentStep(2)}
+                    className="flex-1 text-base py-6"
+                    data-testid="button-back-customer"
+                  >
+                    ← Back
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep(4)}
+                    disabled={!canProceedFromProducts}
+                    className="flex-1 text-base py-6"
+                    data-testid="button-next-review"
+                  >
+                    Next: Review →
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {currentStep === 4 && (
+              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-review">
+                <div className="flex items-center gap-3 mb-6">
+                  <FileCheck className="w-8 h-8 text-primary" />
+                  <h2 className="text-3xl font-bold text-foreground">Additional Charges & Review</h2>
+                </div>
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="transport" className="text-base font-semibold mb-2 block">
+                        Transport (₹)
+                      </Label>
+                      <Input
+                        id="transport"
+                        type="number"
+                        step="0.01"
+                        value={additionalCharges.transport}
+                        onChange={(e) =>
+                          setAdditionalCharges({
+                            ...additionalCharges,
+                            transport: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="text-base"
+                        data-testid="input-transport"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="packaging" className="text-base font-semibold mb-2 block">
+                        Packaging (₹)
+                      </Label>
+                      <Input
+                        id="packaging"
+                        type="number"
+                        step="0.01"
+                        value={additionalCharges.packaging}
+                        onChange={(e) =>
+                          setAdditionalCharges({
+                            ...additionalCharges,
+                            packaging: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="text-base"
+                        data-testid="input-packaging"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="other" className="text-base font-semibold mb-2 block">
+                        Other Charges (₹)
+                      </Label>
+                      <Input
+                        id="other"
+                        type="number"
+                        step="0.01"
+                        value={additionalCharges.other}
+                        onChange={(e) =>
+                          setAdditionalCharges({
+                            ...additionalCharges,
+                            other: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="text-base"
+                        data-testid="input-other"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lorryNo" className="text-base font-semibold mb-2 block">
+                        Lorry / Vehicle No.
+                      </Label>
+                      <Input
+                        id="lorryNo"
+                        value={additionalCharges.lorryNumber}
+                        onChange={(e) =>
+                          setAdditionalCharges({
+                            ...additionalCharges,
+                            lorryNumber: e.target.value,
+                          })
+                        }
+                        placeholder="e.g. TN 01 AB 1234"
+                        className="text-base"
+                        data-testid="input-lorry"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setCurrentStep(3)}
+                      className="flex-[2] text-base py-6"
+                      data-testid="button-back-products"
+                    >
+                      ← Back
+                    </Button>
+                    <Button
+                      onClick={handleGeneratePDF}
+                      disabled={createInvoiceMutation.isPending}
+                      className="flex-[3] text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
+                      data-testid="button-generate-pdf"
+                    >
+                      {createInvoiceMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Generate & Download PDF
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
+
+          <BillSummary
+            items={billItems}
+            subtotal={subtotal}
+            charges={totalCharges}
+            gstAmount={gstAmount}
+            grandTotal={grandTotal}
+            gstEnabled={billConfig.gstEnabled}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
