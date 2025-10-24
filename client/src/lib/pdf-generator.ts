@@ -351,16 +351,15 @@ export function generateInvoicePDF(data: InvoiceData) {
     yPos += 5.5;
   }
 
-  // GST - Calculate unique GST rates from items
-  if (data.gstAmount > 0) {
-    const gstRates = Array.from(new Set(data.items.map(item => item.gstRate).filter(rate => rate > 0)));
+  // GST - Calculate unique GST rates from items (including 0%)
+  const allGstRates = Array.from(new Set(data.items.map(item => item.gstRate)));
+  if (allGstRates.length > 0) {
+    const sortedRates = allGstRates.sort((a, b) => a - b);
     doc.setFont("helvetica", "bold");
-    if (gstRates.length === 1) {
-      doc.text(`GST (${gstRates[0]}%):`, totalsBoxX, yPos);
-    } else if (gstRates.length > 1) {
-      doc.text(`GST (${gstRates.join('%, ')}%):`, totalsBoxX, yPos);
+    if (sortedRates.length === 1) {
+      doc.text(`GST (${sortedRates[0]}%):`, totalsBoxX, yPos);
     } else {
-      doc.text("GST:", totalsBoxX, yPos);
+      doc.text(`GST (${sortedRates.join('%, ')}%):`, totalsBoxX, yPos);
     }
     doc.text("Rs. " + data.gstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
     yPos += 6.5;
