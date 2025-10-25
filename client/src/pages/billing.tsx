@@ -465,10 +465,12 @@ export default function BillingPage() {
     customerData.shopName.trim() !== "" && 
     customerData.city.trim() !== "" && 
     customerData.state.trim() !== "" &&
+    (!billConfig.gstEnabled || customerData.gstin.trim() !== "") &&
     (sameAsbilling || (
       shippingData.shopName.trim() !== "" && 
       shippingData.city.trim() !== "" && 
-      shippingData.state.trim() !== ""
+      shippingData.state.trim() !== "" &&
+      (!billConfig.gstEnabled || shippingData.gstin.trim() !== "")
     ));
   const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
   const hasValidProducts = billItems.length > 0 && allItemsHaveValidQuantity;
@@ -1115,7 +1117,7 @@ export default function BillingPage() {
                           </div>
                           <div>
                             <Label htmlFor="editCustomerName" className="text-base font-semibold mb-2 block">
-                              Customer Name
+                              Customer Name (Optional)
                             </Label>
                             <Input
                               id="editCustomerName"
@@ -1124,7 +1126,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
                                 setCustomerData({ ...customerData, name: value });
                               }}
-                              placeholder="Enter name"
+                              placeholder="Enter name (optional)"
                               className="text-base"
                               maxLength={50}
                               data-testid="input-edit-customer-name"
@@ -1132,7 +1134,7 @@ export default function BillingPage() {
                           </div>
                           <div>
                             <Label htmlFor="editPhone" className="text-base font-semibold mb-2 block">
-                              Phone
+                              Phone (Optional)
                             </Label>
                             <Input
                               id="editPhone"
@@ -1142,7 +1144,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                                 setCustomerData({ ...customerData, phone: value });
                               }}
-                              placeholder="Enter phone (10 digits)"
+                              placeholder="Enter phone (optional)"
                               className="text-base"
                               maxLength={10}
                               data-testid="input-edit-phone"
@@ -1166,7 +1168,7 @@ export default function BillingPage() {
                           </div>
                           <div>
                             <Label htmlFor="editGstin" className="text-base font-semibold mb-2 block">
-                              GSTIN
+                              GSTIN {billConfig.gstEnabled && <span className="text-destructive">*</span>}
                             </Label>
                             <Input
                               id="editGstin"
@@ -1175,7 +1177,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/\s/g, '').slice(0, 15);
                                 setCustomerData({ ...customerData, gstin: value });
                               }}
-                              placeholder="Enter GSTIN"
+                              placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
                               className="text-base"
                               maxLength={15}
                               data-testid="input-edit-gstin"
@@ -1306,7 +1308,7 @@ export default function BillingPage() {
                       </div>
                       <div>
                         <Label htmlFor="customerName" className="text-base font-semibold mb-2 block">
-                          Customer Name
+                          Customer Name (Optional)
                         </Label>
                         <Input
                           id="customerName"
@@ -1315,7 +1317,7 @@ export default function BillingPage() {
                             const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
                             setCustomerData({ ...customerData, name: value });
                           }}
-                          placeholder="Enter name"
+                          placeholder="Enter name (optional)"
                           className="text-base"
                           maxLength={50}
                           data-testid="input-customer-name"
@@ -1323,7 +1325,7 @@ export default function BillingPage() {
                       </div>
                       <div>
                         <Label htmlFor="phone" className="text-base font-semibold mb-2 block">
-                          Phone
+                          Phone (Optional)
                         </Label>
                         <Input
                           id="phone"
@@ -1333,7 +1335,7 @@ export default function BillingPage() {
                             const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                             setCustomerData({ ...customerData, phone: value });
                           }}
-                          placeholder="Enter phone (10 digits)"
+                          placeholder="Enter phone (optional)"
                           className="text-base"
                           maxLength={10}
                           data-testid="input-phone"
@@ -1357,7 +1359,7 @@ export default function BillingPage() {
                       </div>
                       <div>
                         <Label htmlFor="gstin" className="text-base font-semibold mb-2 block">
-                          GSTIN
+                          GSTIN {billConfig.gstEnabled && <span className="text-destructive">*</span>}
                         </Label>
                         <Input
                           id="gstin"
@@ -1366,7 +1368,7 @@ export default function BillingPage() {
                             const value = e.target.value.replace(/\s/g, '').slice(0, 15);
                             setCustomerData({ ...customerData, gstin: value });
                           }}
-                          placeholder="Enter GSTIN"
+                          placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
                           className="text-base"
                           maxLength={15}
                           data-testid="input-gstin"
@@ -1699,7 +1701,7 @@ export default function BillingPage() {
                               </div>
                               <div>
                                 <Label htmlFor="editShippingCustomerName" className="text-base font-semibold mb-2 block">
-                                  Customer Name
+                                  Customer Name (Optional)
                                 </Label>
                                 <Input
                                   id="editShippingCustomerName"
@@ -1708,7 +1710,7 @@ export default function BillingPage() {
                                     const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
                                     setShippingData({ ...shippingData, name: value });
                                   }}
-                                  placeholder="Enter name"
+                                  placeholder="Enter name (optional)"
                                   className="text-base"
                                   maxLength={50}
                                   data-testid="input-edit-shipping-customer-name"
@@ -1716,7 +1718,7 @@ export default function BillingPage() {
                               </div>
                               <div>
                                 <Label htmlFor="editShippingPhone" className="text-base font-semibold mb-2 block">
-                                  Phone
+                                  Phone (Optional)
                                 </Label>
                                 <Input
                                   id="editShippingPhone"
@@ -1726,7 +1728,7 @@ export default function BillingPage() {
                                     const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                                     setShippingData({ ...shippingData, phone: value });
                                   }}
-                                  placeholder="Enter phone (10 digits)"
+                                  placeholder="Enter phone (optional)"
                                   className="text-base"
                                   maxLength={10}
                                   data-testid="input-edit-shipping-phone"
@@ -1750,7 +1752,7 @@ export default function BillingPage() {
                               </div>
                               <div>
                                 <Label htmlFor="editShippingGstin" className="text-base font-semibold mb-2 block">
-                                  GSTIN
+                                  GSTIN {billConfig.gstEnabled && <span className="text-destructive">*</span>}
                                 </Label>
                                 <Input
                                   id="editShippingGstin"
@@ -1759,7 +1761,7 @@ export default function BillingPage() {
                                     const value = e.target.value.replace(/\s/g, '').slice(0, 15);
                                     setShippingData({ ...shippingData, gstin: value });
                                   }}
-                                  placeholder="Enter GSTIN"
+                                  placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
                                   className="text-base"
                                   maxLength={15}
                                   data-testid="input-edit-shipping-gstin"
@@ -1887,7 +1889,7 @@ export default function BillingPage() {
                           </div>
                           <div>
                             <Label htmlFor="shippingCustomerName" className="text-base font-semibold mb-2 block">
-                              Customer Name
+                              Customer Name (Optional)
                             </Label>
                             <Input
                               id="shippingCustomerName"
@@ -1896,14 +1898,14 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
                                 setShippingData({ ...shippingData, name: value });
                               }}
-                              placeholder="Enter name"
+                              placeholder="Enter name (optional)"
                               className="text-base"
                               maxLength={50}
                             />
                           </div>
                           <div>
                             <Label htmlFor="shippingPhone" className="text-base font-semibold mb-2 block">
-                              Phone
+                              Phone (Optional)
                             </Label>
                             <Input
                               id="shippingPhone"
@@ -1913,7 +1915,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                                 setShippingData({ ...shippingData, phone: value });
                               }}
-                              placeholder="Enter phone (10 digits)"
+                              placeholder="Enter phone (optional)"
                               className="text-base"
                               maxLength={10}
                             />
@@ -1936,7 +1938,7 @@ export default function BillingPage() {
                           </div>
                           <div>
                             <Label htmlFor="shippingGstin" className="text-base font-semibold mb-2 block">
-                              GSTIN
+                              GSTIN {billConfig.gstEnabled && <span className="text-destructive">*</span>}
                             </Label>
                             <Input
                               id="shippingGstin"
@@ -1945,7 +1947,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/\s/g, '').slice(0, 15);
                                 setShippingData({ ...shippingData, gstin: value });
                               }}
-                              placeholder="Enter GSTIN"
+                              placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
                               className="text-base"
                               maxLength={15}
                             />
