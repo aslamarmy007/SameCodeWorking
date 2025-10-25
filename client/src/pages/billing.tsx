@@ -876,13 +876,14 @@ export default function BillingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#667eea] to-[#764ba2] pt-2.5">
-      <div className="mx-2.5 bg-white/20 dark:bg-white/10 backdrop-blur-md text-white py-4 sm:py-8 rounded-[20px] sm:rounded-[30px] shadow-lg mb-4 sm:mb-8 border border-white/30">
-        <div className="text-center px-2">
-          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-            <img src={logoImage} alt="Logo" className="w-6 h-6 sm:w-10 sm:h-10 object-contain" />
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold">AYESHA COCO PITH & FIBER INDUSTRIES</h1>
+      <div className="mx-2.5 bg-white/20 dark:bg-white/10 backdrop-blur-md text-white py-4 sm:py-6 rounded-[20px] sm:rounded-[30px] shadow-lg mb-4 sm:mb-8 border border-white/30">
+        <div className="flex items-center justify-between px-4 sm:px-6">
+          <img src={logoImage} alt="Logo" className="w-16 h-16 sm:w-20 sm:h-20 object-contain flex-shrink-0" />
+          <div className="flex-1 text-center">
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold mb-1">AYESHA COCO PITH & FIBER INDUSTRIES</h1>
+            <p className="text-sm sm:text-lg opacity-90">Billing System</p>
           </div>
-          <p className="text-sm sm:text-lg opacity-90">Billing System</p>
+          <div className="w-16 sm:w-20 flex-shrink-0"></div>
         </div>
       </div>
 
