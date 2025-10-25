@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import logoImage from "@assets/cocologo_1761383042737.png";
 import phoneIcon from "@assets/telephone-call_1761384507432.png";
+import phoneIconSmall from "@assets/phone-call_1761390258977.png";
 import rupeeIcon from "@assets/icons8-rupee-96_1761387536058.png";
 import rupeeIconBlack from "@assets/rupee_1761389531807.png";
 
@@ -200,10 +201,12 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.customer.phone) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
+    const phoneIconSmallSize = 2.5;
+    doc.addImage(phoneIconSmall, 'PNG', leftBoxX + 3, billToY - 2, phoneIconSmallSize, phoneIconSmallSize);
     doc.setFont("helvetica", "bold");
-    doc.text("Ph: ", leftBoxX + 3, billToY);
+    doc.text("Ph: ", leftBoxX + 3 + phoneIconSmallSize + 1, billToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.phone, leftBoxX + 3 + doc.getTextWidth("Ph: "), billToY);
+    doc.text(data.customer.phone, leftBoxX + 3 + phoneIconSmallSize + 1 + doc.getTextWidth("Ph: "), billToY);
     billToY += 4;
   }
   
@@ -262,10 +265,12 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.shipping.phone) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
+    const phoneIconSmallSize = 2.5;
+    doc.addImage(phoneIconSmall, 'PNG', rightBoxX + 3, shipToY - 2, phoneIconSmallSize, phoneIconSmallSize);
     doc.setFont("helvetica", "bold");
-    doc.text("Ph: ", rightBoxX + 3, shipToY);
+    doc.text("Ph: ", rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.shipping.phone, rightBoxX + 3 + doc.getTextWidth("Ph: "), shipToY);
+    doc.text(data.shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1 + doc.getTextWidth("Ph: "), shipToY);
     shipToY += 4;
   }
   
