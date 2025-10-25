@@ -1049,6 +1049,12 @@ export default function BillingPage() {
                               <p className="font-semibold">{customerData.phone}</p>
                             </div>
                           )}
+                          {customerData.email && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Email</p>
+                              <p className="font-semibold">{customerData.email}</p>
+                            </div>
+                          )}
                           {customerData.gstin && (
                             <div>
                               <p className="text-sm text-muted-foreground">GSTIN</p>
@@ -1323,6 +1329,22 @@ export default function BillingPage() {
                           className="text-base"
                           maxLength={10}
                           data-testid="input-phone"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email" className="text-base font-semibold mb-2 block">
+                          Email
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={customerData.email}
+                          onChange={(e) => {
+                            setCustomerData({ ...customerData, email: e.target.value });
+                          }}
+                          placeholder="Enter email (optional)"
+                          className="text-base"
+                          data-testid="input-email"
                         />
                       </div>
                       <div>
@@ -1603,6 +1625,12 @@ export default function BillingPage() {
                                 <div>
                                   <p className="text-sm text-muted-foreground">Phone</p>
                                   <p className="font-semibold">{shippingData.phone}</p>
+                                </div>
+                              )}
+                              {shippingData.email && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Email</p>
+                                  <p className="font-semibold">{shippingData.email}</p>
                                 </div>
                               )}
                               {shippingData.gstin && (
@@ -1889,6 +1917,7 @@ export default function BillingPage() {
                               }}
                               placeholder="Enter email (optional)"
                               className="text-base"
+                              data-testid="input-shipping-email"
                             />
                           </div>
                           <div>
