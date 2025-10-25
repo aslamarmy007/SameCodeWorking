@@ -131,10 +131,10 @@ export function BillSummary({
                             const newQty = Math.max(0, item.quantity - step);
                             onUpdateQuantity(item.productId, newQty);
                           }}
-                          className="h-5 w-5 sm:h-7 sm:w-7 p-0"
+                          className="h-8 w-8 sm:h-7 sm:w-7 p-0"
                           data-testid={`button-decrease-${item.productId}`}
                         >
-                          <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          <Minus className="w-3 h-3" />
                         </Button>
                         <Input
                           type="number"
@@ -158,7 +158,7 @@ export function BillSummary({
                               onRemoveItem(item.productId);
                             }
                           }}
-                          className="w-10 sm:w-16 h-5 sm:h-7 text-center text-[10px] sm:text-sm p-0.5 sm:p-1"
+                          className="w-14 sm:w-16 h-8 sm:h-7 text-center text-xs sm:text-sm p-1"
                           data-testid={`input-quantity-${item.productId}`}
                           placeholder={isWeightBased ? "Kg" : "Qty"}
                         />
@@ -169,10 +169,10 @@ export function BillSummary({
                             const step = isWeightBased ? 0.5 : 1;
                             onUpdateQuantity(item.productId, item.quantity + step);
                           }}
-                          className="h-5 w-5 sm:h-7 sm:w-7 p-0"
+                          className="h-8 w-8 sm:h-7 sm:w-7 p-0"
                           data-testid={`button-increase-${item.productId}`}
                         >
-                          <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          <Plus className="w-3 h-3" />
                         </Button>
                       </div>
                     </td>
@@ -202,7 +202,7 @@ export function BillSummary({
                             }
                           }
                         }}
-                        className="w-12 sm:w-20 h-5 sm:h-7 text-center text-[10px] sm:text-sm p-0.5 sm:p-1"
+                        className="w-14 sm:w-20 h-8 sm:h-7 text-center text-xs sm:text-sm p-1"
                         data-testid={`input-price-${item.productId}`}
                       />
                     </td>

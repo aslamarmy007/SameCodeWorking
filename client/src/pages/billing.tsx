@@ -2151,11 +2151,11 @@ export default function BillingPage() {
                     )}
                   </div>
 
-                  <div className="flex gap-4 mt-6">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
                     <Button
                       variant="secondary"
                       onClick={() => setCurrentStep(1)}
-                      className="flex-1 text-base py-6"
+                      className="w-full sm:flex-1 text-sm sm:text-base py-4 sm:py-6"
                       data-testid="button-back-config"
                     >
                       ← Back
@@ -2163,7 +2163,7 @@ export default function BillingPage() {
                     <Button
                       onClick={() => setCurrentStep(3)}
                       disabled={!canProceedFromCustomer}
-                      className="flex-1 text-base py-6"
+                      className="w-full sm:flex-1 text-sm sm:text-base py-4 sm:py-6"
                       data-testid="button-next-products"
                     >
                       Next: Products →
@@ -2238,11 +2238,11 @@ export default function BillingPage() {
                     })}
                   </div>
                 )}
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <Button
                     variant="secondary"
                     onClick={() => setCurrentStep(2)}
-                    className="flex-1 text-base py-6"
+                    className="w-full sm:flex-1 text-sm sm:text-base py-4 sm:py-6"
                     data-testid="button-back-customer"
                   >
                     ← Back
@@ -2250,7 +2250,7 @@ export default function BillingPage() {
                   <Button
                     onClick={() => setCurrentStep(4)}
                     disabled={!canProceedFromProducts}
-                    className="flex-1 text-base py-6"
+                    className="w-full sm:flex-1 text-sm sm:text-base py-4 sm:py-6"
                     data-testid="button-next-review"
                   >
                     Next: Review →
@@ -2352,11 +2352,11 @@ export default function BillingPage() {
                       />
                     </div>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <Button
                       variant="secondary"
                       onClick={() => setCurrentStep(3)}
-                      className="flex-[2] text-base py-6"
+                      className="w-full sm:flex-[2] text-sm sm:text-base py-4 sm:py-6"
                       data-testid="button-back-products"
                     >
                       ← Back
@@ -2364,18 +2364,20 @@ export default function BillingPage() {
                     <Button
                       onClick={handleGeneratePDF}
                       disabled={createInvoiceMutation.isPending || !canGeneratePDF}
-                      className="flex-[3] text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
+                      className="w-full sm:flex-[3] text-sm sm:text-base py-4 sm:py-6 bg-success hover:bg-success/90 text-success-foreground"
                       data-testid="button-generate-pdf"
                     >
                       {createInvoiceMutation.isPending ? (
                         <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating...
+                          <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                          <span className="hidden sm:inline">Generating...</span>
+                          <span className="sm:hidden">Generating PDF...</span>
                         </>
                       ) : (
                         <>
-                          <Download className="w-4 h-4 mr-2" />
-                          Generate & Download PDF
+                          <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Generate & Download PDF</span>
+                          <span className="sm:hidden">Download PDF</span>
                         </>
                       )}
                     </Button>
