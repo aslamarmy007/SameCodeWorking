@@ -43,7 +43,7 @@ export function BillSummary({
   onRemoveItem,
 }: BillSummaryProps) {
   return (
-    <Card className="p-3 sm:p-4 md:p-6 rounded-[15px] sm:rounded-[20px] shadow-xl lg:sticky lg:top-5" data-testid="card-summary">
+    <Card className="p-3 sm:p-4 md:p-6 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-summary">
       <div className="flex items-center gap-2 mb-3 sm:mb-4">
         <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
         <h3 className="text-lg sm:text-xl md:text-2xl font-bold">Current Bill</h3>
