@@ -103,7 +103,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setTextColor(0, 0, 0);
   doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
 
-  yPos += 28;
+  yPos += 35;
 
   // Thick separator line
   doc.setDrawColor(52, 73, 94);
