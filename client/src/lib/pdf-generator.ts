@@ -86,11 +86,11 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 16, { align: "center" });
-  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 20, { align: "center" });
+  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 18, { align: "center" });
+  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 23, { align: "center" });
   
   const phoneIconSize = 3;
-  const phoneTextY = centerStartY + 25;
+  const phoneTextY = centerStartY + 29;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
   const emailIconSize = 3;
