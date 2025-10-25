@@ -150,7 +150,35 @@ export default function BillingPage() {
     },
     onSuccess: (updatedCustomer: Customer) => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      setCustomerData({ ...customerData, id: updatedCustomer.id });
+      
+      // Prepare the updated customer data
+      const updatedData = {
+        id: updatedCustomer.id,
+        name: updatedCustomer.name,
+        shopName: updatedCustomer.shopName || "",
+        phone: updatedCustomer.phone || "",
+        gstin: updatedCustomer.gstin || "",
+        address: updatedCustomer.address || "",
+        city: updatedCustomer.city || "",
+        state: updatedCustomer.state || "",
+        postalCode: updatedCustomer.postalCode || "",
+      };
+      
+      // Update billing data if this customer is the billing customer
+      if (customerData.id === updatedCustomer.id) {
+        setCustomerData(updatedData);
+      }
+      
+      // Update shipping data if this customer is the shipping customer
+      if (shippingData.id === updatedCustomer.id) {
+        setShippingData(updatedData);
+      }
+      
+      // If "same as billing" is checked and billing was updated, sync to shipping
+      if (sameAsbilling && customerData.id === updatedCustomer.id) {
+        setShippingData(updatedData);
+      }
+      
       setIsEditingCustomer(false);
       setIsEditingShippingCustomer(false);
       toast({
