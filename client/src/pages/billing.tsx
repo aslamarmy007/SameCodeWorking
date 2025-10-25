@@ -1293,8 +1293,20 @@ export default function BillingPage() {
                           </div>
                         )}
 
-                        {!isNewShippingCustomer && shippingData.shopName && (
+                        {!isNewShippingCustomer && shippingData.shopName && !isEditingShippingCustomer && (
                           <div className="mb-4 p-4 bg-muted rounded-lg space-y-2" data-testid="display-shipping-info">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="text-lg font-semibold">Shipping Customer Details</h4>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsEditingShippingCustomer(true)}
+                                className="h-8 w-8 p-0"
+                                data-testid="button-edit-shipping-customer"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </div>
                             <div className="grid md:grid-cols-2 gap-4">
                               {shippingData.shopName && (
                                 <div>
@@ -1340,6 +1352,201 @@ export default function BillingPage() {
                                   <p className="font-semibold">{shippingData.state}</p>
                                 </div>
                               )}
+                            </div>
+                          </div>
+                        )}
+
+                        {isEditingShippingCustomer && (
+                          <div className="mb-4">
+                            <h4 className="text-lg font-semibold mb-4">Edit Shipping Customer Details</h4>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="editShippingShopName" className="text-base font-semibold mb-2 block">
+                                  Shop Name <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                  id="editShippingShopName"
+                                  value={shippingData.shopName}
+                                  onChange={(e) =>
+                                    setShippingData({ ...shippingData, shopName: e.target.value.slice(0, 50) })
+                                  }
+                                  placeholder="Enter shop name"
+                                  className="text-base"
+                                  maxLength={50}
+                                  data-testid="input-edit-shipping-shop-name"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="editShippingCustomerName" className="text-base font-semibold mb-2 block">
+                                  Customer Name
+                                </Label>
+                                <Input
+                                  id="editShippingCustomerName"
+                                  value={shippingData.name}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                                    setShippingData({ ...shippingData, name: value });
+                                  }}
+                                  placeholder="Enter name"
+                                  className="text-base"
+                                  maxLength={50}
+                                  data-testid="input-edit-shipping-customer-name"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="editShippingPhone" className="text-base font-semibold mb-2 block">
+                                  Phone
+                                </Label>
+                                <Input
+                                  id="editShippingPhone"
+                                  type="tel"
+                                  value={shippingData.phone}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                    setShippingData({ ...shippingData, phone: value });
+                                  }}
+                                  placeholder="Enter phone (10 digits)"
+                                  className="text-base"
+                                  maxLength={10}
+                                  data-testid="input-edit-shipping-phone"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="editShippingGstin" className="text-base font-semibold mb-2 block">
+                                  GSTIN
+                                </Label>
+                                <Input
+                                  id="editShippingGstin"
+                                  value={shippingData.gstin}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                                    setShippingData({ ...shippingData, gstin: value });
+                                  }}
+                                  placeholder="Enter GSTIN"
+                                  className="text-base"
+                                  maxLength={15}
+                                  data-testid="input-edit-shipping-gstin"
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-4">
+                              <Label htmlFor="editShippingAddress" className="text-base font-semibold mb-2 block">
+                                Address
+                              </Label>
+                              <Textarea
+                                id="editShippingAddress"
+                                value={shippingData.address}
+                                onChange={(e) =>
+                                  setShippingData({ ...shippingData, address: e.target.value.slice(0, 200) })
+                                }
+                                placeholder="Enter address"
+                                className="text-base min-h-[80px]"
+                                maxLength={200}
+                                data-testid="input-edit-shipping-address"
+                              />
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-4 mt-4">
+                              <div>
+                                <Label htmlFor="editShippingCity" className="text-base font-semibold mb-2 block">
+                                  City <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                  id="editShippingCity"
+                                  value={shippingData.city}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                    setShippingData({ ...shippingData, city: value });
+                                  }}
+                                  placeholder="Enter city"
+                                  className="text-base"
+                                  maxLength={40}
+                                  data-testid="input-edit-shipping-city"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="editShippingState" className="text-base font-semibold mb-2 block">
+                                  State <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                  id="editShippingState"
+                                  value={shippingData.state}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                    setShippingData({ ...shippingData, state: value });
+                                  }}
+                                  placeholder="Enter state"
+                                  className="text-base"
+                                  maxLength={40}
+                                  data-testid="input-edit-shipping-state"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="editShippingPostalCode" className="text-base font-semibold mb-2 block">
+                                  Postal Code
+                                </Label>
+                                <Input
+                                  id="editShippingPostalCode"
+                                  value={shippingData.postalCode}
+                                  onChange={(e) =>
+                                    setShippingData({ ...shippingData, postalCode: e.target.value.slice(0, 15) })
+                                  }
+                                  placeholder="Enter postal code"
+                                  className="text-base"
+                                  maxLength={15}
+                                  data-testid="input-edit-shipping-postal-code"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex gap-2 mt-4">
+                              <Button
+                                onClick={() => {
+                                  if (!shippingData.shopName.trim()) {
+                                    toast({
+                                      title: "Validation Error",
+                                      description: "Shop name is required",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                  if (!shippingData.city.trim()) {
+                                    toast({
+                                      title: "Validation Error",
+                                      description: "City is required",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                  if (!shippingData.state.trim()) {
+                                    toast({
+                                      title: "Validation Error",
+                                      description: "State is required",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                  setIsEditingShippingCustomer(false);
+                                  toast({
+                                    title: "Success",
+                                    description: "Shipping customer details updated",
+                                  });
+                                }}
+                                disabled={!shippingData.shopName.trim() || !shippingData.city.trim() || !shippingData.state.trim()}
+                                className="flex-1 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
+                                data-testid="button-update-shipping-customer"
+                              >
+                                <Save className="w-4 h-4 mr-2" />
+                                Update Shipping Customer
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => setIsEditingShippingCustomer(false)}
+                                className="text-base py-6"
+                                data-testid="button-cancel-edit-shipping"
+                              >
+                                Cancel
+                              </Button>
                             </div>
                           </div>
                         )}
