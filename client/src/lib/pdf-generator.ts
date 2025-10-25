@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import logoImage from "@assets/cocologo_1761383042737.png";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -58,25 +59,40 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setLineWidth(0.5);
   doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
 
-  // Company header with better styling
-  doc.setFontSize(26);
-  doc.setTextColor(52, 73, 94);
-  doc.setFont("helvetica", "bold");
-  doc.text("AYESHA Coco Pith", pageWidth / 2, yPos, { align: "center" });
-  yPos += 9;
+  // Header section with logo, center details, and CASH/CREDIT BILL
+  // Logo on the left
+  const logoWidth = 25;
+  const logoHeight = 25;
+  doc.addImage(logoImage, 'PNG', margin, yPos - 5, logoWidth, logoHeight);
 
-  doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
+  // Center company details - all caps and center aligned
+  const centerStartY = yPos;
+  doc.setFontSize(12);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "bold");
+  doc.text("AYESHA", pageWidth / 2, centerStartY, { align: "center" });
+  
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text("Premium Coir Products", pageWidth / 2, yPos, { align: "center" });
-  yPos += 5;
+  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 5, { align: "center" });
+  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 9, { align: "center" });
+
+  // CASH/CREDIT BILL box on the right
+  const billBoxWidth = 35;
+  const billBoxHeight = 10;
+  const billBoxX = pageWidth - margin - billBoxWidth;
+  const billBoxY = yPos - 2;
+  
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(billBoxX, billBoxY, billBoxWidth, billBoxHeight, 2, 2, 'S');
+  
   doc.setFontSize(9);
-  doc.text("123 Garden Street, Chennai - 600001", pageWidth / 2, yPos, { align: "center" });
-  yPos += 4.5;
-  doc.text("Phone: +91 98765 43210 | Email: info@ayeshacoco.com", pageWidth / 2, yPos, { align: "center" });
-  yPos += 4.5;
-  doc.text("GSTIN: 33AAACA0000A1Z5", pageWidth / 2, yPos, { align: "center" });
-  yPos += 8;
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + 6.5, { align: "center" });
+
+  yPos += 28;
 
   // Thick separator line
   doc.setDrawColor(52, 73, 94);
