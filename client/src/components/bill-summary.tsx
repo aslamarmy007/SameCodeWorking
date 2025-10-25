@@ -131,10 +131,10 @@ export function BillSummary({
                             const newQty = Math.max(0, item.quantity - step);
                             onUpdateQuantity(item.productId, newQty);
                           }}
-                          className="h-11 w-11 sm:h-7 sm:w-7 p-0"
+                          className="h-6 w-6 sm:h-7 sm:w-7 p-0"
                           data-testid={`button-decrease-${item.productId}`}
                         >
-                          <Minus className="w-4 h-4 sm:w-3 sm:h-3" />
+                          <Minus className="w-3 h-3 sm:w-3 sm:h-3" />
                         </Button>
                         <Input
                           type="number"
@@ -158,7 +158,7 @@ export function BillSummary({
                               onRemoveItem(item.productId);
                             }
                           }}
-                          className="w-16 sm:w-16 h-11 sm:h-7 text-center text-sm sm:text-sm p-1"
+                          className="w-12 sm:w-16 h-6 sm:h-7 text-center text-xs sm:text-sm p-1"
                           data-testid={`input-quantity-${item.productId}`}
                           placeholder={isWeightBased ? "Kg" : "Qty"}
                         />
@@ -169,10 +169,10 @@ export function BillSummary({
                             const step = isWeightBased ? 0.5 : 1;
                             onUpdateQuantity(item.productId, item.quantity + step);
                           }}
-                          className="h-11 w-11 sm:h-7 sm:w-7 p-0"
+                          className="h-6 w-6 sm:h-7 sm:w-7 p-0"
                           data-testid={`button-increase-${item.productId}`}
                         >
-                          <Plus className="w-4 h-4 sm:w-3 sm:h-3" />
+                          <Plus className="w-3 h-3 sm:w-3 sm:h-3" />
                         </Button>
                       </div>
                     </td>
@@ -202,7 +202,7 @@ export function BillSummary({
                             }
                           }
                         }}
-                        className="w-16 sm:w-20 h-11 sm:h-7 text-center text-sm sm:text-sm p-1"
+                        className="w-14 sm:w-20 h-6 sm:h-7 text-center text-xs sm:text-sm p-1"
                         data-testid={`input-price-${item.productId}`}
                       />
                     </td>
@@ -214,10 +214,10 @@ export function BillSummary({
                         size="icon"
                         variant="ghost"
                         onClick={() => onRemoveItem(item.productId)}
-                        className="h-11 w-11 sm:h-8 sm:w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-6 w-6 sm:h-8 sm:w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         data-testid={`button-delete-${item.productId}`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </td>
                   </tr>
