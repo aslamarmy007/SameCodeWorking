@@ -397,7 +397,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   const subtotalAmount = data.subtotal.toFixed(2);
   const subtotalTextWidth = doc.getTextWidth(subtotalAmount);
-  doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - subtotalTextWidth - rupeeIconSize - iconSpacing, yPos + 2, rupeeIconSize, rupeeIconSize);
+  doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - subtotalTextWidth - rupeeIconSize - iconSpacing, yPos + 4, rupeeIconSize, rupeeIconSize);
   doc.text(subtotalAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
   yPos += rowHeight;
   
@@ -413,7 +413,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     
     const transportAmount = data.transport.toFixed(2);
     const transportTextWidth = doc.getTextWidth(transportAmount);
-    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - transportTextWidth - rupeeIconSize - iconSpacing, yPos + 2, rupeeIconSize, rupeeIconSize);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - transportTextWidth - rupeeIconSize - iconSpacing, yPos + 4, rupeeIconSize, rupeeIconSize);
     doc.text(transportAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
@@ -425,7 +425,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     
     const packagingAmount = data.packaging.toFixed(2);
     const packagingTextWidth = doc.getTextWidth(packagingAmount);
-    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - packagingTextWidth - rupeeIconSize - iconSpacing, yPos + 2, rupeeIconSize, rupeeIconSize);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - packagingTextWidth - rupeeIconSize - iconSpacing, yPos + 4, rupeeIconSize, rupeeIconSize);
     doc.text(packagingAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
@@ -437,7 +437,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     
     const otherAmount = data.other.toFixed(2);
     const otherTextWidth = doc.getTextWidth(otherAmount);
-    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - otherTextWidth - rupeeIconSize - iconSpacing, yPos + 2, rupeeIconSize, rupeeIconSize);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - otherTextWidth - rupeeIconSize - iconSpacing, yPos + 4, rupeeIconSize, rupeeIconSize);
     doc.text(otherAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
@@ -464,7 +464,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     
     const sgstAmount = halfGstAmount.toFixed(2);
     const sgstTextWidth = doc.getTextWidth(sgstAmount);
-    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - sgstTextWidth - rupeeIconSize - iconSpacing, yPos + 2, rupeeIconSize, rupeeIconSize);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - sgstTextWidth - rupeeIconSize - iconSpacing, yPos + 4, rupeeIconSize, rupeeIconSize);
     doc.text(sgstAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
@@ -479,7 +479,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     
     const cgstAmount = halfGstAmount.toFixed(2);
     const cgstTextWidth = doc.getTextWidth(cgstAmount);
-    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - cgstTextWidth - rupeeIconSize - iconSpacing, yPos + 2, rupeeIconSize, rupeeIconSize);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - cgstTextWidth - rupeeIconSize - iconSpacing, yPos + 4, rupeeIconSize, rupeeIconSize);
     doc.text(cgstAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
   }
