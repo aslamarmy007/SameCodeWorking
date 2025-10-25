@@ -577,18 +577,22 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("helvetica", "italic");
   const amountInWords = numberToWords(roundedTotal);
   doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
-  yPos += 7;
+  yPos += 8;
 
   // Lorry number if provided
   if (data.lorryNumber) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text("Vehicle/Lorry No: " + data.lorryNumber, margin, yPos);
-    yPos += 8;
+    yPos += 10;
+  } else {
+    yPos += 5;
   }
 
-  // Footer section
-  const footerY = pageHeight - 32;
+  // Footer section - ensure minimum spacing from content above
+  const minFooterY = yPos + 5;
+  const fixedFooterY = pageHeight - 32;
+  const footerY = Math.max(minFooterY, fixedFooterY);
   
   // Terms & Conditions
   doc.setFontSize(9);
