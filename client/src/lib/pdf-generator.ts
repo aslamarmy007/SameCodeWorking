@@ -5,6 +5,7 @@ import phoneIconSmall from "@assets/phone-call_1761390258977.png";
 import rupeeIcon from "@assets/icons8-rupee-96_1761387536058.png";
 import rupeeIconBlack from "@assets/rupee_1761389531807.png";
 import emailIcon from "@assets/email_1761393720944.png";
+import envelopeIcon from "@assets/envelope_1761394845490.png";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -228,8 +229,10 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.customer.email) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
+    const envelopeIconSize = 2.5;
+    doc.addImage(envelopeIcon, 'PNG', leftBoxX + 3, billToY - 2, envelopeIconSize, envelopeIconSize);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.email, leftBoxX + 3, billToY);
+    doc.text(data.customer.email, leftBoxX + 3 + envelopeIconSize + 1, billToY);
     billToY += 4;
   }
   
@@ -298,8 +301,10 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.shipping.email) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
+    const envelopeIconSize = 2.5;
+    doc.addImage(envelopeIcon, 'PNG', rightBoxX + 3, shipToY - 2, envelopeIconSize, envelopeIconSize);
     doc.setFont("helvetica", "normal");
-    doc.text(data.shipping.email, rightBoxX + 3, shipToY);
+    doc.text(data.shipping.email, rightBoxX + 3 + envelopeIconSize + 1, shipToY);
     shipToY += 4;
   }
   
