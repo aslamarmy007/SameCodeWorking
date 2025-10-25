@@ -1412,6 +1412,20 @@ export default function BillingPage() {
                               state: customerData.state,
                               postalCode: customerData.postalCode,
                             });
+                          } else {
+                            // When unchecked, clear shipping data completely
+                            setShippingData({
+                              name: "",
+                              shopName: "",
+                              phone: "",
+                              gstin: "",
+                              address: "",
+                              city: "",
+                              state: "",
+                              postalCode: "",
+                            });
+                            setIsNewShippingCustomer(true);
+                            setIsEditingShippingCustomer(false);
                           }
                         }}
                         data-testid="checkbox-same-as-billing"
