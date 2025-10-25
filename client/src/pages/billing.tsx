@@ -725,9 +725,10 @@ export default function BillingPage() {
                           id="phone"
                           type="tel"
                           value={customerData.phone}
-                          onChange={(e) =>
-                            setCustomerData({ ...customerData, phone: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            setCustomerData({ ...customerData, phone: value });
+                          }}
                           placeholder="Enter phone"
                           className="text-base"
                           data-testid="input-phone"
@@ -993,9 +994,10 @@ export default function BillingPage() {
                               id="shippingPhone"
                               type="tel"
                               value={shippingData.phone}
-                              onChange={(e) =>
-                                setShippingData({ ...shippingData, phone: e.target.value })
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '');
+                                setShippingData({ ...shippingData, phone: value });
+                              }}
                               placeholder="Enter phone"
                               className="text-base"
                             />
