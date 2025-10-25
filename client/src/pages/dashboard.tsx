@@ -16,29 +16,12 @@ import { z } from "zod";
 import { Pencil, Trash2, Plus, Download, Eye, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Customer, Product, Invoice } from "@shared/schema";
+import { insertCustomerSchema, insertProductSchema } from "@shared/schema";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
 import { format } from "date-fns";
 
-const customerFormSchema = z.object({
-  name: z.string().optional(),
-  shopName: z.string().min(1, "Shop name is required"),
-  phone: z.string().optional(),
-  email: z.string().optional(),
-  gstin: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  postalCode: z.string().optional(),
-});
-
-const productFormSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
-  description: z.string().optional(),
-  hsn: z.string().min(1, "HSN code is required"),
-  defaultPrice: z.string().min(1, "Price is required"),
-  unit: z.string().min(1, "Unit is required"),
-  gstRate: z.string().min(0, "GST rate is required"),
-});
+const customerFormSchema = insertCustomerSchema;
+const productFormSchema = insertProductSchema;
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -65,9 +48,23 @@ export default function Dashboard() {
     queryKey: ["/api/products"],
   });
 
-  // Fetch invoices
+  // Fetch invoices (filtered or all)
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery<Invoice[]>({
-    queryKey: ["/api/invoices"],
+    queryKey: billDateRange.startDate && billDateRange.endDate 
+      ? ["/api/invoices/filter/date-range", billDateRange.startDate, billDateRange.endDate]
+      : ["/api/invoices"],
+    queryFn: async () => {
+      if (billDateRange.startDate && billDateRange.endDate) {
+        const response = await fetch(
+          `/api/invoices/filter/date-range?startDate=${billDateRange.startDate}&endDate=${billDateRange.endDate}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch invoices");
+        return response.json();
+      }
+      const response = await fetch("/api/invoices");
+      if (!response.ok) throw new Error("Failed to fetch invoices");
+      return response.json();
+    },
   });
 
   // Customer form
@@ -188,6 +185,11 @@ export default function Dashboard() {
     mutationFn: (id: string) => apiRequest(`/api/invoices/${id}`, "DELETE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      if (billDateRange.startDate && billDateRange.endDate) {
+        queryClient.invalidateQueries({ 
+          queryKey: ["/api/invoices/filter/date-range", billDateRange.startDate, billDateRange.endDate] 
+        });
+      }
       toast({ title: "Bill deleted successfully" });
       setDeleteInvoiceId(null);
     },
@@ -297,14 +299,13 @@ export default function Dashboard() {
     }
   };
 
-  const filteredInvoices = billDateRange.startDate && billDateRange.endDate
-    ? invoices.filter(invoice => {
-        const invoiceDate = new Date(invoice.billDate);
-        const start = new Date(billDateRange.startDate);
-        const end = new Date(billDateRange.endDate);
-        return invoiceDate >= start && invoiceDate <= end;
-      })
-    : invoices;
+  const handleDateFilterChange = (field: "startDate" | "endDate", value: string) => {
+    setBillDateRange(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleClearFilter = () => {
+    setBillDateRange({ startDate: "", endDate: "" });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -730,7 +731,7 @@ export default function Dashboard() {
                       id="startDate"
                       type="date"
                       value={billDateRange.startDate}
-                      onChange={(e) => setBillDateRange({ ...billDateRange, startDate: e.target.value })}
+                      onChange={(e) => handleDateFilterChange("startDate", e.target.value)}
                       data-testid="input-filter-startdate"
                     />
                   </div>
@@ -740,14 +741,14 @@ export default function Dashboard() {
                       id="endDate"
                       type="date"
                       value={billDateRange.endDate}
-                      onChange={(e) => setBillDateRange({ ...billDateRange, endDate: e.target.value })}
+                      onChange={(e) => handleDateFilterChange("endDate", e.target.value)}
                       data-testid="input-filter-enddate"
                     />
                   </div>
                   <div className="flex items-end">
                     <Button
                       variant="outline"
-                      onClick={() => setBillDateRange({ startDate: "", endDate: "" })}
+                      onClick={handleClearFilter}
                       data-testid="button-clear-filter"
                     >
                       Clear Filter
@@ -771,14 +772,14 @@ export default function Dashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredInvoices.length === 0 ? (
+                        {invoices.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={5} className="text-center text-gray-500" data-testid="text-no-bills">
                               No bills found. {billDateRange.startDate && billDateRange.endDate ? "Try adjusting the date range." : "Create your first bill from the billing page."}
                             </TableCell>
                           </TableRow>
                         ) : (
-                          filteredInvoices.map((invoice) => (
+                          invoices.map((invoice) => (
                             <TableRow key={invoice.id} data-testid={`row-bill-${invoice.id}`}>
                               <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                               <TableCell>{format(new Date(invoice.billDate), "dd MMM yyyy")}</TableCell>
