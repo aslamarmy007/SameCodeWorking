@@ -433,8 +433,15 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.addPage();
     yPos = 18;
     
-    // Add header on new page
-    doc.addImage(logoImage, 'PNG', margin, yPos - 2, 30, 30);
+    // Professional border around the new page
+    doc.setDrawColor(100, 100, 100);
+    doc.setLineWidth(0.5);
+    doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+    
+    // Add complete header on new page
+    const logoWidth = 30;
+    const logoHeight = 30;
+    doc.addImage(logoImage, 'PNG', margin, yPos - 2, logoWidth, logoHeight);
     
     const centerStartY = yPos + 12;
     doc.setFontSize(45);
@@ -451,6 +458,45 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setFont("helvetica", "normal");
     doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI", pageWidth / 2, centerStartY + 18, { align: "center" });
     doc.text("ALANGUDI, PUDUKKOTTAI, TAMIL NADU, INDIA - 622301.", pageWidth / 2, centerStartY + 23, { align: "center" });
+    
+    const phoneIconSize = 3;
+    const phoneTextY = centerStartY + 29;
+    const phoneNumbersText = "89409 30276 | 94443 70934";
+    const emailText = "ayeshaacf@gmail.com";
+    const emailIconSize = 3;
+    const billBoxWidth = 30;
+    
+    doc.setFontSize(9);
+    
+    // Phone icon and text on LEFT side
+    const phoneStartX = margin + logoWidth + 5;
+    doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
+    doc.setFont("helvetica", "normal");
+    doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
+    
+    // Email icon and text on RIGHT side
+    const emailWidth = doc.getTextWidth(emailText);
+    const emailEndX = pageWidth - margin - billBoxWidth - 5;
+    const emailTextX = emailEndX - emailWidth;
+    const emailIconX = emailTextX - emailIconSize - 1;
+    doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, emailIconSize, emailIconSize);
+    doc.text(emailText, emailTextX, phoneTextY);
+    
+    // CASH/CREDIT BILL box on the right with double border
+    const billBoxHeight = 8;
+    const billBoxX = pageWidth - margin - billBoxWidth;
+    const billBoxY = yPos - 1;
+    
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(billBoxX, billBoxY, billBoxWidth, billBoxHeight, 2, 2, 'S');
+    doc.setLineWidth(0.4);
+    doc.roundedRect(billBoxX + 1.5, billBoxY + 1.5, billBoxWidth - 3, billBoxHeight - 3, 1.5, 1.5, 'S');
+    
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
     
     yPos += 46;
     
