@@ -115,6 +115,12 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - [2025-10-25] Restructured layout from grid to vertical flex for single-column design
 - [2025-10-25] Moved Current Bill section from right sidebar to full-width section below main content
 - [2025-10-25] All devices now use a consistent vertical layout with the bill summary always visible at the bottom
+- [2025-10-25] Optimized mobile touch targets to meet 44px accessibility standard:
+  - All interactive buttons (quantity +/-, delete, navigation) now h-11 (44px) on mobile
+  - All input fields increased to h-11 on mobile for better usability
+  - Navigation buttons stack vertically on mobile with responsive text sizing
+  - PDF button text adapts: "Download PDF" on mobile, "Generate & Download PDF" on larger screens
+  - Improved spacing and padding for mobile devices
 
 ## Development Status
 - ✅ Schema and data models defined
