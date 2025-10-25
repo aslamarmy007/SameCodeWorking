@@ -6,7 +6,7 @@ import { z } from "zod";
 // Customer table
 export const customers = pgTable("customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
+  name: text("name"),
   shopName: text("shop_name"),
   phone: text("phone"),
   email: text("email"),

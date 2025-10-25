@@ -159,7 +159,7 @@ export default function BillingPage() {
       // Prepare the updated customer data
       const updatedData = {
         id: updatedCustomer.id,
-        name: updatedCustomer.name,
+        name: updatedCustomer.name || "",
         shopName: updatedCustomer.shopName || "",
         phone: updatedCustomer.phone || "",
         email: updatedCustomer.email || "",
@@ -219,6 +219,7 @@ export default function BillingPage() {
         customerName: customerData.name,
         shopName: customerData.shopName,
         phone: customerData.phone,
+        email: customerData.email,
         gstin: customerData.gstin,
         address: customerData.address,
         city: customerData.city,
@@ -227,6 +228,7 @@ export default function BillingPage() {
         shippingName: finalShippingData.name,
         shippingShopName: finalShippingData.shopName,
         shippingPhone: finalShippingData.phone,
+        shippingEmail: finalShippingData.email,
         shippingGstin: finalShippingData.gstin,
         shippingAddress: finalShippingData.address,
         shippingCity: finalShippingData.city,
@@ -357,7 +359,7 @@ export default function BillingPage() {
       setSelectedBillingCustomerId(customerId);
       const customerInfo = {
         id: customer.id,
-        name: customer.name,
+        name: customer.name || "",
         shopName: customer.shopName || "",
         phone: customer.phone || "",
         email: customer.email || "",
@@ -1568,7 +1570,7 @@ export default function BillingPage() {
                                 setSelectedShippingCustomerId(customerId);
                                 setShippingData({
                                   id: customer.id,
-                                  name: customer.name,
+                                  name: customer.name || "",
                                   shopName: customer.shopName || "",
                                   phone: customer.phone || "",
         email: customer.email || "",

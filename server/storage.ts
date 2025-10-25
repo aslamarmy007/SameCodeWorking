@@ -17,7 +17,7 @@ export interface IStorage {
   createCustomer(customer: InsertCustomer): Promise<Customer>;
   updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
   deleteCustomer(id: string): Promise<boolean>;
-  findDuplicateCustomer(name: string, shopName: string | null): Promise<Customer | undefined>;
+  findDuplicateCustomer(name: string | undefined, shopName: string | null): Promise<Customer | undefined>;
 
   // Product operations
   getAllProducts(): Promise<Product[]>;
@@ -144,13 +144,15 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const customer: Customer = { 
       id,
-      name: insertCustomer.name,
+      name: insertCustomer.name || null,
       shopName: insertCustomer.shopName || null,
       phone: insertCustomer.phone || null,
+      email: insertCustomer.email || null,
       gstin: insertCustomer.gstin || null,
       address: insertCustomer.address || null,
       city: insertCustomer.city || null,
       state: insertCustomer.state || null,
+      postalCode: insertCustomer.postalCode || null,
     };
     this.customers.set(id, customer);
     return customer;
@@ -172,7 +174,7 @@ export class MemStorage implements IStorage {
     return this.customers.delete(id);
   }
 
-  async findDuplicateCustomer(name: string, shopName: string | null): Promise<Customer | undefined> {
+  async findDuplicateCustomer(name: string | undefined, shopName: string | null): Promise<Customer | undefined> {
     if (!shopName || !shopName.trim()) {
       return undefined;
     }
@@ -229,17 +231,21 @@ export class MemStorage implements IStorage {
       customerName: insertInvoice.customerName,
       shopName: insertInvoice.shopName || null,
       phone: insertInvoice.phone || null,
+      email: insertInvoice.email || null,
       gstin: insertInvoice.gstin || null,
       address: insertInvoice.address || null,
       city: insertInvoice.city || null,
       state: insertInvoice.state || null,
+      postalCode: insertInvoice.postalCode || null,
       shippingName: insertInvoice.shippingName || null,
       shippingShopName: insertInvoice.shippingShopName || null,
       shippingPhone: insertInvoice.shippingPhone || null,
+      shippingEmail: insertInvoice.shippingEmail || null,
       shippingGstin: insertInvoice.shippingGstin || null,
       shippingAddress: insertInvoice.shippingAddress || null,
       shippingCity: insertInvoice.shippingCity || null,
       shippingState: insertInvoice.shippingState || null,
+      shippingPostalCode: insertInvoice.shippingPostalCode || null,
       subtotal: insertInvoice.subtotal,
       transport: insertInvoice.transport || "0",
       packaging: insertInvoice.packaging || "0",
