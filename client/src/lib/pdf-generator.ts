@@ -67,30 +67,31 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   // Center company details - all caps and center aligned
   const centerStartY = yPos;
-  doc.setFontSize(12);
+  doc.setFontSize(18);
   doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("times", "bold");
   doc.text("AYESHA", pageWidth / 2, centerStartY, { align: "center" });
   
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 5, { align: "center" });
-  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 9, { align: "center" });
+  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 6, { align: "center" });
+  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 10, { align: "center" });
 
-  // CASH/CREDIT BILL box on the right
-  const billBoxWidth = 35;
-  const billBoxHeight = 10;
+  // CASH/CREDIT BILL box on the right with double border
+  const billBoxWidth = 30;
+  const billBoxHeight = 8;
   const billBoxX = pageWidth - margin - billBoxWidth;
-  const billBoxY = yPos - 2;
+  const billBoxY = yPos - 1;
   
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
   doc.roundedRect(billBoxX, billBoxY, billBoxWidth, billBoxHeight, 2, 2, 'S');
+  doc.roundedRect(billBoxX + 1, billBoxY + 1, billBoxWidth - 2, billBoxHeight - 2, 2, 2, 'S');
   
-  doc.setFontSize(9);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
-  doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + 6.5, { align: "center" });
+  doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + 5.5, { align: "center" });
 
   yPos += 28;
 
