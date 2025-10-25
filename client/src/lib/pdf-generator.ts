@@ -374,76 +374,51 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   yPos += 6;
 
-  // Totals section with professional boxed styling
+  // Totals section with professional styling (no left/right borders)
   const totalsBoxX = pageWidth - 85;
   const totalsBoxWidth = 70;
-  const totalsStartY = yPos;
-  
-  // Draw outer box for totals section
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(0.5);
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   
-  let totalRowsCount = 1; // Subtotal
-  if (data.transport > 0) totalRowsCount++;
-  if (data.packaging > 0) totalRowsCount++;
-  if (data.other > 0) totalRowsCount++;
-  totalRowsCount += 2; // SGST and CGST
-  totalRowsCount += 1; // Grand Total
-  
   const rowHeight = 7;
   
   // Subtotal row
-  doc.setFillColor(255, 255, 255);
-  doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.3);
-  doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
-  
   doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
   doc.text("Subtotal:", totalsBoxX + 3, yPos + 5);
   doc.text("Rs. " + data.subtotal.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
   yPos += rowHeight;
+  
+  // Horizontal line after subtotal
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.3);
+  doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
 
   // Additional charges
   if (data.transport > 0) {
-    doc.setFillColor(255, 255, 255);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
-    doc.setDrawColor(230, 230, 230);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
-    
     doc.setFont("helvetica", "normal");
     doc.text("Transport:", totalsBoxX + 3, yPos + 5);
     doc.text("Rs. " + data.transport.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
+    doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
   }
 
   if (data.packaging > 0) {
-    doc.setFillColor(255, 255, 255);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
-    doc.setDrawColor(230, 230, 230);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
-    
     doc.setFont("helvetica", "normal");
     doc.text("Packaging:", totalsBoxX + 3, yPos + 5);
     doc.text("Rs. " + data.packaging.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
+    doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
   }
 
   if (data.other > 0) {
-    doc.setFillColor(255, 255, 255);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
-    doc.setDrawColor(230, 230, 230);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
-    
     doc.setFont("helvetica", "normal");
     doc.text("Other Charges:", totalsBoxX + 3, yPos + 5);
     doc.text("Rs. " + data.other.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
+    doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
   }
 
   // GST - Split into SGST and CGST (half of total GST each)
@@ -458,11 +433,6 @@ export function generateInvoicePDF(data: InvoiceData) {
     const halfGstAmount = data.gstAmount / 2;
     
     // SGST row
-    doc.setFillColor(255, 255, 255);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
-    doc.setDrawColor(230, 230, 230);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
-    
     doc.setFont("helvetica", "normal");
     if (sgstCgstRates.length === 1) {
       doc.text(`SGST (${sgstCgstRates[0]}%):`, totalsBoxX + 3, yPos + 5);
@@ -471,13 +441,9 @@ export function generateInvoicePDF(data: InvoiceData) {
     }
     doc.text("Rs. " + halfGstAmount.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
+    doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
     
     // CGST row
-    doc.setFillColor(255, 255, 255);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
-    doc.setDrawColor(230, 230, 230);
-    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
-    
     doc.setFont("helvetica", "normal");
     if (sgstCgstRates.length === 1) {
       doc.text(`CGST (${sgstCgstRates[0]}%):`, totalsBoxX + 3, yPos + 5);
