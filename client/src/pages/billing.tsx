@@ -875,26 +875,26 @@ export default function BillingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#667eea] to-[#764ba2]">
-      <div className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white py-8 rounded-b-[30px] shadow-lg mb-8">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Sprout className="w-10 h-10" />
-            <h1 className="text-4xl font-bold">AYESHA Coco Pith</h1>
+      <div className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white py-4 sm:py-8 rounded-b-[20px] sm:rounded-b-[30px] shadow-lg mb-4 sm:mb-8">
+        <div className="text-center px-2">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <Sprout className="w-6 h-6 sm:w-10 sm:h-10" />
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold">AYESHA Coco Pith</h1>
           </div>
-          <p className="text-lg opacity-90">Professional Billing System</p>
+          <p className="text-sm sm:text-lg opacity-90">Professional Billing System</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pb-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-4 sm:pb-8">
         <StepProgress currentStep={currentStep} />
 
-        <div className="grid lg:grid-cols-[2fr,1fr] gap-8 items-start">
+        <div className="grid lg:grid-cols-[2fr,1fr] gap-4 sm:gap-8 items-start">
           <div>
             {currentStep === 1 && (
-              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-config">
-                <div className="flex items-center gap-3 mb-6">
-                  <Settings className="w-8 h-8 text-primary" />
-                  <h2 className="text-3xl font-bold text-foreground">Bill Configuration</h2>
+              <Card className="p-4 sm:p-6 md:p-8 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-config">
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Bill Configuration</h2>
                 </div>
                 <div className="space-y-6">
                   <div>
@@ -946,10 +946,10 @@ export default function BillingPage() {
             )}
 
             {currentStep === 2 && (
-              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-customer">
-                <div className="flex items-center gap-3 mb-6">
-                  <User className="w-8 h-8 text-primary" />
-                  <h2 className="text-3xl font-bold text-foreground">Customer Information</h2>
+              <Card className="p-4 sm:p-6 md:p-8 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-customer">
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Customer Information</h2>
                 </div>
                 <div className="space-y-6">
                   <div>
@@ -2174,10 +2174,10 @@ export default function BillingPage() {
             )}
 
             {currentStep === 3 && (
-              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-products">
-                <div className="flex items-center gap-3 mb-6">
-                  <Package className="w-8 h-8 text-primary" />
-                  <h2 className="text-3xl font-bold text-foreground">Add Products</h2>
+              <Card className="p-4 sm:p-6 md:p-8 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-products">
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <Package className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Add Products</h2>
                 </div>
                 {productsLoading ? (
                   <div className="flex items-center justify-center py-12">
@@ -2260,10 +2260,10 @@ export default function BillingPage() {
             )}
 
             {currentStep === 4 && (
-              <Card className="p-8 rounded-[20px] shadow-xl" data-testid="card-review">
-                <div className="flex items-center gap-3 mb-6">
-                  <FileCheck className="w-8 h-8 text-primary" />
-                  <h2 className="text-3xl font-bold text-foreground">Additional Charges & Review</h2>
+              <Card className="p-4 sm:p-6 md:p-8 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-review">
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <FileCheck className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Additional Charges & Review</h2>
                 </div>
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">

@@ -13,13 +13,13 @@ const steps = [
 
 export function StepProgress({ currentStep }: StepProgressProps) {
   return (
-    <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
+    <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-8 flex-wrap px-2">
       {steps.map((step, index) => (
-        <div key={step.number} className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div key={step.number} className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <div
               className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300",
+                "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm sm:text-base md:text-lg transition-all duration-300",
                 currentStep === step.number
                   ? "bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white shadow-lg shadow-primary/40"
                   : currentStep > step.number
@@ -30,10 +30,10 @@ export function StepProgress({ currentStep }: StepProgressProps) {
             >
               {step.number}
             </div>
-            <span className="font-semibold text-white hidden sm:inline">{step.label}</span>
+            <span className="font-semibold text-white text-xs sm:text-sm hidden sm:inline">{step.label}</span>
           </div>
           {index < steps.length - 1 && (
-            <div className="w-12 h-1 bg-white/30 rounded hidden sm:block" />
+            <div className="w-6 sm:w-8 md:w-12 h-0.5 sm:h-1 bg-white/30 rounded hidden sm:block" />
           )}
         </div>
       ))}
