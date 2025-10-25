@@ -40,7 +40,7 @@ export default function Dashboard() {
   });
   const [customerNameSearch, setCustomerNameSearch] = useState("");
   const [customerPhoneSearch, setCustomerPhoneSearch] = useState("");
-  const [customerCityFilter, setCustomerCityFilter] = useState("");
+  const [customerCityFilter, setCustomerCityFilter] = useState("all");
   const [customerSortOption, setCustomerSortOption] = useState("a-z");
 
   // Fetch customers
@@ -505,7 +505,7 @@ export default function Dashboard() {
     }
 
     // Filter by city
-    if (customerCityFilter) {
+    if (customerCityFilter && customerCityFilter !== "all") {
       filtered = filtered.filter(customer => 
         customer.city === customerCityFilter
       );
@@ -712,8 +712,89 @@ export default function Dashboard() {
                 {customersLoading ? (
                   <div data-testid="loading-customers">Loading customers...</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
+                  <>
+                    {/* Filter and Search Controls */}
+                    <div className="mb-6 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Name Search */}
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Search by shop or contact name"
+                            value={customerNameSearch}
+                            onChange={(e) => setCustomerNameSearch(e.target.value)}
+                            className="pl-10 pr-10"
+                            data-testid="input-search-customer-name"
+                          />
+                          {customerNameSearch && (
+                            <button
+                              onClick={() => setCustomerNameSearch("")}
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                              data-testid="button-clear-name-search"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Phone Search */}
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Search by phone"
+                            value={customerPhoneSearch}
+                            onChange={(e) => setCustomerPhoneSearch(e.target.value)}
+                            className="pl-10 pr-10"
+                            data-testid="input-search-customer-phone"
+                          />
+                          {customerPhoneSearch && (
+                            <button
+                              onClick={() => setCustomerPhoneSearch("")}
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                              data-testid="button-clear-phone-search"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* City Filter */}
+                        <Select value={customerCityFilter} onValueChange={setCustomerCityFilter}>
+                          <SelectTrigger data-testid="select-city-filter">
+                            <SelectValue placeholder="Filter by city" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all" data-testid="city-option-all">All Cities</SelectItem>
+                            {uniqueCities.map((city) => (
+                              <SelectItem key={city} value={city!} data-testid={`city-option-${city}`}>
+                                {city}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {/* Sort Options */}
+                        <Select value={customerSortOption} onValueChange={setCustomerSortOption}>
+                          <SelectTrigger data-testid="select-sort-option">
+                            <SelectValue placeholder="Sort by" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="a-z" data-testid="sort-option-a-z">A to Z</SelectItem>
+                            <SelectItem value="z-a" data-testid="sort-option-z-a">Z to A</SelectItem>
+                            <SelectItem value="new-old" data-testid="sort-option-new-old">New to Old</SelectItem>
+                            <SelectItem value="old-new" data-testid="sort-option-old-new">Old to New</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Results count */}
+                      <div className="text-sm text-gray-600 dark:text-gray-400" data-testid="text-customer-count">
+                        Showing {filteredCustomers.length} of {customers.length} customers
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Shop Name</TableHead>
@@ -724,14 +805,16 @@ export default function Dashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {customers.length === 0 ? (
+                        {filteredCustomers.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={5} className="text-center text-gray-500" data-testid="text-no-customers">
-                              No customers found. Add your first customer to get started.
+                              {customers.length === 0 
+                                ? "No customers found. Add your first customer to get started."
+                                : "No customers match your search criteria."}
                             </TableCell>
                           </TableRow>
                         ) : (
-                          customers.map((customer) => (
+                          filteredCustomers.map((customer) => (
                             <TableRow key={customer.id} data-testid={`row-customer-${customer.id}`}>
                               <TableCell className="font-medium">{customer.shopName}</TableCell>
                               <TableCell>{customer.name}</TableCell>
@@ -761,6 +844,7 @@ export default function Dashboard() {
                       </TableBody>
                     </Table>
                   </div>
+                  </>
                 )}
               </CardContent>
             </Card>
