@@ -2,8 +2,23 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    const contentType = res.headers.get("content-type");
+    let errorBody;
+    
+    try {
+      if (contentType && contentType.includes("application/json")) {
+        errorBody = await res.json();
+      } else {
+        errorBody = await res.text();
+      }
+    } catch {
+      errorBody = res.statusText;
+    }
+    
+    const error: any = new Error(`${res.status}: ${typeof errorBody === 'string' ? errorBody : errorBody.error || 'Request failed'}`);
+    error.status = res.status;
+    error.body = typeof errorBody === 'object' ? errorBody : { error: errorBody };
+    throw error;
   }
 }
 
@@ -20,6 +35,12 @@ export async function apiRequest<T = any>(
   });
 
   await throwIfResNotOk(res);
+  
+  // Handle 204 No Content responses (e.g., DELETE operations)
+  if (res.status === 204) {
+    return null as T;
+  }
+  
   return await res.json();
 }
 
