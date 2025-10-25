@@ -425,6 +425,42 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   yPos += 6;
 
+  // Check if we need a new page for totals section
+  // Estimate space needed: totals (7 rows avg) + grand total + words + lorry + footer (32mm)
+  const estimatedSpaceNeeded = 100;
+  if (yPos + estimatedSpaceNeeded > pageHeight - 10) {
+    // Add new page
+    doc.addPage();
+    yPos = 18;
+    
+    // Add header on new page
+    doc.addImage(logoImage, 'PNG', margin, yPos - 2, 30, 30);
+    
+    const centerStartY = yPos + 12;
+    doc.setFontSize(45);
+    doc.setTextColor(51, 74, 94);
+    doc.setFont("times", "bold");
+    doc.text("AYESHA", pageWidth / 2, centerStartY, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text("COCO PITH & FIBER INDUSTRIES", pageWidth / 2, centerStartY + 11, { align: "center" });
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI", pageWidth / 2, centerStartY + 18, { align: "center" });
+    doc.text("ALANGUDI, PUDUKKOTTAI, TAMIL NADU, INDIA - 622301.", pageWidth / 2, centerStartY + 23, { align: "center" });
+    
+    yPos += 46;
+    
+    // Thick separator line
+    doc.setDrawColor(52, 73, 94);
+    doc.setLineWidth(0.8);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 10;
+  }
+
   // Totals section with professional styling (no left/right borders)
   const totalsBoxX = pageWidth - 85;
   const totalsBoxWidth = 70;
