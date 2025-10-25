@@ -75,8 +75,8 @@ export default function BillingPage() {
     state: "",
     postalCode: "",
   });
-  const [isNewCustomer, setIsNewCustomer] = useState(true);
-  const [isNewShippingCustomer, setIsNewShippingCustomer] = useState(true);
+  const [isNewCustomer, setIsNewCustomer] = useState<boolean | null>(null);
+  const [isNewShippingCustomer, setIsNewShippingCustomer] = useState<boolean | null>(null);
   const [sameAsbilling, setSameAsBinding] = useState(true);
   const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   const [isEditingShippingCustomer, setIsEditingShippingCustomer] = useState(false);
@@ -942,10 +942,22 @@ export default function BillingPage() {
                       Customer Type
                     </Label>
                     <Select 
-                      value={isNewCustomer ? "new" : "existing"} 
+                      value={isNewCustomer === null ? "" : (isNewCustomer ? "new" : "existing")} 
                       onValueChange={(value) => {
                         setIsNewCustomer(value === "new");
                         if (value === "new") {
+                          setSelectedBillingCustomerId("");
+                          setCustomerData({
+                            name: "",
+                            shopName: "",
+                            phone: "",
+                            gstin: "",
+                            address: "",
+                            city: "",
+                            state: "",
+                            postalCode: "",
+                          });
+                        } else {
                           setSelectedBillingCustomerId("");
                           setCustomerData({
                             name: "",
@@ -961,7 +973,7 @@ export default function BillingPage() {
                       }}
                     >
                       <SelectTrigger className="text-base" data-testid="select-customer-type">
-                        <SelectValue />
+                        <SelectValue placeholder="Select new customer or Existing customer" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="existing">Existing Customer</SelectItem>
@@ -973,7 +985,7 @@ export default function BillingPage() {
                   <div className="border-t-2 pt-6">
                     <h3 className="text-xl font-bold mb-4">Billing To</h3>
                     
-                    {!isNewCustomer && (
+                    {isNewCustomer === false && (
                       <div>
                         <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
                           Select Customer
@@ -1230,7 +1242,7 @@ export default function BillingPage() {
                       </div>
                     )}
 
-                  {isNewCustomer && (
+                  {isNewCustomer === true && (
                   <div>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
@@ -1429,7 +1441,7 @@ export default function BillingPage() {
                               state: "",
                               postalCode: "",
                             });
-                            setIsNewShippingCustomer(true);
+                            setIsNewShippingCustomer(null);
                             setIsEditingShippingCustomer(false);
                           }
                         }}
@@ -1450,10 +1462,22 @@ export default function BillingPage() {
                             Shipping Customer Type
                           </Label>
                           <Select 
-                            value={isNewShippingCustomer ? "new" : "existing"} 
+                            value={isNewShippingCustomer === null ? "" : (isNewShippingCustomer ? "new" : "existing")} 
                             onValueChange={(value) => {
                               setIsNewShippingCustomer(value === "new");
                               if (value === "new") {
+                                setSelectedShippingCustomerId("");
+                                setShippingData({
+                                  name: "",
+                                  shopName: "",
+                                  phone: "",
+                                  gstin: "",
+                                  address: "",
+                                  city: "",
+                                  state: "",
+                                  postalCode: "",
+                                });
+                              } else {
                                 setSelectedShippingCustomerId("");
                                 setShippingData({
                                   name: "",
@@ -1469,7 +1493,7 @@ export default function BillingPage() {
                             }}
                           >
                             <SelectTrigger className="text-base" data-testid="select-shipping-customer-type">
-                              <SelectValue />
+                              <SelectValue placeholder="Select new customer or Existing customer" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="existing">Existing Customer</SelectItem>
@@ -1478,7 +1502,7 @@ export default function BillingPage() {
                           </Select>
                         </div>
 
-                        {!isNewShippingCustomer && (
+                        {isNewShippingCustomer === false && (
                           <div className="mb-4">
                             <Label htmlFor="shippingCustomerSelect" className="text-base font-semibold mb-2 block">
                               Select Customer
@@ -1514,7 +1538,7 @@ export default function BillingPage() {
                           </div>
                         )}
 
-                        {!isNewShippingCustomer && shippingData.shopName && !isEditingShippingCustomer && (
+                        {isNewShippingCustomer === false && shippingData.shopName && !isEditingShippingCustomer && (
                           <div className="mb-4 p-4 bg-muted rounded-lg space-y-2" data-testid="display-shipping-info">
                             <div className="flex justify-between items-start mb-2">
                               <h4 className="text-lg font-semibold">Shipping Customer Details</h4>
@@ -1751,7 +1775,7 @@ export default function BillingPage() {
                           </div>
                         )}
 
-                        {isNewShippingCustomer && (
+                        {isNewShippingCustomer === true && (
                         <>
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
