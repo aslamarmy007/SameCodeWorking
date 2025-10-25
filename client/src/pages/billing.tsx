@@ -17,7 +17,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { StepProgress } from "@/components/step-progress";
 import { BillSummary } from "@/components/bill-summary";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle, Hash, Weight } from "lucide-react";
+import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle, Hash, Weight, Pencil } from "lucide-react";
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
@@ -78,6 +78,8 @@ export default function BillingPage() {
   const [isNewCustomer, setIsNewCustomer] = useState(true);
   const [isNewShippingCustomer, setIsNewShippingCustomer] = useState(true);
   const [sameAsbilling, setSameAsBinding] = useState(true);
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+  const [isEditingShippingCustomer, setIsEditingShippingCustomer] = useState(false);
   const [shippingData, setShippingData] = useState<CustomerData>({
     name: "",
     shopName: "",
@@ -135,6 +137,39 @@ export default function BillingPage() {
         toast({
           title: "Error",
           description: "Failed to save customer",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
+  const updateCustomerMutation = useMutation({
+    mutationFn: async (customer: CustomerData) => {
+      const { id, ...customerData } = customer;
+      return await apiRequest<Customer>("PUT", `/api/customers/${id}`, customerData);
+    },
+    onSuccess: (updatedCustomer: Customer) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      setCustomerData({ ...customerData, id: updatedCustomer.id });
+      setIsEditingCustomer(false);
+      setIsEditingShippingCustomer(false);
+      toast({
+        title: "Customer Updated",
+        description: "Customer has been updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      const errorData = error.body;
+      if (errorData?.error === "Validation error") {
+        toast({
+          title: "Validation Error",
+          description: errorData.message || "Please check all fields and try again",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update customer",
           variant: "destructive",
         });
       }
@@ -489,6 +524,112 @@ export default function BillingPage() {
     saveCustomerMutation.mutate(customerData);
   };
 
+  const handleUpdateCustomer = () => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
+    const phoneRegex = /^\d{10}$/;
+    const gstinRegex = /^[a-zA-Z0-9]+$/;
+    
+    // Validate shop name (required)
+    if (!customerData.shopName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Shop name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!shopNameRegex.test(customerData.shopName.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Shop name can only contain letters and numbers",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate customer name (optional)
+    if (customerData.name.trim() && !nameRegex.test(customerData.name.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate phone
+    if (customerData.phone.trim() && !phoneRegex.test(customerData.phone.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Phone number must be exactly 10 digits",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate GSTIN
+    if (customerData.gstin.trim()) {
+      if (!gstinRegex.test(customerData.gstin.trim())) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN can only contain letters and numbers",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (customerData.gstin.trim().length > 15) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN must be maximum 15 characters",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    // Validate city (required)
+    if (!customerData.city.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "City is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(customerData.city.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "City must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate state (required)
+    if (!customerData.state.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "State is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(customerData.state.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "State must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateCustomerMutation.mutate(customerData);
+  };
+
   const handleGeneratePDF = async () => {
     // Validate all items have quantity >= 0.1
     if (!allItemsHaveValidQuantity) {
@@ -661,11 +802,21 @@ export default function BillingPage() {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-                    )}
 
-                    {!isNewCustomer && customerData.shopName && (
+                    {customerData.shopName && !isEditingCustomer && (
                       <div className="mt-4 p-4 bg-muted rounded-lg space-y-2" data-testid="display-billing-info">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="text-lg font-semibold">Customer Details</h4>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsEditingCustomer(true)}
+                            className="h-8 w-8 p-0"
+                            data-testid="button-edit-customer"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div>
                         <div className="grid md:grid-cols-2 gap-4">
                           {customerData.shopName && (
                             <div>
@@ -712,6 +863,182 @@ export default function BillingPage() {
                             </div>
                           )}
                         </div>
+                      </div>
+                    )}
+
+                    {isEditingCustomer && (
+                      <div className="mt-4">
+                        <h4 className="text-lg font-semibold mb-4">Edit Customer Details</h4>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="editShopName" className="text-base font-semibold mb-2 block">
+                              Shop Name <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                              id="editShopName"
+                              value={customerData.shopName}
+                              onChange={(e) =>
+                                setCustomerData({ ...customerData, shopName: e.target.value.slice(0, 50) })
+                              }
+                              placeholder="Enter shop name"
+                              className="text-base"
+                              maxLength={50}
+                              data-testid="input-edit-shop-name"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editCustomerName" className="text-base font-semibold mb-2 block">
+                              Customer Name
+                            </Label>
+                            <Input
+                              id="editCustomerName"
+                              value={customerData.name}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                                setCustomerData({ ...customerData, name: value });
+                              }}
+                              placeholder="Enter name"
+                              className="text-base"
+                              maxLength={50}
+                              data-testid="input-edit-customer-name"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editPhone" className="text-base font-semibold mb-2 block">
+                              Phone
+                            </Label>
+                            <Input
+                              id="editPhone"
+                              type="tel"
+                              value={customerData.phone}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                setCustomerData({ ...customerData, phone: value });
+                              }}
+                              placeholder="Enter phone (10 digits)"
+                              className="text-base"
+                              maxLength={10}
+                              data-testid="input-edit-phone"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editGstin" className="text-base font-semibold mb-2 block">
+                              GSTIN
+                            </Label>
+                            <Input
+                              id="editGstin"
+                              value={customerData.gstin}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                                setCustomerData({ ...customerData, gstin: value });
+                              }}
+                              placeholder="Enter GSTIN"
+                              className="text-base"
+                              maxLength={15}
+                              data-testid="input-edit-gstin"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <Label htmlFor="editAddress" className="text-base font-semibold mb-2 block">
+                            Address
+                          </Label>
+                          <Textarea
+                            id="editAddress"
+                            value={customerData.address}
+                            onChange={(e) =>
+                              setCustomerData({ ...customerData, address: e.target.value.slice(0, 200) })
+                            }
+                            placeholder="Enter address"
+                            className="text-base min-h-[80px]"
+                            maxLength={200}
+                            data-testid="input-edit-address"
+                          />
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-4 mt-4">
+                          <div>
+                            <Label htmlFor="editCity" className="text-base font-semibold mb-2 block">
+                              City <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                              id="editCity"
+                              value={customerData.city}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                setCustomerData({ ...customerData, city: value });
+                              }}
+                              placeholder="Enter city"
+                              className="text-base"
+                              maxLength={40}
+                              data-testid="input-edit-city"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editState" className="text-base font-semibold mb-2 block">
+                              State <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                              id="editState"
+                              value={customerData.state}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                setCustomerData({ ...customerData, state: value });
+                              }}
+                              placeholder="Enter state"
+                              className="text-base"
+                              maxLength={40}
+                              data-testid="input-edit-state"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editPostalCode" className="text-base font-semibold mb-2 block">
+                              Postal Code
+                            </Label>
+                            <Input
+                              id="editPostalCode"
+                              value={customerData.postalCode}
+                              onChange={(e) =>
+                                setCustomerData({ ...customerData, postalCode: e.target.value.slice(0, 15) })
+                              }
+                              placeholder="Enter postal code"
+                              className="text-base"
+                              maxLength={15}
+                              data-testid="input-edit-postal-code"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            onClick={handleUpdateCustomer}
+                            disabled={updateCustomerMutation.isPending || !customerData.shopName.trim() || !customerData.city.trim() || !customerData.state.trim()}
+                            className="flex-1 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
+                            data-testid="button-update-customer"
+                          >
+                            {updateCustomerMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Updating...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4 mr-2" />
+                                Update Customer
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsEditingCustomer(false)}
+                            className="text-base py-6"
+                            data-testid="button-cancel-edit"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                       </div>
                     )}
 
