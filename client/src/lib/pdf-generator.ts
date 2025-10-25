@@ -504,6 +504,31 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setDrawColor(52, 73, 94);
     doc.setLineWidth(0.8);
     doc.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 8;
+    
+    // Invoice title and details in a box
+    doc.setFillColor(52, 73, 94);
+    doc.rect(margin, yPos, pageWidth - (2 * margin), 11, "F");
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("TAX INVOICE", margin + 4, yPos + 7.5);
+    
+    doc.setFontSize(10);
+    doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 4, yPos + 7.5, { align: "right" });
+    yPos += 16;
+    
+    // Date - positioned properly within margins
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    const formattedDate2 = new Date(data.billDate).toLocaleDateString('en-IN', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    doc.text("Date: " + formattedDate2, pageWidth - margin - 4, yPos, { align: "right" });
     yPos += 10;
   }
 
