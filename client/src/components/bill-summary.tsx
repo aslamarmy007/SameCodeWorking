@@ -68,12 +68,12 @@ export function BillSummary({
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white">
-              <th className="text-xs p-2 text-center rounded-tl-lg">S.No</th>
-              <th className="text-xs p-2 text-left">Item</th>
-              <th className="text-xs p-2 text-center">Qty/Kg</th>
-              <th className="text-xs p-2 text-center">₹ Rate</th>
-              <th className="text-xs p-2 text-right">₹ Amount</th>
-              <th className="text-xs p-2 text-center rounded-tr-lg">Del</th>
+              <th className="text-[10px] sm:text-xs p-1 sm:p-2 text-center rounded-tl-lg">S.No</th>
+              <th className="text-[10px] sm:text-xs p-1 sm:p-2 text-left">Item</th>
+              <th className="text-[10px] sm:text-xs p-1 sm:p-2 text-center">Qty/Kg</th>
+              <th className="text-[10px] sm:text-xs p-1 sm:p-2 text-center">₹ Rate</th>
+              <th className="text-[10px] sm:text-xs p-1 sm:p-2 text-right">₹ Amt</th>
+              <th className="text-[10px] sm:text-xs p-1 sm:p-2 text-center rounded-tr-lg">Del</th>
             </tr>
           </thead>
           <tbody>
@@ -97,32 +97,32 @@ export function BillSummary({
                     className="border-b hover:bg-muted/50 transition-colors"
                     data-testid={`row-item-${item.productId}`}
                   >
-                    <td className="p-2 text-center text-sm font-semibold text-muted-foreground">
+                    <td className="p-1 sm:p-2 text-center text-[10px] sm:text-sm font-semibold text-muted-foreground">
                       {index + 1}
                     </td>
-                    <td className="p-2 text-sm font-medium">
-                      <div className="flex items-center gap-1 flex-wrap">
+                    <td className="p-1 sm:p-2 text-[10px] sm:text-sm font-medium">
+                      <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap">
                         {isWeightBased ? (
-                          <Weight className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                          <Weight className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                         ) : (
-                          <Hash className="w-3 h-3 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                          <Hash className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-purple-600 dark:text-purple-400 flex-shrink-0" />
                         )}
-                        <span>{item.productName}</span>
+                        <span className="text-[10px] sm:text-sm leading-tight">{item.productName}</span>
                         {hasGST ? (
-                          <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded text-xs font-semibold">
+                          <div className="hidden sm:flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded text-xs font-semibold">
                             <Star className="w-2.5 h-2.5 fill-current" />
                             <span>{item.gstRate}%</span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded text-xs font-semibold">
+                          <div className="hidden sm:flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded text-xs font-semibold">
                             <Circle className="w-2.5 h-2.5 fill-current" />
                             <span>0%</span>
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="p-2 text-center">
-                      <div className="flex items-center justify-center gap-1">
+                    <td className="p-1 sm:p-2 text-center">
+                      <div className="flex items-center justify-center gap-0.5 sm:gap-1">
                         <Button
                           size="icon"
                           variant="outline"
@@ -131,10 +131,10 @@ export function BillSummary({
                             const newQty = Math.max(0, item.quantity - step);
                             onUpdateQuantity(item.productId, newQty);
                           }}
-                          className="h-7 w-7"
+                          className="h-5 w-5 sm:h-7 sm:w-7 p-0"
                           data-testid={`button-decrease-${item.productId}`}
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         </Button>
                         <Input
                           type="number"
@@ -158,7 +158,7 @@ export function BillSummary({
                               onRemoveItem(item.productId);
                             }
                           }}
-                          className="w-16 h-7 text-center text-sm p-1"
+                          className="w-10 sm:w-16 h-5 sm:h-7 text-center text-[10px] sm:text-sm p-0.5 sm:p-1"
                           data-testid={`input-quantity-${item.productId}`}
                           placeholder={isWeightBased ? "Kg" : "Qty"}
                         />
@@ -169,14 +169,14 @@ export function BillSummary({
                             const step = isWeightBased ? 0.5 : 1;
                             onUpdateQuantity(item.productId, item.quantity + step);
                           }}
-                          className="h-7 w-7"
+                          className="h-5 w-5 sm:h-7 sm:w-7 p-0"
                           data-testid={`button-increase-${item.productId}`}
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         </Button>
                       </div>
                     </td>
-                    <td className="p-2 text-center">
+                    <td className="p-1 sm:p-2 text-center">
                       <Input
                         type="number"
                         min="0.01"
@@ -202,22 +202,22 @@ export function BillSummary({
                             }
                           }
                         }}
-                        className="w-20 h-7 text-center text-sm p-1"
+                        className="w-12 sm:w-20 h-5 sm:h-7 text-center text-[10px] sm:text-sm p-0.5 sm:p-1"
                         data-testid={`input-price-${item.productId}`}
                       />
                     </td>
-                    <td className="p-2 text-right text-sm font-semibold">
+                    <td className="p-1 sm:p-2 text-right text-[10px] sm:text-sm font-semibold">
                       ₹{item.total.toFixed(2)}
                     </td>
-                    <td className="p-2 text-center">
+                    <td className="p-1 sm:p-2 text-center">
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => onRemoveItem(item.productId)}
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-6 w-6 sm:h-8 sm:w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         data-testid={`button-delete-${item.productId}`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </td>
                   </tr>
@@ -228,11 +228,11 @@ export function BillSummary({
         </table>
       </div>
 
-      <div className="space-y-2 pt-4 border-t-2">
+      <div className="space-y-1 sm:space-y-2 pt-3 sm:pt-4 border-t-2">
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
-            <span className="font-medium">Subtotal:</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="font-medium text-xs sm:text-base">Subtotal:</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
               {(() => {
                 const summary = items.reduce((acc, item) => {
                   const isWeightBased = item.unit?.toLowerCase() === "kg";
@@ -251,43 +251,43 @@ export function BillSummary({
               })()}
             </span>
           </div>
-          <span className="font-semibold" data-testid="text-subtotal">
+          <span className="font-semibold text-xs sm:text-base" data-testid="text-subtotal">
             ₹{subtotal.toFixed(2)}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="font-medium">Charges:</span>
-          <span className="font-semibold" data-testid="text-charges">
+          <span className="font-medium text-xs sm:text-base">Charges:</span>
+          <span className="font-semibold text-xs sm:text-base" data-testid="text-charges">
             ₹{charges.toFixed(2)}
           </span>
         </div>
         {gstEnabled && items.length > 0 && (
           <>
             <div className="flex justify-between">
-              <span className="font-medium">
+              <span className="font-medium text-xs sm:text-base">
                 SGST ({(() => {
                   const rates = Array.from(new Set(items.map(item => item.gstRate).filter(rate => rate > 0)));
                   return rates.length > 0 ? rates.map(r => r / 2).join('%, ') + '%' : '0%';
                 })()}):
               </span>
-              <span className="font-semibold" data-testid="text-sgst">
+              <span className="font-semibold text-xs sm:text-base" data-testid="text-sgst">
                 ₹{(gstAmount / 2).toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="font-medium">
+              <span className="font-medium text-xs sm:text-base">
                 CGST ({(() => {
                   const rates = Array.from(new Set(items.map(item => item.gstRate).filter(rate => rate > 0)));
                   return rates.length > 0 ? rates.map(r => r / 2).join('%, ') + '%' : '0%';
                 })()}):
               </span>
-              <span className="font-semibold" data-testid="text-cgst">
+              <span className="font-semibold text-xs sm:text-base" data-testid="text-cgst">
                 ₹{(gstAmount / 2).toFixed(2)}
               </span>
             </div>
           </>
         )}
-        <div className="flex justify-between pt-3 border-t-2 text-xl font-bold">
+        <div className="flex justify-between pt-2 sm:pt-3 border-t-2 text-base sm:text-xl font-bold">
           <span>Grand Total:</span>
           <span data-testid="text-grand-total">₹{grandTotal.toFixed(2)}</span>
         </div>
