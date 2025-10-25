@@ -1083,6 +1083,12 @@ export default function BillingPage() {
                               <p className="font-semibold">{customerData.state}</p>
                             </div>
                           )}
+                          {customerData.postalCode && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Postal Code</p>
+                              <p className="font-semibold">{customerData.postalCode}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1659,6 +1665,12 @@ export default function BillingPage() {
                                 <div>
                                   <p className="text-sm text-muted-foreground">State</p>
                                   <p className="font-semibold">{shippingData.state}</p>
+                                </div>
+                              )}
+                              {shippingData.postalCode && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">Postal Code</p>
+                                  <p className="font-semibold">{shippingData.postalCode}</p>
                                 </div>
                               )}
                             </div>
