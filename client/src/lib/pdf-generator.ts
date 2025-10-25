@@ -374,38 +374,76 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   yPos += 6;
 
-  // Totals section with professional styling
-  const totalsBoxX = pageWidth - 80;
-  const totalsBoxWidth = 65;
+  // Totals section with professional boxed styling
+  const totalsBoxX = pageWidth - 85;
+  const totalsBoxWidth = 70;
+  const totalsStartY = yPos;
   
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.3);
+  // Draw outer box for totals section
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.5);
+  
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   
-  // Subtotal
-  doc.text("Subtotal:", totalsBoxX, yPos);
-  doc.text("Rs. " + data.subtotal.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
-  yPos += 5.5;
+  let totalRowsCount = 1; // Subtotal
+  if (data.transport > 0) totalRowsCount++;
+  if (data.packaging > 0) totalRowsCount++;
+  if (data.other > 0) totalRowsCount++;
+  totalRowsCount += 2; // SGST and CGST
+  totalRowsCount += 1; // Grand Total
+  
+  const rowHeight = 7;
+  
+  // Subtotal row
+  doc.setFillColor(255, 255, 255);
+  doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.3);
+  doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text("Subtotal:", totalsBoxX + 3, yPos + 5);
+  doc.text("Rs. " + data.subtotal.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+  yPos += rowHeight;
 
   // Additional charges
   if (data.transport > 0) {
-    doc.text("Transport:", totalsBoxX, yPos);
-    doc.text("Rs. " + data.transport.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
-    yPos += 5.5;
+    doc.setFillColor(255, 255, 255);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
+    
+    doc.setFont("helvetica", "normal");
+    doc.text("Transport:", totalsBoxX + 3, yPos + 5);
+    doc.text("Rs. " + data.transport.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
   }
 
   if (data.packaging > 0) {
-    doc.text("Packaging:", totalsBoxX, yPos);
-    doc.text("Rs. " + data.packaging.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
-    yPos += 5.5;
+    doc.setFillColor(255, 255, 255);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
+    
+    doc.setFont("helvetica", "normal");
+    doc.text("Packaging:", totalsBoxX + 3, yPos + 5);
+    doc.text("Rs. " + data.packaging.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
   }
 
   if (data.other > 0) {
-    doc.text("Other Charges:", totalsBoxX, yPos);
-    doc.text("Rs. " + data.other.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
-    yPos += 5.5;
+    doc.setFillColor(255, 255, 255);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
+    
+    doc.setFont("helvetica", "normal");
+    doc.text("Other Charges:", totalsBoxX + 3, yPos + 5);
+    doc.text("Rs. " + data.other.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
   }
 
   // GST - Split into SGST and CGST (half of total GST each)
@@ -419,43 +457,54 @@ export function generateInvoicePDF(data: InvoiceData) {
     const sgstCgstRates = ratesToShow.map(rate => rate / 2);
     const halfGstAmount = data.gstAmount / 2;
     
-    doc.setFont("helvetica", "bold");
+    // SGST row
+    doc.setFillColor(255, 255, 255);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
     
-    // SGST
+    doc.setFont("helvetica", "normal");
     if (sgstCgstRates.length === 1) {
-      doc.text(`SGST (${sgstCgstRates[0]}%):`, totalsBoxX, yPos);
+      doc.text(`SGST (${sgstCgstRates[0]}%):`, totalsBoxX + 3, yPos + 5);
     } else {
-      doc.text(`SGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX, yPos);
+      doc.text(`SGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX + 3, yPos + 5);
     }
-    doc.text("Rs. " + halfGstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
-    yPos += 5.5;
+    doc.text("Rs. " + halfGstAmount.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
     
-    // CGST
+    // CGST row
+    doc.setFillColor(255, 255, 255);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "S");
+    
+    doc.setFont("helvetica", "normal");
     if (sgstCgstRates.length === 1) {
-      doc.text(`CGST (${sgstCgstRates[0]}%):`, totalsBoxX, yPos);
+      doc.text(`CGST (${sgstCgstRates[0]}%):`, totalsBoxX + 3, yPos + 5);
     } else {
-      doc.text(`CGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX, yPos);
+      doc.text(`CGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX + 3, yPos + 5);
     }
-    doc.text("Rs. " + halfGstAmount.toFixed(2), pageWidth - margin - 3, yPos, { align: "right" });
-    yPos += 6.5;
+    doc.text("Rs. " + halfGstAmount.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
   }
 
-  // Grand total box
+  // Grand total row with dark background
+  const grandTotalRowHeight = 9;
   doc.setFillColor(52, 73, 94);
-  doc.rect(totalsBoxX - 2, yPos - 2, totalsBoxWidth + 2, 9, "F");
+  doc.rect(totalsBoxX, yPos, totalsBoxWidth, grandTotalRowHeight, "F");
   
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text("Grand Total:", totalsBoxX, yPos + 4.5);
+  doc.text("Grand Total:", totalsBoxX + 3, yPos + 6);
   
   // Add rupee icon before grand total amount
   const grandTotalIconSize = 3.5;
   const grandTotalAmount = data.grandTotal.toFixed(2);
   const grandTotalTextWidth = doc.getTextWidth(grandTotalAmount);
-  doc.addImage(rupeeIcon, 'PNG', pageWidth - margin - 3 - grandTotalTextWidth - grandTotalIconSize - 1, yPos + 1.5, grandTotalIconSize, grandTotalIconSize);
-  doc.text(grandTotalAmount, pageWidth - margin - 3, yPos + 4.5, { align: "right" });
-  yPos += 12;
+  doc.addImage(rupeeIcon, 'PNG', totalsBoxX + totalsBoxWidth - 3 - grandTotalTextWidth - grandTotalIconSize - 1, yPos + 3, grandTotalIconSize, grandTotalIconSize);
+  doc.text(grandTotalAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 6, { align: "right" });
+  yPos += grandTotalRowHeight + 5;
 
   // Amount in words
   doc.setTextColor(0, 0, 0);
