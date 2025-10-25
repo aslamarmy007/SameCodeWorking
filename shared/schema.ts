@@ -9,6 +9,7 @@ export const customers = pgTable("customers", {
   name: text("name").notNull(),
   shopName: text("shop_name"),
   phone: text("phone"),
+  email: text("email"),
   gstin: text("gstin"),
   address: text("address"),
   city: text("city"),
@@ -33,6 +34,11 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({ id: tru
     .optional()
     .refine((val) => !val || /^\d{10}$/.test(val), {
       message: "Phone number must be exactly 10 digits"
+    }),
+  email: z.string()
+    .optional()
+    .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+      message: "Please enter a valid email address"
     }),
   gstin: z.string()
     .optional()
@@ -88,6 +94,7 @@ export const invoices = pgTable("invoices", {
   customerName: text("customer_name").notNull(),
   shopName: text("shop_name"),
   phone: text("phone"),
+  email: text("email"),
   gstin: text("gstin"),
   address: text("address"),
   city: text("city"),
@@ -96,6 +103,7 @@ export const invoices = pgTable("invoices", {
   shippingName: text("shipping_name"),
   shippingShopName: text("shipping_shop_name"),
   shippingPhone: text("shipping_phone"),
+  shippingEmail: text("shipping_email"),
   shippingGstin: text("shipping_gstin"),
   shippingAddress: text("shipping_address"),
   shippingCity: text("shipping_city"),

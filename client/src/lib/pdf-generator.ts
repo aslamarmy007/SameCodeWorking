@@ -12,6 +12,7 @@ interface InvoiceData {
     name: string;
     shopName: string;
     phone: string;
+    email: string;
     gstin: string;
     address: string;
     city: string;
@@ -22,6 +23,7 @@ interface InvoiceData {
     name: string;
     shopName: string;
     phone: string;
+    email: string;
     gstin: string;
     address: string;
     city: string;
@@ -208,6 +210,14 @@ export function generateInvoicePDF(data: InvoiceData) {
     billToY += 4;
   }
   
+  if (data.customer.email) {
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.text(data.customer.email, leftBoxX + 3, billToY);
+    billToY += 4;
+  }
+  
   if (data.customer.gstin) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
@@ -267,6 +277,14 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.addImage(phoneIconSmall, 'PNG', rightBoxX + 3, shipToY - 2, phoneIconSmallSize, phoneIconSmallSize);
     doc.setFont("helvetica", "normal");
     doc.text(data.shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
+    shipToY += 4;
+  }
+  
+  if (data.shipping.email) {
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.text(data.shipping.email, rightBoxX + 3, shipToY);
     shipToY += 4;
   }
   

@@ -44,6 +44,7 @@ type CustomerData = {
   name: string;
   shopName: string;
   phone: string;
+  email: string;
   gstin: string;
   address: string;
   city: string;
@@ -69,6 +70,7 @@ export default function BillingPage() {
     name: "",
     shopName: "",
     phone: "",
+    email: "",
     gstin: "",
     address: "",
     city: "",
@@ -86,6 +88,7 @@ export default function BillingPage() {
     name: "",
     shopName: "",
     phone: "",
+    email: "",
     gstin: "",
     address: "",
     city: "",
@@ -159,6 +162,7 @@ export default function BillingPage() {
         name: updatedCustomer.name,
         shopName: updatedCustomer.shopName || "",
         phone: updatedCustomer.phone || "",
+        email: updatedCustomer.email || "",
         gstin: updatedCustomer.gstin || "",
         address: updatedCustomer.address || "",
         city: updatedCustomer.city || "",
@@ -261,6 +265,7 @@ export default function BillingPage() {
           name: customerData.name,
           shopName: customerData.shopName,
           phone: customerData.phone,
+          email: customerData.email,
           gstin: customerData.gstin,
           address: customerData.address,
           city: customerData.city,
@@ -271,6 +276,7 @@ export default function BillingPage() {
           name: finalShippingData.name,
           shopName: finalShippingData.shopName,
           phone: finalShippingData.phone,
+          email: finalShippingData.email,
           gstin: finalShippingData.gstin,
           address: finalShippingData.address,
           city: finalShippingData.city,
@@ -302,6 +308,7 @@ export default function BillingPage() {
         name: "",
         shopName: "",
         phone: "",
+        email: "",
         gstin: "",
         address: "",
         city: "",
@@ -314,6 +321,7 @@ export default function BillingPage() {
         name: "",
         shopName: "",
         phone: "",
+        email: "",
         gstin: "",
         address: "",
         city: "",
@@ -1122,6 +1130,22 @@ export default function BillingPage() {
                             />
                           </div>
                           <div>
+                            <Label htmlFor="editEmail" className="text-base font-semibold mb-2 block">
+                              Email
+                            </Label>
+                            <Input
+                              id="editEmail"
+                              type="email"
+                              value={customerData.email}
+                              onChange={(e) => {
+                                setCustomerData({ ...customerData, email: e.target.value });
+                              }}
+                              placeholder="Enter email (optional)"
+                              className="text-base"
+                              data-testid="input-edit-email"
+                            />
+                          </div>
+                          <div>
                             <Label htmlFor="editGstin" className="text-base font-semibold mb-2 block">
                               GSTIN
                             </Label>
@@ -1435,6 +1459,7 @@ export default function BillingPage() {
                               name: "",
                               shopName: "",
                               phone: "",
+        email: "",
                               gstin: "",
                               address: "",
                               city: "",
@@ -1471,6 +1496,7 @@ export default function BillingPage() {
                                   name: "",
                                   shopName: "",
                                   phone: "",
+        email: "",
                                   gstin: "",
                                   address: "",
                                   city: "",
@@ -1483,6 +1509,7 @@ export default function BillingPage() {
                                   name: "",
                                   shopName: "",
                                   phone: "",
+        email: "",
                                   gstin: "",
                                   address: "",
                                   city: "",
@@ -1516,6 +1543,7 @@ export default function BillingPage() {
                                   name: customer.name,
                                   shopName: customer.shopName || "",
                                   phone: customer.phone || "",
+        email: customer.email || "",
                                   gstin: customer.gstin || "",
                                   address: customer.address || "",
                                   city: customer.city || "",
@@ -1654,6 +1682,22 @@ export default function BillingPage() {
                                   className="text-base"
                                   maxLength={10}
                                   data-testid="input-edit-shipping-phone"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="editShippingEmail" className="text-base font-semibold mb-2 block">
+                                  Email
+                                </Label>
+                                <Input
+                                  id="editShippingEmail"
+                                  type="email"
+                                  value={shippingData.email}
+                                  onChange={(e) => {
+                                    setShippingData({ ...shippingData, email: e.target.value });
+                                  }}
+                                  placeholder="Enter email (optional)"
+                                  className="text-base"
+                                  data-testid="input-edit-shipping-email"
                                 />
                               </div>
                               <div>
@@ -1824,6 +1868,21 @@ export default function BillingPage() {
                               placeholder="Enter phone (10 digits)"
                               className="text-base"
                               maxLength={10}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="shippingEmail" className="text-base font-semibold mb-2 block">
+                              Email
+                            </Label>
+                            <Input
+                              id="shippingEmail"
+                              type="email"
+                              value={shippingData.email}
+                              onChange={(e) => {
+                                setShippingData({ ...shippingData, email: e.target.value });
+                              }}
+                              placeholder="Enter email (optional)"
+                              className="text-base"
                             />
                           </div>
                           <div>
