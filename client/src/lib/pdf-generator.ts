@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import logoImage from "@assets/cocologo_1761383042737.png";
+import phoneIcon from "@assets/telephone-call_1761384507432.png";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -82,9 +83,17 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 13, { align: "center" });
   doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 17, { align: "center" });
   
+  const phoneIconSize = 3;
+  const phoneTextY = centerStartY + 21;
+  const phoneNumbersText = "89409 30276 | 94443 70934";
+  const textWidth = doc.getTextWidth(phoneNumbersText);
+  const phoneIconX = (pageWidth / 2) - (textWidth / 2) - phoneIconSize - 1;
+  
+  doc.addImage(phoneIcon, 'PNG', phoneIconX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
+  
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("89409 30276      94443 70934", pageWidth / 2, centerStartY + 21, { align: "center" });
+  doc.text(phoneNumbersText, pageWidth / 2, phoneTextY, { align: "center" });
 
   // CASH/CREDIT BILL box on the right with double border
   const billBoxWidth = 30;
