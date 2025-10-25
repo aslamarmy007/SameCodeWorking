@@ -82,15 +82,15 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
-  doc.text("COCO PITH & FIBER INDUSTRIES", pageWidth / 2, centerStartY + 10, { align: "center" });
+  doc.text("COCO PITH & FIBER INDUSTRIES", pageWidth / 2, centerStartY + 11, { align: "center" });
   
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 16, { align: "center" });
-  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 21, { align: "center" });
+  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 20, { align: "center" });
   
   const phoneIconSize = 3;
-  const phoneTextY = centerStartY + 27;
+  const phoneTextY = centerStartY + 25;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
   const emailIconSize = 3;
