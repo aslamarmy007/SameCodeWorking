@@ -29,12 +29,15 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
    - Save customer details (name, shop, phone, GSTIN, address)
    - Quick selection from existing customers
    - Auto-fill customer information
-   - Input validation rules:
-     - Shop name: letters and numbers only (REQUIRED - only mandatory field)
-     - Name: letters only (optional)
-     - Phone: exactly 10 digits (optional)
-     - GSTIN: letters and numbers only, max 15 characters (optional)
-     - City & State: letters only (optional)
+   - Input validation rules with character limits:
+     - Shop name: max 50 chars, letters and numbers only (REQUIRED - only mandatory field)
+     - Name: max 50 chars, letters only (optional, auto-filtered)
+     - Phone: max 10 chars, numbers only (optional, auto-filtered)
+     - GSTIN: max 15 chars, alphanumeric, no spaces (optional, auto-filtered)
+     - Address: max 200 chars, textarea (optional)
+     - City: max 40 chars, letters only (optional, auto-filtered)
+     - State: max 40 chars, letters only (optional, auto-filtered)
+     - Postal Code: max 15 chars (optional)
    - Duplicate customer detection (prevents saving customers with same shop name)
    - Comprehensive error messages for validation failures
 
@@ -66,7 +69,7 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 ## Data Models
 
 ### Customer
-- id, name, shopName, phone, gstin, address, city, state
+- id, name, shopName, phone, gstin, address, city, state, postalCode
 
 ### Product
 - id, name, description, hsn, defaultPrice, unit
@@ -97,6 +100,16 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - [2025-10-25] Updated both billing and shipping customer forms to require only shop name
 - [2025-10-25] Updated phone input fields to accept only numeric characters (auto-filters non-digits)
 - [2025-10-25] Updated GSTIN input fields to max 15 characters and auto-remove spaces
+- [2025-10-25] Added comprehensive field constraints:
+  - Shop name: max 50 characters
+  - Customer name: max 50 characters, letters only (auto-filtered)
+  - Phone: max 10 characters, numbers only (auto-filtered)
+  - GSTIN: max 15 characters, no spaces (auto-removed)
+  - Address: textarea with max 200 characters
+  - City: max 40 characters, letters only (auto-filtered)
+  - State: max 40 characters, letters only (auto-filtered)
+  - Added Postal Code field: max 15 characters
+- [2025-10-25] All constraints apply to both billing and shipping sections
 
 ## Development Status
 - ✅ Schema and data models defined

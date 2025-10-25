@@ -11,6 +11,7 @@ interface InvoiceData {
     address: string;
     city: string;
     state: string;
+    postalCode: string;
   };
   shipping: {
     name: string;
@@ -20,6 +21,7 @@ interface InvoiceData {
     address: string;
     city: string;
     state: string;
+    postalCode: string;
   };
   items: Array<{
     productName: string;

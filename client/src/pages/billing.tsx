@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -47,6 +48,7 @@ type CustomerData = {
   address: string;
   city: string;
   state: string;
+  postalCode: string;
 };
 
 type AdditionalCharges = {
@@ -71,6 +73,7 @@ export default function BillingPage() {
     address: "",
     city: "",
     state: "",
+    postalCode: "",
   });
   const [isNewCustomer, setIsNewCustomer] = useState(true);
   const [isNewShippingCustomer, setIsNewShippingCustomer] = useState(true);
@@ -83,6 +86,7 @@ export default function BillingPage() {
     address: "",
     city: "",
     state: "",
+    postalCode: "",
   });
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [additionalCharges, setAdditionalCharges] = useState<AdditionalCharges>({
@@ -150,6 +154,7 @@ export default function BillingPage() {
         address: customerData.address,
         city: customerData.city,
         state: customerData.state,
+        postalCode: customerData.postalCode,
         shippingName: finalShippingData.name,
         shippingShopName: finalShippingData.shopName,
         shippingPhone: finalShippingData.phone,
@@ -157,6 +162,7 @@ export default function BillingPage() {
         shippingAddress: finalShippingData.address,
         shippingCity: finalShippingData.city,
         shippingState: finalShippingData.state,
+        shippingPostalCode: finalShippingData.postalCode,
         subtotal: subtotal.toString(),
         transport: additionalCharges.transport.toString(),
         packaging: additionalCharges.packaging.toString(),
@@ -194,6 +200,7 @@ export default function BillingPage() {
           address: customerData.address,
           city: customerData.city,
           state: customerData.state,
+          postalCode: customerData.postalCode,
         },
         shipping: {
           name: finalShippingData.name,
@@ -203,6 +210,7 @@ export default function BillingPage() {
           address: finalShippingData.address,
           city: finalShippingData.city,
           state: finalShippingData.state,
+          postalCode: finalShippingData.postalCode,
         },
         items: billItems,
         subtotal,
@@ -233,6 +241,7 @@ export default function BillingPage() {
         address: "",
         city: "",
         state: "",
+        postalCode: "",
       });
       setIsNewCustomer(true);
       setSameAsBinding(true);
@@ -244,6 +253,7 @@ export default function BillingPage() {
         address: "",
         city: "",
         state: "",
+        postalCode: "",
       });
       setBillItems([]);
       setAdditionalCharges({
@@ -280,6 +290,7 @@ export default function BillingPage() {
         address: customer.address || "",
         city: customer.city || "",
         state: customer.state || "",
+        postalCode: customer.postalCode || "",
       });
     }
   };
@@ -482,6 +493,7 @@ export default function BillingPage() {
           address: customerData.address,
           city: customerData.city,
           state: customerData.state,
+          postalCode: customerData.postalCode,
         });
         setCustomerData({ ...customerData, id: savedCustomer.id });
         // Wait a bit to ensure state is updated
@@ -596,6 +608,7 @@ export default function BillingPage() {
                             address: "",
                             city: "",
                             state: "",
+                            postalCode: "",
                           });
                         }
                       }}
@@ -695,10 +708,11 @@ export default function BillingPage() {
                           id="shopName"
                           value={customerData.shopName}
                           onChange={(e) =>
-                            setCustomerData({ ...customerData, shopName: e.target.value })
+                            setCustomerData({ ...customerData, shopName: e.target.value.slice(0, 50) })
                           }
                           placeholder="Enter shop name"
                           className="text-base"
+                          maxLength={50}
                           data-testid="input-shop-name"
                         />
                       </div>
@@ -709,11 +723,13 @@ export default function BillingPage() {
                         <Input
                           id="customerName"
                           value={customerData.name}
-                          onChange={(e) =>
-                            setCustomerData({ ...customerData, name: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                            setCustomerData({ ...customerData, name: value });
+                          }}
                           placeholder="Enter name"
                           className="text-base"
+                          maxLength={50}
                           data-testid="input-customer-name"
                         />
                       </div>
@@ -726,11 +742,12 @@ export default function BillingPage() {
                           type="tel"
                           value={customerData.phone}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '');
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                             setCustomerData({ ...customerData, phone: value });
                           }}
-                          placeholder="Enter phone"
+                          placeholder="Enter phone (10 digits)"
                           className="text-base"
+                          maxLength={10}
                           data-testid="input-phone"
                         />
                       </div>
@@ -756,18 +773,19 @@ export default function BillingPage() {
                       <Label htmlFor="address" className="text-base font-semibold mb-2 block">
                         Address
                       </Label>
-                      <Input
+                      <Textarea
                         id="address"
                         value={customerData.address}
                         onChange={(e) =>
-                          setCustomerData({ ...customerData, address: e.target.value })
+                          setCustomerData({ ...customerData, address: e.target.value.slice(0, 200) })
                         }
                         placeholder="Enter address"
-                        className="text-base"
+                        className="text-base min-h-[80px]"
+                        maxLength={200}
                         data-testid="input-address"
                       />
                     </div>
-                    <div className="grid md:grid-cols-2 gap-4 mt-4">
+                    <div className="grid md:grid-cols-3 gap-4 mt-4">
                       <div>
                         <Label htmlFor="city" className="text-base font-semibold mb-2 block">
                           City
@@ -775,11 +793,13 @@ export default function BillingPage() {
                         <Input
                           id="city"
                           value={customerData.city}
-                          onChange={(e) =>
-                            setCustomerData({ ...customerData, city: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                            setCustomerData({ ...customerData, city: value });
+                          }}
                           placeholder="Enter city"
                           className="text-base"
+                          maxLength={40}
                           data-testid="input-city"
                         />
                       </div>
@@ -790,12 +810,30 @@ export default function BillingPage() {
                         <Input
                           id="state"
                           value={customerData.state}
-                          onChange={(e) =>
-                            setCustomerData({ ...customerData, state: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                            setCustomerData({ ...customerData, state: value });
+                          }}
                           placeholder="Enter state"
                           className="text-base"
+                          maxLength={40}
                           data-testid="input-state"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="postalCode" className="text-base font-semibold mb-2 block">
+                          Postal Code
+                        </Label>
+                        <Input
+                          id="postalCode"
+                          value={customerData.postalCode}
+                          onChange={(e) =>
+                            setCustomerData({ ...customerData, postalCode: e.target.value.slice(0, 15) })
+                          }
+                          placeholder="Enter postal code"
+                          className="text-base"
+                          maxLength={15}
+                          data-testid="input-postal-code"
                         />
                       </div>
                     </div>
@@ -858,6 +896,7 @@ export default function BillingPage() {
                                   address: "",
                                   city: "",
                                   state: "",
+                                  postalCode: "",
                                 });
                               }
                             }}
@@ -889,6 +928,7 @@ export default function BillingPage() {
                                   address: customer.address || "",
                                   city: customer.city || "",
                                   state: customer.state || "",
+                                  postalCode: customer.postalCode || "",
                                 });
                               }
                             }}>
@@ -968,10 +1008,11 @@ export default function BillingPage() {
                               id="shippingShopName"
                               value={shippingData.shopName}
                               onChange={(e) =>
-                                setShippingData({ ...shippingData, shopName: e.target.value })
+                                setShippingData({ ...shippingData, shopName: e.target.value.slice(0, 50) })
                               }
                               placeholder="Enter shop name"
                               className="text-base"
+                              maxLength={50}
                             />
                           </div>
                           <div>
@@ -981,11 +1022,13 @@ export default function BillingPage() {
                             <Input
                               id="shippingCustomerName"
                               value={shippingData.name}
-                              onChange={(e) =>
-                                setShippingData({ ...shippingData, name: e.target.value })
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                                setShippingData({ ...shippingData, name: value });
+                              }}
                               placeholder="Enter name"
                               className="text-base"
+                              maxLength={50}
                             />
                           </div>
                           <div>
@@ -997,11 +1040,12 @@ export default function BillingPage() {
                               type="tel"
                               value={shippingData.phone}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/\D/g, '');
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                                 setShippingData({ ...shippingData, phone: value });
                               }}
-                              placeholder="Enter phone"
+                              placeholder="Enter phone (10 digits)"
                               className="text-base"
+                              maxLength={10}
                             />
                           </div>
                           <div>
@@ -1025,17 +1069,18 @@ export default function BillingPage() {
                           <Label htmlFor="shippingAddress" className="text-base font-semibold mb-2 block">
                             Address
                           </Label>
-                          <Input
+                          <Textarea
                             id="shippingAddress"
                             value={shippingData.address}
                             onChange={(e) =>
-                              setShippingData({ ...shippingData, address: e.target.value })
+                              setShippingData({ ...shippingData, address: e.target.value.slice(0, 200) })
                             }
                             placeholder="Enter address"
-                            className="text-base"
+                            className="text-base min-h-[80px]"
+                            maxLength={200}
                           />
                         </div>
-                        <div className="grid md:grid-cols-2 gap-4 mt-4">
+                        <div className="grid md:grid-cols-3 gap-4 mt-4">
                           <div>
                             <Label htmlFor="shippingCity" className="text-base font-semibold mb-2 block">
                               City
@@ -1043,11 +1088,13 @@ export default function BillingPage() {
                             <Input
                               id="shippingCity"
                               value={shippingData.city}
-                              onChange={(e) =>
-                                setShippingData({ ...shippingData, city: e.target.value })
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                setShippingData({ ...shippingData, city: value });
+                              }}
                               placeholder="Enter city"
                               className="text-base"
+                              maxLength={40}
                             />
                           </div>
                           <div>
@@ -1057,11 +1104,28 @@ export default function BillingPage() {
                             <Input
                               id="shippingState"
                               value={shippingData.state}
-                              onChange={(e) =>
-                                setShippingData({ ...shippingData, state: e.target.value })
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                setShippingData({ ...shippingData, state: value });
+                              }}
                               placeholder="Enter state"
                               className="text-base"
+                              maxLength={40}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="shippingPostalCode" className="text-base font-semibold mb-2 block">
+                              Postal Code
+                            </Label>
+                            <Input
+                              id="shippingPostalCode"
+                              value={shippingData.postalCode}
+                              onChange={(e) =>
+                                setShippingData({ ...shippingData, postalCode: e.target.value.slice(0, 15) })
+                              }
+                              placeholder="Enter postal code"
+                              className="text-base"
+                              maxLength={15}
                             />
                           </div>
                         </div>

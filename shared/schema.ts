@@ -13,6 +13,7 @@ export const customers = pgTable("customers", {
   address: text("address"),
   city: text("city"),
   state: text("state"),
+  postalCode: text("postal_code"),
 });
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true }).extend({
@@ -20,9 +21,13 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({ id: tru
     .optional()
     .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
       message: "Customer name must contain only letters"
+    })
+    .refine((val) => !val || val.length <= 50, {
+      message: "Customer name must be maximum 50 characters"
     }),
   shopName: z.string()
     .min(1, "Shop name is required")
+    .max(50, "Shop name must be maximum 50 characters")
     .regex(/^[a-zA-Z0-9\s]+$/, "Shop name can only contain letters and numbers"),
   phone: z.string()
     .optional()
@@ -37,15 +42,31 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({ id: tru
     .refine((val) => !val || val.length <= 15, {
       message: "GSTIN must be maximum 15 characters"
     }),
+  address: z.string()
+    .optional()
+    .refine((val) => !val || val.length <= 200, {
+      message: "Address must be maximum 200 characters"
+    }),
   city: z.string()
     .optional()
     .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
       message: "City must contain only letters"
+    })
+    .refine((val) => !val || val.length <= 40, {
+      message: "City must be maximum 40 characters"
     }),
   state: z.string()
     .optional()
     .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
       message: "State must contain only letters"
+    })
+    .refine((val) => !val || val.length <= 40, {
+      message: "State must be maximum 40 characters"
+    }),
+  postalCode: z.string()
+    .optional()
+    .refine((val) => !val || val.length <= 15, {
+      message: "Postal code must be maximum 15 characters"
     }),
 });
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
@@ -79,6 +100,7 @@ export const invoices = pgTable("invoices", {
   address: text("address"),
   city: text("city"),
   state: text("state"),
+  postalCode: text("postal_code"),
   shippingName: text("shipping_name"),
   shippingShopName: text("shipping_shop_name"),
   shippingPhone: text("shipping_phone"),
@@ -86,6 +108,7 @@ export const invoices = pgTable("invoices", {
   shippingAddress: text("shipping_address"),
   shippingCity: text("shipping_city"),
   shippingState: text("shipping_state"),
+  shippingPostalCode: text("shipping_postal_code"),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   transport: decimal("transport", { precision: 10, scale: 2 }).default("0"),
   packaging: decimal("packaging", { precision: 10, scale: 2 }).default("0"),
