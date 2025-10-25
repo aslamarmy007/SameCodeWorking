@@ -2385,19 +2385,21 @@ export default function BillingPage() {
             )}
           </div>
 
-          <BillSummary
-            items={billItems}
-            subtotal={subtotal}
-            charges={totalCharges}
-            gstAmount={gstAmount}
-            grandTotal={grandTotal}
-            gstEnabled={billConfig.gstEnabled}
-            customerShopName={customerData.shopName}
-            billDate={billConfig.billDate}
-            onUpdateQuantity={handleUpdateQuantity}
-            onUpdatePrice={handleUpdatePrice}
-            onRemoveItem={handleRemoveItem}
-          />
+          <div className={`${currentStep === 4 ? 'block' : 'hidden lg:block'}`}>
+            <BillSummary
+              items={billItems}
+              subtotal={subtotal}
+              charges={totalCharges}
+              gstAmount={gstAmount}
+              grandTotal={grandTotal}
+              gstEnabled={billConfig.gstEnabled}
+              customerShopName={customerData.shopName}
+              billDate={billConfig.billDate}
+              onUpdateQuantity={handleUpdateQuantity}
+              onUpdatePrice={handleUpdatePrice}
+              onRemoveItem={handleRemoveItem}
+            />
+          </div>
         </div>
       </div>
     </div>
