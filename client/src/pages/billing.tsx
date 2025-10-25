@@ -474,11 +474,13 @@ export default function BillingPage() {
   const canProceedFromConfig = billConfig.billDate !== "";
   const canProceedFromCustomer = 
     customerData.shopName.trim() !== "" && 
-    customerData.city.trim() !== "" &&
+    customerData.city.trim() !== "" && 
+    customerData.state.trim() !== "" &&
     (!billConfig.gstEnabled || customerData.gstin.trim() !== "") &&
     (sameAsbilling || (
       shippingData.shopName.trim() !== "" && 
-      shippingData.city.trim() !== "" &&
+      shippingData.city.trim() !== "" && 
+      shippingData.state.trim() !== "" &&
       (!billConfig.gstEnabled || shippingData.gstin.trim() !== "")
     ));
   const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
@@ -566,6 +568,25 @@ export default function BillingPage() {
       toast({
         title: "Validation Error",
         description: "City must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate state (required)
+    if (!customerData.state.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "State is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(customerData.state.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "State must contain only letters",
         variant: "destructive",
       });
       return;
@@ -674,6 +695,25 @@ export default function BillingPage() {
       return;
     }
     
+    // Validate state (required)
+    if (!customerData.state.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "State is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(customerData.state.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "State must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     updateCustomerMutation.mutate(customerData);
     
     // If "same as billing" is checked, sync shipping data with billing data
@@ -772,6 +812,25 @@ export default function BillingPage() {
       toast({
         title: "Validation Error",
         description: "City must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate state (required)
+    if (!shippingData.state.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "State is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(shippingData.state.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "State must contain only letters",
         variant: "destructive",
       });
       return;
@@ -1073,6 +1132,12 @@ export default function BillingPage() {
                               <p className="font-semibold">{customerData.city}</p>
                             </div>
                           )}
+                          {customerData.state && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">State</p>
+                              <p className="font-semibold">{customerData.state}</p>
+                            </div>
+                          )}
                           {customerData.postalCode && (
                             <div>
                               <p className="text-sm text-muted-foreground">Postal Code</p>
@@ -1188,7 +1253,7 @@ export default function BillingPage() {
                             data-testid="input-edit-address"
                           />
                         </div>
-                        <div className="grid md:grid-cols-2 gap-4 mt-4">
+                        <div className="grid md:grid-cols-3 gap-4 mt-4">
                           <div>
                             <Label htmlFor="editCity" className="text-base font-semibold mb-2 block">
                               City <span className="text-destructive">*</span>
@@ -1204,6 +1269,24 @@ export default function BillingPage() {
                               className="text-base"
                               maxLength={40}
                               data-testid="input-edit-city"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editState" className="text-base font-semibold mb-2 block">
+                              State <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                              id="editState"
+                              value={customerData.state}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                setCustomerData({ ...customerData, state: value });
+                              }}
+                              placeholder="Enter state (required)"
+                              className="text-base"
+                              maxLength={40}
+                              data-testid="input-edit-state"
                               required
                             />
                           </div>
@@ -1228,7 +1311,7 @@ export default function BillingPage() {
                         <div className="flex gap-2 mt-4">
                           <Button
                             onClick={handleUpdateCustomer}
-                            disabled={updateCustomerMutation.isPending || !customerData.shopName.trim() || !customerData.city.trim()}
+                            disabled={updateCustomerMutation.isPending || !customerData.shopName.trim() || !customerData.city.trim() || !customerData.state.trim()}
                             className="flex-1 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                             data-testid="button-update-customer"
                           >
