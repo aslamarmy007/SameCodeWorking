@@ -448,8 +448,17 @@ export default function BillingPage() {
       }
     }
     
-    // Validate city
-    if (customerData.city.trim() && !nameRegex.test(customerData.city.trim())) {
+    // Validate city (required)
+    if (!customerData.city.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "City is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(customerData.city.trim())) {
       toast({
         title: "Validation Error",
         description: "City must contain only letters",
@@ -458,8 +467,17 @@ export default function BillingPage() {
       return;
     }
     
-    // Validate state
-    if (customerData.state.trim() && !nameRegex.test(customerData.state.trim())) {
+    // Validate state (required)
+    if (!customerData.state.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "State is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(customerData.state.trim())) {
       toast({
         title: "Validation Error",
         description: "State must contain only letters",
@@ -788,7 +806,7 @@ export default function BillingPage() {
                     <div className="grid md:grid-cols-3 gap-4 mt-4">
                       <div>
                         <Label htmlFor="city" className="text-base font-semibold mb-2 block">
-                          City
+                          City <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="city"
@@ -801,11 +819,12 @@ export default function BillingPage() {
                           className="text-base"
                           maxLength={40}
                           data-testid="input-city"
+                          required
                         />
                       </div>
                       <div>
                         <Label htmlFor="state" className="text-base font-semibold mb-2 block">
-                          State
+                          State <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="state"
@@ -818,6 +837,7 @@ export default function BillingPage() {
                           className="text-base"
                           maxLength={40}
                           data-testid="input-state"
+                          required
                         />
                       </div>
                       <div>
@@ -1083,7 +1103,7 @@ export default function BillingPage() {
                         <div className="grid md:grid-cols-3 gap-4 mt-4">
                           <div>
                             <Label htmlFor="shippingCity" className="text-base font-semibold mb-2 block">
-                              City
+                              City <span className="text-destructive">*</span>
                             </Label>
                             <Input
                               id="shippingCity"
@@ -1095,11 +1115,12 @@ export default function BillingPage() {
                               placeholder="Enter city"
                               className="text-base"
                               maxLength={40}
+                              required
                             />
                           </div>
                           <div>
                             <Label htmlFor="shippingState" className="text-base font-semibold mb-2 block">
-                              State
+                              State <span className="text-destructive">*</span>
                             </Label>
                             <Input
                               id="shippingState"
@@ -1111,6 +1132,7 @@ export default function BillingPage() {
                               placeholder="Enter state"
                               className="text-base"
                               maxLength={40}
+                              required
                             />
                           </div>
                           <div>
@@ -1195,8 +1217,17 @@ export default function BillingPage() {
                               }
                             }
                             
-                            // Validate city
-                            if (shippingData.city.trim() && !nameRegex.test(shippingData.city.trim())) {
+                            // Validate city (required)
+                            if (!shippingData.city.trim()) {
+                              toast({
+                                title: "Validation Error",
+                                description: "City is required",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            if (!nameRegex.test(shippingData.city.trim())) {
                               toast({
                                 title: "Validation Error",
                                 description: "City must contain only letters",
@@ -1205,8 +1236,17 @@ export default function BillingPage() {
                               return;
                             }
                             
-                            // Validate state
-                            if (shippingData.state.trim() && !nameRegex.test(shippingData.state.trim())) {
+                            // Validate state (required)
+                            if (!shippingData.state.trim()) {
+                              toast({
+                                title: "Validation Error",
+                                description: "State is required",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            if (!nameRegex.test(shippingData.state.trim())) {
                               toast({
                                 title: "Validation Error",
                                 description: "State must contain only letters",

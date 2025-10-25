@@ -48,21 +48,13 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({ id: tru
       message: "Address must be maximum 200 characters"
     }),
   city: z.string()
-    .optional()
-    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
-      message: "City must contain only letters"
-    })
-    .refine((val) => !val || val.length <= 40, {
-      message: "City must be maximum 40 characters"
-    }),
+    .min(1, "City is required")
+    .max(40, "City must be maximum 40 characters")
+    .regex(/^[a-zA-Z\s]+$/, "City must contain only letters"),
   state: z.string()
-    .optional()
-    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
-      message: "State must contain only letters"
-    })
-    .refine((val) => !val || val.length <= 40, {
-      message: "State must be maximum 40 characters"
-    }),
+    .min(1, "State is required")
+    .max(40, "State must be maximum 40 characters")
+    .regex(/^[a-zA-Z\s]+$/, "State must contain only letters"),
   postalCode: z.string()
     .optional()
     .refine((val) => !val || val.length <= 15, {
@@ -123,6 +115,11 @@ export const invoices = pgTable("invoices", {
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({ 
   id: true, 
   createdAt: true 
+}).extend({
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  shippingCity: z.string().min(1, "Shipping city is required"),
+  shippingState: z.string().min(1, "Shipping state is required"),
 });
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type Invoice = typeof invoices.$inferSelect;
