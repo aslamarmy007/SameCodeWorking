@@ -80,6 +80,8 @@ export default function BillingPage() {
   const [sameAsbilling, setSameAsBinding] = useState(true);
   const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   const [isEditingShippingCustomer, setIsEditingShippingCustomer] = useState(false);
+  const [selectedBillingCustomerId, setSelectedBillingCustomerId] = useState<string>("");
+  const [selectedShippingCustomerId, setSelectedShippingCustomerId] = useState<string>("");
   const [shippingData, setShippingData] = useState<CustomerData>({
     name: "",
     shopName: "",
@@ -344,6 +346,7 @@ export default function BillingPage() {
   const handleCustomerSelect = (customerId: string) => {
     const customer = customers.find((c) => c.id === customerId);
     if (customer) {
+      setSelectedBillingCustomerId(customerId);
       const customerInfo = {
         id: customer.id,
         name: customer.name,
@@ -943,6 +946,7 @@ export default function BillingPage() {
                       onValueChange={(value) => {
                         setIsNewCustomer(value === "new");
                         if (value === "new") {
+                          setSelectedBillingCustomerId("");
                           setCustomerData({
                             name: "",
                             shopName: "",
@@ -974,7 +978,7 @@ export default function BillingPage() {
                         <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
                           Select Customer
                         </Label>
-                        <Select onValueChange={handleCustomerSelect}>
+                        <Select value={selectedBillingCustomerId} onValueChange={handleCustomerSelect}>
                           <SelectTrigger className="text-base" data-testid="select-customer">
                             <SelectValue placeholder="Select a customer..." />
                           </SelectTrigger>
@@ -1414,6 +1418,7 @@ export default function BillingPage() {
                             });
                           } else {
                             // When unchecked, clear shipping data completely
+                            setSelectedShippingCustomerId("");
                             setShippingData({
                               name: "",
                               shopName: "",
@@ -1449,6 +1454,7 @@ export default function BillingPage() {
                             onValueChange={(value) => {
                               setIsNewShippingCustomer(value === "new");
                               if (value === "new") {
+                                setSelectedShippingCustomerId("");
                                 setShippingData({
                                   name: "",
                                   shopName: "",
@@ -1477,9 +1483,10 @@ export default function BillingPage() {
                             <Label htmlFor="shippingCustomerSelect" className="text-base font-semibold mb-2 block">
                               Select Customer
                             </Label>
-                            <Select onValueChange={(customerId) => {
+                            <Select value={selectedShippingCustomerId} onValueChange={(customerId) => {
                               const customer = customers.find((c) => c.id === customerId);
                               if (customer) {
+                                setSelectedShippingCustomerId(customerId);
                                 setShippingData({
                                   id: customer.id,
                                   name: customer.name,
