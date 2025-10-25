@@ -720,7 +720,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   // Signature section
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.text("For AYESHA Coco Pith & Fiber Industries", pageWidth - margin - 3, footerY + 8, { align: "right" });
+  doc.text("For AYESHA Coco Pith & Fiber Industries", pageWidth - margin - 3, footerY + 4, { align: "right" });
   
   // Add signature if enabled
   if (data.eSignatureEnabled && data.signedBy) {
@@ -739,22 +739,22 @@ export function generateInvoicePDF(data: InvoiceData) {
     }
     
     if (signatureImage) {
-      // Add signature image
-      const sigWidth = 25;
-      const sigHeight = 15;
-      doc.addImage(signatureImage, 'PNG', pageWidth - margin - sigWidth - 3, footerY + 1, sigWidth, sigHeight);
+      // Add signature image below company name
+      const sigWidth = 30;
+      const sigHeight = 12;
+      doc.addImage(signatureImage, 'PNG', pageWidth - margin - sigWidth - 3, footerY + 7, sigWidth, sigHeight);
       
       // Add line below signature
       doc.setLineWidth(0.3);
-      doc.line(pageWidth - 55, footerY + 18, pageWidth - margin - 3, footerY + 18);
+      doc.line(pageWidth - 55, footerY + 20, pageWidth - margin - 3, footerY + 20);
       
       // Add signatory name
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
-      doc.text(signatoryName, pageWidth - margin - 3, footerY + 22, { align: "right" });
+      doc.text(signatoryName, pageWidth - margin - 3, footerY + 23.5, { align: "right" });
       
       doc.setFont("helvetica", "normal");
-      doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 26, { align: "right" });
+      doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 27, { align: "right" });
     }
   } else {
     // Without signature - just show line and text
