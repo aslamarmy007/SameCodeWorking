@@ -21,6 +21,7 @@ import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, 
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
+import logoImage from "@assets/cocologo_1761383042737.png";
 
 type BillItem = {
   productId: string;
@@ -878,7 +879,7 @@ export default function BillingPage() {
       <div className="mx-2.5 bg-white/20 dark:bg-white/10 backdrop-blur-md text-white py-4 sm:py-8 rounded-[20px] sm:rounded-[30px] shadow-lg mb-4 sm:mb-8 border border-white/30">
         <div className="text-center px-2">
           <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-            <Sprout className="w-6 h-6 sm:w-10 sm:h-10" />
+            <img src={logoImage} alt="Logo" className="w-6 h-6 sm:w-10 sm:h-10 object-contain" />
             <h1 className="text-xl sm:text-3xl md:text-4xl font-bold">AYESHA COCO PITH & FIBER INDUSTRIES</h1>
           </div>
           <p className="text-sm sm:text-lg opacity-90">Billing System</p>
