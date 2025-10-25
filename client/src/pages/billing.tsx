@@ -316,7 +316,7 @@ export default function BillingPage() {
   const handleCustomerSelect = (customerId: string) => {
     const customer = customers.find((c) => c.id === customerId);
     if (customer) {
-      setCustomerData({
+      const customerInfo = {
         id: customer.id,
         name: customer.name,
         shopName: customer.shopName || "",
@@ -326,7 +326,13 @@ export default function BillingPage() {
         city: customer.city || "",
         state: customer.state || "",
         postalCode: customer.postalCode || "",
-      });
+      };
+      setCustomerData(customerInfo);
+      
+      // If "same as billing" is checked, also update shipping data
+      if (sameAsbilling) {
+        setShippingData(customerInfo);
+      }
     }
   };
 
@@ -522,6 +528,21 @@ export default function BillingPage() {
     }
     
     saveCustomerMutation.mutate(customerData);
+    
+    // If "same as billing" is checked, sync shipping data with billing data
+    if (sameAsbilling) {
+      setShippingData({
+        id: customerData.id,
+        name: customerData.name,
+        shopName: customerData.shopName,
+        phone: customerData.phone,
+        gstin: customerData.gstin,
+        address: customerData.address,
+        city: customerData.city,
+        state: customerData.state,
+        postalCode: customerData.postalCode,
+      });
+    }
   };
 
   const handleUpdateCustomer = () => {
@@ -628,6 +649,21 @@ export default function BillingPage() {
     }
     
     updateCustomerMutation.mutate(customerData);
+    
+    // If "same as billing" is checked, sync shipping data with billing data
+    if (sameAsbilling) {
+      setShippingData({
+        id: customerData.id,
+        name: customerData.name,
+        shopName: customerData.shopName,
+        phone: customerData.phone,
+        gstin: customerData.gstin,
+        address: customerData.address,
+        city: customerData.city,
+        state: customerData.state,
+        postalCode: customerData.postalCode,
+      });
+    }
   };
 
   const handleGeneratePDF = async () => {
@@ -1213,7 +1249,23 @@ export default function BillingPage() {
                       <Checkbox
                         id="sameAsBilling"
                         checked={sameAsbilling}
-                        onCheckedChange={(checked) => setSameAsBinding(checked as boolean)}
+                        onCheckedChange={(checked) => {
+                          setSameAsBinding(checked as boolean);
+                          // When checked, immediately copy billing data to shipping
+                          if (checked) {
+                            setShippingData({
+                              id: customerData.id,
+                              name: customerData.name,
+                              shopName: customerData.shopName,
+                              phone: customerData.phone,
+                              gstin: customerData.gstin,
+                              address: customerData.address,
+                              city: customerData.city,
+                              state: customerData.state,
+                              postalCode: customerData.postalCode,
+                            });
+                          }
+                        }}
                         data-testid="checkbox-same-as-billing"
                       />
                       <Label
