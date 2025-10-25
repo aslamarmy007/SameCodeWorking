@@ -73,7 +73,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.addImage(logoImage, 'PNG', margin, yPos - 2, logoWidth, logoHeight);
 
   // Center company details - all caps and center aligned
-  const centerStartY = yPos + 8;
+  const centerStartY = yPos + 10;
   doc.setFontSize(45);
   doc.setTextColor(51, 74, 94);
   doc.setFont("times", "bold");
