@@ -1,8 +1,8 @@
 import jsPDF from "jspdf";
 import logoImage from "@assets/cocologo_1761383042737.png";
 import phoneIcon from "@assets/telephone-call_1761384507432.png";
-import rupeeIcon from "@assets/icons8-rupee-96_1761387536058.png";
-import rupeeIconBlack from "@assets/rupee_1761388756679.png";
+import rupeeIcon from "@assets/rupee_1761389531807.png";
+import rupeeIconBlack from "@assets/rupee_1761389531807.png";
 
 interface InvoiceData {
   invoiceNumber: string;
