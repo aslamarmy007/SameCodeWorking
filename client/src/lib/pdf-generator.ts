@@ -62,8 +62,8 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   // Header section with logo, center details, and CASH/CREDIT BILL
   // Logo on the left
-  const logoWidth = 25;
-  const logoHeight = 25;
+  const logoWidth = 30;
+  const logoHeight = 30;
   doc.addImage(logoImage, 'PNG', margin, yPos - 5, logoWidth, logoHeight);
 
   // Center company details - all caps and center aligned
@@ -73,12 +73,12 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("times", "bold");
   doc.text("AYESHA", pageWidth / 2, centerStartY, { align: "center" });
   
-  doc.setFontSize(10);
+  doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
   doc.text("COCO PITH & FIBER INDUSTRIES", pageWidth / 2, centerStartY + 8, { align: "center" });
   
-  doc.setFontSize(7);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 13, { align: "center" });
   doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 17, { align: "center" });
@@ -86,12 +86,13 @@ export function generateInvoicePDF(data: InvoiceData) {
   const phoneIconSize = 3;
   const phoneTextY = centerStartY + 21;
   const phoneNumbersText = "89409 30276 | 94443 70934";
+  
+  doc.setFontSize(9);
   const textWidth = doc.getTextWidth(phoneNumbersText);
   const phoneIconX = (pageWidth / 2) - (textWidth / 2) - phoneIconSize - 1;
   
   doc.addImage(phoneIcon, 'PNG', phoneIconX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   
-  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.text(phoneNumbersText, pageWidth / 2, phoneTextY, { align: "center" });
 
