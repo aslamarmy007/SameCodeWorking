@@ -4,6 +4,7 @@ import phoneIcon from "@assets/telephone-call_1761384507432.png";
 import phoneIconSmall from "@assets/phone-call_1761390258977.png";
 import rupeeIcon from "@assets/icons8-rupee-96_1761387536058.png";
 import rupeeIconBlack from "@assets/rupee_1761389531807.png";
+import emailIcon from "@assets/email_1761393720944.png";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -100,6 +101,19 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   doc.setFont("helvetica", "normal");
   doc.text(phoneNumbersText, pageWidth / 2, phoneTextY, { align: "center" });
+  
+  // Email with icon (5px space after phone number)
+  const emailTextY = phoneTextY + 5;
+  const emailText = "ayeshaAacf@gmail.com";
+  const emailIconSize = 3;
+  
+  doc.setFontSize(9);
+  const emailTextWidth = doc.getTextWidth(emailText);
+  const emailIconX = (pageWidth / 2) - (emailTextWidth / 2) - emailIconSize - 1;
+  
+  doc.addImage(emailIcon, 'PNG', emailIconX, emailTextY - 2.5, emailIconSize, emailIconSize);
+  doc.setFont("helvetica", "normal");
+  doc.text(emailText, pageWidth / 2, emailTextY, { align: "center" });
 
   // CASH/CREDIT BILL box on the right with double border
   const billBoxWidth = 30;
@@ -118,7 +132,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setTextColor(0, 0, 0);
   doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
 
-  yPos += 41;
+  yPos += 46;
 
   // Thick separator line
   doc.setDrawColor(52, 73, 94);
