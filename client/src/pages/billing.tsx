@@ -22,6 +22,8 @@ import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
 import logoImage from "@assets/cocologo_1761383042737.png";
+import aslamSignature from "@assets/pngegg_1761410687109.png";
+import zupearSignature from "@assets/signature_1761410697487.png";
 
 type BillItem = {
   productId: string;
@@ -38,6 +40,8 @@ type BillItem = {
 type BillConfig = {
   billDate: string;
   gstEnabled: boolean;
+  eSignatureEnabled: boolean;
+  signedBy: string;
 };
 
 type CustomerData = {
@@ -66,6 +70,8 @@ export default function BillingPage() {
   const [billConfig, setBillConfig] = useState<BillConfig>({
     billDate: new Date().toISOString().split("T")[0],
     gstEnabled: true,
+    eSignatureEnabled: false,
+    signedBy: "",
   });
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: "",
@@ -934,6 +940,47 @@ export default function BillingPage() {
                       }}
                       data-testid="switch-gst"
                     />
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-base font-semibold block">
+                          {billConfig.eSignatureEnabled ? "With E-Signature" : "Without E-Signature"}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          Add authorized signature to bill
+                        </span>
+                      </div>
+                      <Switch
+                        checked={billConfig.eSignatureEnabled}
+                        onCheckedChange={(checked) => {
+                          setBillConfig({ ...billConfig, eSignatureEnabled: checked, signedBy: checked ? billConfig.signedBy : "" });
+                        }}
+                        data-testid="switch-esignature"
+                      />
+                    </div>
+                    {billConfig.eSignatureEnabled && (
+                      <div>
+                        <Label htmlFor="signedBy" className="text-base font-semibold mb-2 block">
+                          Whose Signature?
+                        </Label>
+                        <Select
+                          value={billConfig.signedBy}
+                          onValueChange={(value) =>
+                            setBillConfig({ ...billConfig, signedBy: value })
+                          }
+                        >
+                          <SelectTrigger id="signedBy" className="text-base" data-testid="select-signature">
+                            <SelectValue placeholder="Select who signs" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Aslam">Aslam</SelectItem>
+                            <SelectItem value="Zupear">Zupear</SelectItem>
+                            <SelectItem value="Salman">Salman</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                   <Button
                     onClick={() => setCurrentStep(2)}
