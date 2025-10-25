@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import logoImage from "@assets/cocologo_1761383042737.png";
 import phoneIcon from "@assets/telephone-call_1761384507432.png";
 import rupeeIcon from "@assets/icons8-rupee-96_1761387536058.png";
+import rupeeIconBlack from "@assets/rupee_1761388756679.png";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -383,6 +384,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setTextColor(0, 0, 0);
   
   const rowHeight = 7;
+  const rupeeIconSize = 3;
   
   // Subtotal row with navy light blue background
   doc.setFillColor(220, 235, 245);
@@ -391,7 +393,11 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
   doc.text("Subtotal:", totalsBoxX + 3, yPos + 5);
-  doc.text("Rs. " + data.subtotal.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+  
+  const subtotalAmount = data.subtotal.toFixed(2);
+  const subtotalTextWidth = doc.getTextWidth(subtotalAmount);
+  doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - subtotalTextWidth - rupeeIconSize - 1, yPos + 2.5, rupeeIconSize, rupeeIconSize);
+  doc.text(subtotalAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
   yPos += rowHeight;
   
   // Horizontal line after subtotal
@@ -403,7 +409,11 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.transport > 0) {
     doc.setFont("helvetica", "normal");
     doc.text("Transport:", totalsBoxX + 3, yPos + 5);
-    doc.text("Rs. " + data.transport.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    
+    const transportAmount = data.transport.toFixed(2);
+    const transportTextWidth = doc.getTextWidth(transportAmount);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - transportTextWidth - rupeeIconSize - 1, yPos + 2.5, rupeeIconSize, rupeeIconSize);
+    doc.text(transportAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
   }
@@ -411,7 +421,11 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.packaging > 0) {
     doc.setFont("helvetica", "normal");
     doc.text("Packaging:", totalsBoxX + 3, yPos + 5);
-    doc.text("Rs. " + data.packaging.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    
+    const packagingAmount = data.packaging.toFixed(2);
+    const packagingTextWidth = doc.getTextWidth(packagingAmount);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - packagingTextWidth - rupeeIconSize - 1, yPos + 2.5, rupeeIconSize, rupeeIconSize);
+    doc.text(packagingAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
   }
@@ -419,7 +433,11 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (data.other > 0) {
     doc.setFont("helvetica", "normal");
     doc.text("Other Charges:", totalsBoxX + 3, yPos + 5);
-    doc.text("Rs. " + data.other.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    
+    const otherAmount = data.other.toFixed(2);
+    const otherTextWidth = doc.getTextWidth(otherAmount);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - otherTextWidth - rupeeIconSize - 1, yPos + 2.5, rupeeIconSize, rupeeIconSize);
+    doc.text(otherAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
   }
@@ -442,7 +460,11 @@ export function generateInvoicePDF(data: InvoiceData) {
     } else {
       doc.text(`SGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX + 3, yPos + 5);
     }
-    doc.text("Rs. " + halfGstAmount.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    
+    const sgstAmount = halfGstAmount.toFixed(2);
+    const sgstTextWidth = doc.getTextWidth(sgstAmount);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - sgstTextWidth - rupeeIconSize - 1, yPos + 2.5, rupeeIconSize, rupeeIconSize);
+    doc.text(sgstAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
     
@@ -453,7 +475,11 @@ export function generateInvoicePDF(data: InvoiceData) {
     } else {
       doc.text(`CGST (${sgstCgstRates.join('%, ')}%):`, totalsBoxX + 3, yPos + 5);
     }
-    doc.text("Rs. " + halfGstAmount.toFixed(2), totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+    
+    const cgstAmount = halfGstAmount.toFixed(2);
+    const cgstTextWidth = doc.getTextWidth(cgstAmount);
+    doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - cgstTextWidth - rupeeIconSize - 1, yPos + 2.5, rupeeIconSize, rupeeIconSize);
+    doc.text(cgstAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
   }
 
