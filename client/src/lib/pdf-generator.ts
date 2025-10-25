@@ -164,7 +164,7 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   // Customer details boxes - Bill To and Ship To side by side
   const boxWidth = (pageWidth - (2 * margin) - 4) / 2; // 4mm gap between boxes
-  const boxHeight = 36;
+  const boxHeight = 44;
   const leftBoxX = margin;
   const rightBoxX = margin + boxWidth + 4;
   
