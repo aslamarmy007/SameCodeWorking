@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import logoImage from "@assets/cocologo_1761383042737.png";
 import phoneIcon from "@assets/telephone-call_1761384507432.png";
+import rupeeIcon from "@assets/icons8-rupee-96_1761387536058.png";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -300,7 +301,16 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("Description", col2, yPos + 6);
   doc.text("HSN", col3, yPos + 6);
   doc.text("Qty/Kg", col4, yPos + 6, { align: "center" });
+  
+  // Add rupee icon before "Rate"
+  const rateIconSize = 3;
+  const rateTextWidth = doc.getTextWidth("Rate");
+  doc.addImage(rupeeIcon, 'PNG', col5 - rateTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
   doc.text("Rate", col5, yPos + 6, { align: "right" });
+  
+  // Add rupee icon before "Amount"
+  const amountTextWidth = doc.getTextWidth("Amount");
+  doc.addImage(rupeeIcon, 'PNG', col6 - amountTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
   doc.text("Amount", col6, yPos + 6, { align: "right" });
   yPos += 9;
 
@@ -325,7 +335,15 @@ export function generateInvoicePDF(data: InvoiceData) {
       doc.text("Description", col2, yPos + 6);
       doc.text("HSN", col3, yPos + 6);
       doc.text("Qty/Kg", col4, yPos + 6, { align: "center" });
+      
+      // Add rupee icon before "Rate" on new page
+      const newPageRateTextWidth = doc.getTextWidth("Rate");
+      doc.addImage(rupeeIcon, 'PNG', col5 - newPageRateTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
       doc.text("Rate", col5, yPos + 6, { align: "right" });
+      
+      // Add rupee icon before "Amount" on new page
+      const newPageAmountTextWidth = doc.getTextWidth("Amount");
+      doc.addImage(rupeeIcon, 'PNG', col6 - newPageAmountTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
       doc.text("Amount", col6, yPos + 6, { align: "right" });
       yPos += 9;
       doc.setTextColor(0, 0, 0);
@@ -430,7 +448,13 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text("Grand Total:", totalsBoxX, yPos + 4.5);
-  doc.text("Rs. " + data.grandTotal.toFixed(2), pageWidth - margin - 3, yPos + 4.5, { align: "right" });
+  
+  // Add rupee icon before grand total amount
+  const grandTotalIconSize = 3.5;
+  const grandTotalAmount = data.grandTotal.toFixed(2);
+  const grandTotalTextWidth = doc.getTextWidth(grandTotalAmount);
+  doc.addImage(rupeeIcon, 'PNG', pageWidth - margin - 3 - grandTotalTextWidth - grandTotalIconSize - 1, yPos + 1.5, grandTotalIconSize, grandTotalIconSize);
+  doc.text(grandTotalAmount, pageWidth - margin - 3, yPos + 4.5, { align: "right" });
   yPos += 12;
 
   // Amount in words
