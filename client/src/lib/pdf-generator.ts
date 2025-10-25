@@ -95,30 +95,25 @@ export function generateInvoicePDF(data: InvoiceData) {
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
   const emailIconSize = 3;
+  const billBoxWidth = 30;
   
   doc.setFontSize(9);
   
-  // Calculate combined width for centering (phone + space + email)
-  const phoneWidth = doc.getTextWidth(phoneNumbersText);
-  const emailWidth = doc.getTextWidth(emailText);
-  const spaceBetween = 10; // Space between phone and email
-  const totalContentWidth = phoneIconSize + 1 + phoneWidth + spaceBetween + emailIconSize + 1 + emailWidth;
-  
-  // Starting X position for phone icon (to center everything)
-  const startX = (pageWidth / 2) - (totalContentWidth / 2);
-  
-  // Phone icon and text
-  doc.addImage(phoneIcon, 'PNG', startX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
+  // Phone icon and text on LEFT side
+  const phoneStartX = margin + logoWidth + 5;
+  doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.setFont("helvetica", "normal");
-  doc.text(phoneNumbersText, startX + phoneIconSize + 1, phoneTextY);
+  doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
-  // Email icon and text (on same line)
-  const emailStartX = startX + phoneIconSize + 1 + phoneWidth + spaceBetween;
-  doc.addImage(emailIcon, 'PNG', emailStartX, phoneTextY - 2.5, emailIconSize, emailIconSize);
-  doc.text(emailText, emailStartX + emailIconSize + 1, phoneTextY);
+  // Email icon and text on RIGHT side
+  const emailWidth = doc.getTextWidth(emailText);
+  const emailEndX = pageWidth - margin - billBoxWidth - 5;
+  const emailTextX = emailEndX - emailWidth;
+  const emailIconX = emailTextX - emailIconSize - 1;
+  doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, emailIconSize, emailIconSize);
+  doc.text(emailText, emailTextX, phoneTextY);
 
   // CASH/CREDIT BILL box on the right with double border
-  const billBoxWidth = 30;
   const billBoxHeight = 8;
   const billBoxX = pageWidth - margin - billBoxWidth;
   const billBoxY = yPos - 1;
