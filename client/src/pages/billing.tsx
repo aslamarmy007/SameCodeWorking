@@ -888,7 +888,7 @@ export default function BillingPage() {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-4 sm:pb-8">
         <StepProgress currentStep={currentStep} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-4 sm:gap-8 items-start">
+        <div className="flex flex-col gap-4 sm:gap-6">
           <div className="w-full">
             {currentStep === 1 && (
               <Card className="p-4 sm:p-6 md:p-8 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-config">
@@ -2385,7 +2385,7 @@ export default function BillingPage() {
             )}
           </div>
 
-          <div className={`w-full ${currentStep === 4 ? 'block' : 'hidden lg:block'}`}>
+          <div className="w-full">
             <BillSummary
               items={billItems}
               subtotal={subtotal}
