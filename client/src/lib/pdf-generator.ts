@@ -384,7 +384,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setTextColor(0, 0, 0);
   
   const rowHeight = 7;
-  const rupeeIconSize = 3;
+  const rupeeIconSize = 2.2;
   const iconSpacing = 1;
   
   // Subtotal row with navy light blue background
