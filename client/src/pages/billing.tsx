@@ -741,11 +741,13 @@ export default function BillingPage() {
                         <Input
                           id="gstin"
                           value={customerData.gstin}
-                          onChange={(e) =>
-                            setCustomerData({ ...customerData, gstin: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                            setCustomerData({ ...customerData, gstin: value });
+                          }}
                           placeholder="Enter GSTIN"
                           className="text-base"
+                          maxLength={15}
                           data-testid="input-gstin"
                         />
                       </div>
@@ -1009,11 +1011,13 @@ export default function BillingPage() {
                             <Input
                               id="shippingGstin"
                               value={shippingData.gstin}
-                              onChange={(e) =>
-                                setShippingData({ ...shippingData, gstin: e.target.value })
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                                setShippingData({ ...shippingData, gstin: value });
+                              }}
                               placeholder="Enter GSTIN"
                               className="text-base"
+                              maxLength={15}
                             />
                           </div>
                         </div>

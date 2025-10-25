@@ -96,6 +96,7 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - [2025-10-25] Made customer name, phone, GSTIN, address, city, and state all optional fields
 - [2025-10-25] Updated both billing and shipping customer forms to require only shop name
 - [2025-10-25] Updated phone input fields to accept only numeric characters (auto-filters non-digits)
+- [2025-10-25] Updated GSTIN input fields to max 15 characters and auto-remove spaces
 
 ## Development Status
 - ✅ Schema and data models defined
