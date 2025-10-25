@@ -459,7 +459,7 @@ export default function BillingPage() {
   const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
   const hasValidProducts = billItems.length > 0 && allItemsHaveValidQuantity;
   const hasAnyCharges = additionalCharges.transport > 0 || additionalCharges.packaging > 0 || additionalCharges.other > 0;
-  const canProceedFromProducts = hasValidProducts || hasAnyCharges;
+  const canProceedFromProducts = billItems.length === 0 || allItemsHaveValidQuantity;
   const canGeneratePDF = hasValidProducts || hasAnyCharges;
 
   const handleSaveCustomer = () => {
