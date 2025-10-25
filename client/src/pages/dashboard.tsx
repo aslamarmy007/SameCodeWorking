@@ -99,21 +99,36 @@ export default function Dashboard() {
   // Customer mutations
   const createCustomerMutation = useMutation({
     mutationFn: (data: z.infer<typeof customerFormSchema>) =>
-      apiRequest("/api/customers", "POST", data),
+      apiRequest("POST", "/api/customers", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({ title: "Customer created successfully" });
       setCustomerDialogOpen(false);
       customerForm.reset();
     },
-    onError: () => {
-      toast({ title: "Failed to create customer", variant: "destructive" });
+    onError: (error: any) => {
+      const errorData = error.body;
+      if (errorData?.error === "Customer already exists") {
+        toast({
+          title: "Customer Already Exists",
+          description: errorData.message || "A customer with this shop name already exists",
+          variant: "destructive",
+        });
+      } else if (errorData?.error === "Validation error") {
+        toast({
+          title: "Validation Error",
+          description: errorData.message || "Please check all fields and try again",
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Failed to create customer", variant: "destructive" });
+      }
     },
   });
 
   const updateCustomerMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: z.infer<typeof customerFormSchema> }) =>
-      apiRequest(`/api/customers/${id}`, "PUT", data),
+      apiRequest("PUT", `/api/customers/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({ title: "Customer updated successfully" });
@@ -121,13 +136,22 @@ export default function Dashboard() {
       setEditingCustomer(null);
       customerForm.reset();
     },
-    onError: () => {
-      toast({ title: "Failed to update customer", variant: "destructive" });
+    onError: (error: any) => {
+      const errorData = error.body;
+      if (errorData?.error === "Validation error") {
+        toast({
+          title: "Validation Error",
+          description: errorData.message || "Please check all fields and try again",
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Failed to update customer", variant: "destructive" });
+      }
     },
   });
 
   const deleteCustomerMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/customers/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/customers/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({ title: "Customer deleted successfully" });
@@ -141,7 +165,7 @@ export default function Dashboard() {
   // Product mutations
   const createProductMutation = useMutation({
     mutationFn: (data: z.infer<typeof productFormSchema>) =>
-      apiRequest("/api/products", "POST", data),
+      apiRequest("POST", "/api/products", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({ title: "Product created successfully" });
@@ -155,7 +179,7 @@ export default function Dashboard() {
 
   const updateProductMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: z.infer<typeof productFormSchema> }) =>
-      apiRequest(`/api/products/${id}`, "PUT", data),
+      apiRequest("PUT", `/api/products/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({ title: "Product updated successfully" });
@@ -169,7 +193,7 @@ export default function Dashboard() {
   });
 
   const deleteProductMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/products/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/products/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({ title: "Product deleted successfully" });
@@ -182,7 +206,7 @@ export default function Dashboard() {
 
   // Invoice mutations
   const deleteInvoiceMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/invoices/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/invoices/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
       if (billDateRange.startDate && billDateRange.endDate) {
@@ -199,6 +223,109 @@ export default function Dashboard() {
   });
 
   const handleCustomerSubmit = (data: z.infer<typeof customerFormSchema>) => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
+    const phoneRegex = /^\d{10}$/;
+    const gstinRegex = /^[a-zA-Z0-9]+$/;
+    
+    // Validate shop name (required)
+    if (!data.shopName?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Shop name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!shopNameRegex.test(data.shopName.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Shop name can only contain letters and numbers",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate customer name (optional)
+    if (data.name?.trim() && !nameRegex.test(data.name.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate phone
+    if (data.phone?.trim() && !phoneRegex.test(data.phone.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Phone number must be exactly 10 digits",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate GSTIN
+    if (data.gstin?.trim()) {
+      if (!gstinRegex.test(data.gstin.trim())) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN can only contain letters and numbers",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (data.gstin.trim().length > 15) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN must be maximum 15 characters",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    // Validate city (required)
+    if (!data.city?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "City is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(data.city.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "City must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate state (required)
+    if (!data.state?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "State is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(data.state.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "State must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // All validations passed, submit the form
     if (editingCustomer) {
       updateCustomerMutation.mutate({ id: editingCustomer.id, data });
     } else {
@@ -639,7 +766,7 @@ export default function Dashboard() {
                               <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                  <Input {...field} data-testid="input-product-description" />
+                                  <Input {...field} value={field.value || ""} data-testid="input-product-description" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
