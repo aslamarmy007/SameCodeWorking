@@ -77,10 +77,14 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("helvetica", "bold");
   doc.text("COCO PITH & FIBER INDUSTRIES", pageWidth / 2, centerStartY + 8, { align: "center" });
   
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 14, { align: "center" });
-  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 18, { align: "center" });
+  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI,", pageWidth / 2, centerStartY + 13, { align: "center" });
+  doc.text("ALANGUDI - 622 301, PUDUKKOTTAI DIST.", pageWidth / 2, centerStartY + 17, { align: "center" });
+  
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("89409 30276      94443 70934", pageWidth / 2, centerStartY + 21, { align: "center" });
 
   // CASH/CREDIT BILL box on the right with double border
   const billBoxWidth = 30;
