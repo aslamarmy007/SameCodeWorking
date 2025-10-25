@@ -23,16 +23,22 @@ export interface IStorage {
   getAllProducts(): Promise<Product[]>;
   getProduct(id: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: string): Promise<boolean>;
 
   // Invoice operations
   getAllInvoices(): Promise<Invoice[]>;
   getInvoice(id: string): Promise<Invoice | undefined>;
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  updateInvoice(id: string, invoice: Partial<InsertInvoice>): Promise<Invoice | undefined>;
+  deleteInvoice(id: string): Promise<boolean>;
+  getInvoicesByDateRange(startDate: string, endDate: string): Promise<Invoice[]>;
   getNextInvoiceNumber(): Promise<string>;
 
   // Invoice items operations
   createInvoiceItem(item: InsertInvoiceItem): Promise<InvoiceItem>;
   getInvoiceItems(invoiceId: string): Promise<InvoiceItem[]>;
+  deleteInvoiceItems(invoiceId: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -212,6 +218,27 @@ export class MemStorage implements IStorage {
     return product;
   }
 
+  async updateProduct(
+    id: string,
+    updates: Partial<InsertProduct>
+  ): Promise<Product | undefined> {
+    const product = this.products.get(id);
+    if (!product) return undefined;
+
+    const updated: Product = { 
+      ...product, 
+      ...updates,
+      description: updates.description !== undefined ? updates.description || null : product.description,
+      gstRate: updates.gstRate !== undefined ? updates.gstRate : product.gstRate
+    };
+    this.products.set(id, updated);
+    return updated;
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    return this.products.delete(id);
+  }
+
   // Invoice operations
   async getAllInvoices(): Promise<Invoice[]> {
     return Array.from(this.invoices.values());
@@ -283,6 +310,48 @@ export class MemStorage implements IStorage {
     return Array.from(this.invoiceItems.values()).filter(
       (item) => item.invoiceId === invoiceId
     );
+  }
+
+  async updateInvoice(
+    id: string,
+    updates: Partial<InsertInvoice>
+  ): Promise<Invoice | undefined> {
+    const invoice = this.invoices.get(id);
+    if (!invoice) return undefined;
+
+    const updated: Invoice = { 
+      ...invoice, 
+      ...updates,
+      createdAt: invoice.createdAt
+    };
+    this.invoices.set(id, updated);
+    return updated;
+  }
+
+  async deleteInvoice(id: string): Promise<boolean> {
+    const deleted = this.invoices.delete(id);
+    if (deleted) {
+      await this.deleteInvoiceItems(id);
+    }
+    return deleted;
+  }
+
+  async getInvoicesByDateRange(startDate: string, endDate: string): Promise<Invoice[]> {
+    const allInvoices = Array.from(this.invoices.values());
+    return allInvoices.filter(invoice => {
+      const invoiceDate = new Date(invoice.billDate);
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return invoiceDate >= start && invoiceDate <= end;
+    });
+  }
+
+  async deleteInvoiceItems(invoiceId: string): Promise<void> {
+    const itemsToDelete = Array.from(this.invoiceItems.entries())
+      .filter(([_, item]) => item.invoiceId === invoiceId)
+      .map(([id, _]) => id);
+    
+    itemsToDelete.forEach(id => this.invoiceItems.delete(id));
   }
 }
 
