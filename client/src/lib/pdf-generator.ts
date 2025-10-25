@@ -203,10 +203,8 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setTextColor(0, 0, 0);
     const phoneIconSmallSize = 2.5;
     doc.addImage(phoneIconSmall, 'PNG', leftBoxX + 3, billToY - 2, phoneIconSmallSize, phoneIconSmallSize);
-    doc.setFont("helvetica", "bold");
-    doc.text("Ph: ", leftBoxX + 3 + phoneIconSmallSize + 1, billToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.phone, leftBoxX + 3 + phoneIconSmallSize + 1 + doc.getTextWidth("Ph: "), billToY);
+    doc.text(data.customer.phone, leftBoxX + 3 + phoneIconSmallSize + 1, billToY);
     billToY += 4;
   }
   
@@ -267,10 +265,8 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setTextColor(0, 0, 0);
     const phoneIconSmallSize = 2.5;
     doc.addImage(phoneIconSmall, 'PNG', rightBoxX + 3, shipToY - 2, phoneIconSmallSize, phoneIconSmallSize);
-    doc.setFont("helvetica", "bold");
-    doc.text("Ph: ", rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1 + doc.getTextWidth("Ph: "), shipToY);
+    doc.text(data.shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
     shipToY += 4;
   }
   
