@@ -528,6 +528,25 @@ export function generateInvoicePDF(data: InvoiceData) {
     yPos += rowHeight;
   }
 
+  // Calculate round off
+  const roundedTotal = Math.round(data.grandTotal);
+  const roundOffAmount = roundedTotal - data.grandTotal;
+  
+  // Round Off row
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.3);
+  doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.text("Round Off:", totalsBoxX + 3, yPos + 5);
+  
+  const roundOffText = (roundOffAmount >= 0 ? "+" : "") + roundOffAmount.toFixed(2);
+  const roundOffTextWidth = doc.getTextWidth(roundOffText);
+  doc.addImage(rupeeIconBlack, 'PNG', totalsBoxX + totalsBoxWidth - 3 - roundOffTextWidth - rupeeIconSize - iconSpacing, yPos + 2.5, rupeeIconSize, rupeeIconSize);
+  doc.text(roundOffText, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
+  yPos += rowHeight;
+
   // Grand total row with dark background
   const grandTotalRowHeight = 9;
   doc.setFillColor(52, 73, 94);
@@ -538,19 +557,19 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("helvetica", "bold");
   doc.text("Grand Total:", totalsBoxX + 3, yPos + 6);
   
-  // Add rupee icon before grand total amount
+  // Add rupee icon before grand total amount (rounded)
   const grandTotalIconSize = 3.5;
-  const grandTotalAmount = data.grandTotal.toFixed(2);
+  const grandTotalAmount = roundedTotal.toFixed(2);
   const grandTotalTextWidth = doc.getTextWidth(grandTotalAmount);
   doc.addImage(rupeeIcon, 'PNG', totalsBoxX + totalsBoxWidth - 3 - grandTotalTextWidth - grandTotalIconSize - 1, yPos + 3, grandTotalIconSize, grandTotalIconSize);
   doc.text(grandTotalAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 6, { align: "right" });
   yPos += grandTotalRowHeight + 5;
 
-  // Amount in words
+  // Amount in words (using rounded total)
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(8);
   doc.setFont("helvetica", "italic");
-  const amountInWords = numberToWords(data.grandTotal);
+  const amountInWords = numberToWords(roundedTotal);
   doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
   yPos += 7;
 
