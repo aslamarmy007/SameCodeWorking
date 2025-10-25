@@ -702,7 +702,7 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   // Footer section - ensure minimum spacing from content above
   const minFooterY = yPos + 5;
-  const fixedFooterY = pageHeight - 32;
+  const fixedFooterY = pageHeight - 42;
   const footerY = Math.max(minFooterY, fixedFooterY);
   
   // Terms & Conditions
