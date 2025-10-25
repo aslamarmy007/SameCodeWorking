@@ -859,7 +859,7 @@ export default function BillingPage() {
                     </div>
                     <Button
                       onClick={handleSaveCustomer}
-                      disabled={saveCustomerMutation.isPending || !customerData.shopName.trim()}
+                      disabled={saveCustomerMutation.isPending || !customerData.shopName.trim() || !customerData.city.trim() || !customerData.state.trim()}
                       className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                       data-testid="button-save-customer"
                     >
@@ -1257,7 +1257,7 @@ export default function BillingPage() {
                             
                             saveCustomerMutation.mutate(shippingData);
                           }}
-                          disabled={saveCustomerMutation.isPending || !shippingData.shopName.trim()}
+                          disabled={saveCustomerMutation.isPending || !shippingData.shopName.trim() || !shippingData.city.trim() || !shippingData.state.trim()}
                           className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                           data-testid="button-save-shipping-customer"
                         >
