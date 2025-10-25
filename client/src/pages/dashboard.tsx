@@ -13,7 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Pencil, Trash2, Plus, Download, Eye, LayoutDashboard } from "lucide-react";
+import { Pencil, Trash2, Plus, Download, Eye, LayoutDashboard, Search, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import type { Customer, Product, Invoice } from "@shared/schema";
 import { insertCustomerSchema, insertProductSchema } from "@shared/schema";
@@ -37,6 +38,10 @@ export default function Dashboard() {
     startDate: "",
     endDate: "",
   });
+  const [customerNameSearch, setCustomerNameSearch] = useState("");
+  const [customerPhoneSearch, setCustomerPhoneSearch] = useState("");
+  const [customerCityFilter, setCustomerCityFilter] = useState("");
+  const [customerSortOption, setCustomerSortOption] = useState("a-z");
 
   // Fetch customers
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
@@ -478,6 +483,57 @@ export default function Dashboard() {
   const handleClearFilter = () => {
     setBillDateRange({ startDate: "", endDate: "" });
   };
+
+  // Filter and sort customers
+  const getFilteredAndSortedCustomers = () => {
+    let filtered = [...customers];
+
+    // Filter by name (shop name or contact name)
+    if (customerNameSearch.trim()) {
+      const searchLower = customerNameSearch.toLowerCase();
+      filtered = filtered.filter(customer => 
+        (customer.shopName?.toLowerCase() || "").includes(searchLower) ||
+        (customer.name?.toLowerCase() || "").includes(searchLower)
+      );
+    }
+
+    // Filter by phone
+    if (customerPhoneSearch.trim()) {
+      filtered = filtered.filter(customer => 
+        (customer.phone || "").includes(customerPhoneSearch)
+      );
+    }
+
+    // Filter by city
+    if (customerCityFilter) {
+      filtered = filtered.filter(customer => 
+        customer.city === customerCityFilter
+      );
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (customerSortOption) {
+        case "a-z":
+          return (a.shopName || "").localeCompare(b.shopName || "");
+        case "z-a":
+          return (b.shopName || "").localeCompare(a.shopName || "");
+        case "new-old":
+          return (b.id || "").localeCompare(a.id || "");
+        case "old-new":
+          return (a.id || "").localeCompare(b.id || "");
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  };
+
+  // Get unique cities for filter dropdown
+  const uniqueCities = Array.from(new Set(customers.map(c => c.city).filter(Boolean))).sort();
+
+  const filteredCustomers = getFilteredAndSortedCustomers();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-6">
