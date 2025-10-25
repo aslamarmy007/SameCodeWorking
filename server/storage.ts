@@ -159,6 +159,7 @@ export class MemStorage implements IStorage {
       city: insertCustomer.city || null,
       state: insertCustomer.state || null,
       postalCode: insertCustomer.postalCode || null,
+      createdAt: new Date(),
     };
     this.customers.set(id, customer);
     return customer;

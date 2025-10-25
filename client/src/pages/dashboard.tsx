@@ -519,9 +519,13 @@ export default function Dashboard() {
         case "z-a":
           return (b.shopName || "").localeCompare(a.shopName || "");
         case "new-old":
-          return (b.id || "").localeCompare(a.id || "");
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
         case "old-new":
-          return (a.id || "").localeCompare(b.id || "");
+          const dateA2 = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB2 = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateA2 - dateB2;
         default:
           return 0;
       }

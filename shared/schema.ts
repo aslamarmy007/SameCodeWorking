@@ -15,9 +15,13 @@ export const customers = pgTable("customers", {
   city: text("city"),
   state: text("state"),
   postalCode: text("postal_code"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true }).extend({
+export const insertCustomerSchema = createInsertSchema(customers).omit({ 
+  id: true,
+  createdAt: true 
+}).extend({
   name: z.string()
     .optional()
     .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
