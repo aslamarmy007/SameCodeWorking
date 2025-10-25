@@ -300,6 +300,8 @@ export default function BillingPage() {
         gstAmount,
         grandTotal,
         lorryNumber: additionalCharges.lorryNumber,
+        eSignatureEnabled: billConfig.eSignatureEnabled,
+        signedBy: billConfig.signedBy,
       });
 
       toast({
@@ -312,6 +314,8 @@ export default function BillingPage() {
       setBillConfig({
         billDate: new Date().toISOString().split("T")[0],
         gstEnabled: true,
+        eSignatureEnabled: false,
+        signedBy: "",
       });
       setCustomerData({
         name: "",

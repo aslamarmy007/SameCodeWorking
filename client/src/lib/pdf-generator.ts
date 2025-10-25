@@ -6,6 +6,8 @@ import rupeeIcon from "@assets/icons8-rupee-96_1761387536058.png";
 import rupeeIconBlack from "@assets/rupee_1761389531807.png";
 import emailIcon from "@assets/email_1761393720944.png";
 import envelopeIcon from "@assets/envelope_1761394845490.png";
+import aslamSignature from "@assets/pngegg_1761410687109.png";
+import zupearSignature from "@assets/signature_1761410697487.png";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -48,6 +50,8 @@ interface InvoiceData {
   gstAmount: number;
   grandTotal: number;
   lorryNumber: string;
+  eSignatureEnabled?: boolean;
+  signedBy?: string;
 }
 
 export function generateInvoicePDF(data: InvoiceData) {
@@ -718,12 +722,49 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFontSize(9);
   doc.text("For AYESHA Coco Pith & Fiber Industries", pageWidth - margin - 3, footerY + 8, { align: "right" });
   
-  doc.setLineWidth(0.3);
-  doc.line(pageWidth - 55, footerY + 13, pageWidth - margin - 3, footerY + 13);
-  
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 17, { align: "right" });
+  // Add signature if enabled
+  if (data.eSignatureEnabled && data.signedBy) {
+    let signatureImage = null;
+    let signatoryName = "";
+    
+    if (data.signedBy === "Aslam") {
+      signatureImage = aslamSignature;
+      signatoryName = "Aslam";
+    } else if (data.signedBy === "Zupear") {
+      signatureImage = zupearSignature;
+      signatoryName = "Zupear";
+    } else if (data.signedBy === "Salman") {
+      signatureImage = aslamSignature; // Using Aslam's signature as placeholder for Salman
+      signatoryName = "Salman";
+    }
+    
+    if (signatureImage) {
+      // Add signature image
+      const sigWidth = 25;
+      const sigHeight = 15;
+      doc.addImage(signatureImage, 'PNG', pageWidth - margin - sigWidth - 3, footerY + 1, sigWidth, sigHeight);
+      
+      // Add line below signature
+      doc.setLineWidth(0.3);
+      doc.line(pageWidth - 55, footerY + 18, pageWidth - margin - 3, footerY + 18);
+      
+      // Add signatory name
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text(signatoryName, pageWidth - margin - 3, footerY + 22, { align: "right" });
+      
+      doc.setFont("helvetica", "normal");
+      doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 26, { align: "right" });
+    }
+  } else {
+    // Without signature - just show line and text
+    doc.setLineWidth(0.3);
+    doc.line(pageWidth - 55, footerY + 13, pageWidth - margin - 3, footerY + 13);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 17, { align: "right" });
+  }
 
   // Save and download the PDF
   const fileName = "Invoice-" + data.invoiceNumber + "-" + new Date().getTime() + ".pdf";
