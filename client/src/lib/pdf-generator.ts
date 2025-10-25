@@ -64,7 +64,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   // Logo on the left
   const logoWidth = 30;
   const logoHeight = 30;
-  doc.addImage(logoImage, 'PNG', margin, yPos - 5, logoWidth, logoHeight);
+  doc.addImage(logoImage, 'PNG', margin, yPos, logoWidth, logoHeight);
 
   // Center company details - all caps and center aligned
   const centerStartY = yPos + 8;
