@@ -720,7 +720,7 @@ export default function BillingPage() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="shopName" className="text-base font-semibold mb-2 block">
-                          Shop Name *
+                          Shop Name <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="shopName"
@@ -1022,7 +1022,7 @@ export default function BillingPage() {
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="shippingShopName" className="text-base font-semibold mb-2 block">
-                              Shop Name *
+                              Shop Name <span className="text-destructive">*</span>
                             </Label>
                             <Input
                               id="shippingShopName"
