@@ -2185,7 +2185,7 @@ export default function BillingPage() {
                     <span className="ml-3 text-lg">Loading products...</span>
                   </div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-6">
                     {products.map((product) => {
                       const gstRate = parseFloat(product.gstRate || "0");
                       const hasGST = gstRate > 0;
@@ -2193,43 +2193,43 @@ export default function BillingPage() {
                       return (
                       <Card
                         key={product.id}
-                        className="p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-primary border-2 cursor-pointer hover-elevate active-elevate-2 relative"
+                        className="p-3 sm:p-4 rounded-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary border-2 cursor-pointer relative"
                         onClick={() => handleAddProduct(product)}
                         data-testid={`card-product-${product.id}`}
                       >
                         {hasGST ? (
-                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full text-xs font-semibold">
-                            <Star className="w-3 h-3 fill-current" />
-                            <span>{gstRate}% GST</span>
+                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                            <Star className="w-2.5 h-2.5 fill-current" />
+                            <span>{gstRate}%</span>
                           </div>
                         ) : (
-                          <div className="absolute top-3 right-3 flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full text-xs font-semibold">
-                            <Circle className="w-3 h-3 fill-current" />
-                            <span>0% GST</span>
+                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                            <Circle className="w-2.5 h-2.5 fill-current" />
+                            <span>0%</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-1.5 mb-1.5">
                           {isWeightBased ? (
-                            <div className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-1 rounded-full text-xs font-semibold">
-                              <Weight className="w-3 h-3" />
+                            <div className="flex items-center gap-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                              <Weight className="w-2.5 h-2.5" />
                               <span>Kg</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-1 rounded-full text-xs font-semibold">
-                              <Hash className="w-3 h-3" />
+                            <div className="flex items-center gap-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                              <Hash className="w-2.5 h-2.5" />
                               <span>Qty</span>
                             </div>
                           )}
-                          <h3 className="font-bold text-lg pr-20">{product.name}</h3>
+                          <h3 className="font-bold text-sm sm:text-base pr-12 line-clamp-1">{product.name}</h3>
                         </div>
                         {product.description && (
-                          <p className="text-sm text-muted-foreground mb-3">
+                          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                             {product.description}
                           </p>
                         )}
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">HSN: {product.hsn}</span>
-                          <span className="font-bold text-primary text-lg">
+                        <div className="flex items-center justify-between text-xs sm:text-sm">
+                          <span className="text-muted-foreground">HSN: {product.hsn}</span>
+                          <span className="font-bold text-primary">
                             ₹{parseFloat(product.defaultPrice).toFixed(2)}/{product.unit}
                           </span>
                         </div>
