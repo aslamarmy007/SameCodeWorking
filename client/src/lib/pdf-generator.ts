@@ -67,7 +67,7 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   // Center company details - all caps and center aligned
   const centerStartY = yPos;
-  doc.setFontSize(18);
+  doc.setFontSize(28);
   doc.setTextColor(0, 0, 0);
   doc.setFont("times", "bold");
   doc.text("AYESHA", pageWidth / 2, centerStartY, { align: "center" });
