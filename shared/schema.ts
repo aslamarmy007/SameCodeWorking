@@ -17,13 +17,13 @@ export const customers = pgTable("customers", {
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true }).extend({
   name: z.string()
-    .min(1, "Customer name is required")
-    .regex(/^[a-zA-Z\s]+$/, "Customer name must contain only letters"),
-  shopName: z.string()
     .optional()
-    .refine((val) => !val || /^[a-zA-Z0-9\s]+$/.test(val), {
-      message: "Shop name can only contain letters and numbers"
+    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
+      message: "Customer name must contain only letters"
     }),
+  shopName: z.string()
+    .min(1, "Shop name is required")
+    .regex(/^[a-zA-Z0-9\s]+$/, "Shop name can only contain letters and numbers"),
   phone: z.string()
     .optional()
     .refine((val) => !val || /^\d{10}$/.test(val), {

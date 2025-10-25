@@ -30,27 +30,32 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
    - Quick selection from existing customers
    - Auto-fill customer information
    - Input validation rules:
-     - Name: letters only (required)
-     - Shop name: letters and numbers only
-     - Phone: exactly 10 digits
-     - GSTIN: letters and numbers only, max 15 characters
-     - City & State: letters only
+     - Shop name: letters and numbers only (REQUIRED - only mandatory field)
+     - Name: letters only (optional)
+     - Phone: exactly 10 digits (optional)
+     - GSTIN: letters and numbers only, max 15 characters (optional)
+     - City & State: letters only (optional)
    - Duplicate customer detection (prevents saving customers with same shop name)
    - Comprehensive error messages for validation failures
 
-3. **Product Catalog**
+3. **Shipping Information**
+   - Separate billing and shipping addresses
+   - Option to use billing address as shipping address
+   - Support for selecting existing customers for shipping
+
+4. **Product Catalog**
    - Pre-defined products with HSN codes
    - Default pricing
    - Interactive product cards with hover effects
 
-4. **Invoice Generation**
+5. **Invoice Generation**
    - Real-time calculation of subtotals
    - GST (18%) toggle and calculation
    - Additional charges (transport, packaging, other)
    - Lorry/vehicle number tracking
    - PDF export functionality (planned)
 
-5. **Beautiful UI/UX**
+6. **Beautiful UI/UX**
    - Purple gradient background (#667eea to #764ba2)
    - Rounded cards with shadows
    - Smooth transitions and hover effects
@@ -87,6 +92,9 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - [2025-10-24] Enhanced error handling with user-friendly validation messages
 - [2025-10-24] Updated shop name validation to allow letters and numbers
 - [2025-10-24] Added GSTIN validation (alphanumeric only, max 15 characters)
+- [2025-10-25] Changed validation: Shop name is now the only required field in customer information
+- [2025-10-25] Made customer name, phone, GSTIN, address, city, and state all optional fields
+- [2025-10-25] Updated both billing and shipping customer forms to require only shop name
 
 ## Development Status
 - ✅ Schema and data models defined

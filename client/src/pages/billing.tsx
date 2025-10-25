@@ -367,7 +367,7 @@ export default function BillingPage() {
   };
 
   const canProceedFromConfig = billConfig.billDate !== "";
-  const canProceedFromCustomer = customerData.name.trim() !== "";
+  const canProceedFromCustomer = customerData.shopName.trim() !== "";
   const canProceedFromProducts = billItems.length > 0;
   const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
   const canGeneratePDF = billItems.length > 0 && allItemsHaveValidQuantity;
@@ -378,30 +378,30 @@ export default function BillingPage() {
     const phoneRegex = /^\d{10}$/;
     const gstinRegex = /^[a-zA-Z0-9]+$/;
     
-    // Validate customer name
-    if (!customerData.name.trim()) {
+    // Validate shop name (required)
+    if (!customerData.shopName.trim()) {
       toast({
         title: "Validation Error",
-        description: "Customer name is required",
+        description: "Shop name is required",
         variant: "destructive",
       });
       return;
     }
     
-    if (!nameRegex.test(customerData.name.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Customer name must contain only letters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate shop name
-    if (customerData.shopName.trim() && !shopNameRegex.test(customerData.shopName.trim())) {
+    if (!shopNameRegex.test(customerData.shopName.trim())) {
       toast({
         title: "Validation Error",
         description: "Shop name can only contain letters and numbers",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate customer name (optional)
+    if (customerData.name.trim() && !nameRegex.test(customerData.name.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name must contain only letters",
         variant: "destructive",
       });
       return;
@@ -798,7 +798,7 @@ export default function BillingPage() {
                     </div>
                     <Button
                       onClick={handleSaveCustomer}
-                      disabled={saveCustomerMutation.isPending || !customerData.name.trim()}
+                      disabled={saveCustomerMutation.isPending || !customerData.shopName.trim()}
                       className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                       data-testid="button-save-customer"
                     >
@@ -1066,30 +1066,30 @@ export default function BillingPage() {
                             const phoneRegex = /^\d{10}$/;
                             const gstinRegex = /^[a-zA-Z0-9]+$/;
                             
-                            // Validate customer name
-                            if (!shippingData.name.trim()) {
+                            // Validate shop name (required)
+                            if (!shippingData.shopName.trim()) {
                               toast({
                                 title: "Validation Error",
-                                description: "Customer name is required",
+                                description: "Shop name is required",
                                 variant: "destructive",
                               });
                               return;
                             }
                             
-                            if (!nameRegex.test(shippingData.name.trim())) {
-                              toast({
-                                title: "Validation Error",
-                                description: "Customer name must contain only letters",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            
-                            // Validate shop name
-                            if (shippingData.shopName.trim() && !shopNameRegex.test(shippingData.shopName.trim())) {
+                            if (!shopNameRegex.test(shippingData.shopName.trim())) {
                               toast({
                                 title: "Validation Error",
                                 description: "Shop name can only contain letters and numbers",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // Validate customer name (optional)
+                            if (shippingData.name.trim() && !nameRegex.test(shippingData.name.trim())) {
+                              toast({
+                                title: "Validation Error",
+                                description: "Customer name must contain only letters",
                                 variant: "destructive",
                               });
                               return;
@@ -1147,7 +1147,7 @@ export default function BillingPage() {
                             
                             saveCustomerMutation.mutate(shippingData);
                           }}
-                          disabled={saveCustomerMutation.isPending || !shippingData.name.trim()}
+                          disabled={saveCustomerMutation.isPending || !shippingData.shopName.trim()}
                           className="w-full mt-4 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                           data-testid="button-save-shipping-customer"
                         >
