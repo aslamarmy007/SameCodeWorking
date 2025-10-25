@@ -91,7 +91,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("ALANGUDI, PUDUKKOTTAI, TAMIL NADU, INDIA - 622301.", pageWidth / 2, centerStartY + 23, { align: "center" });
   
   const phoneIconSize = 3;
-  const phoneTextY = centerStartY + 32;
+  const phoneTextY = centerStartY + 29;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
   const emailIconSize = 3;
@@ -99,18 +99,19 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   doc.setFontSize(9);
   
-  // Phone icon and text on LEFT side (aligned to left margin)
-  const phoneStartX = margin;
+  // Phone icon and text on LEFT side
+  const phoneStartX = margin + logoWidth + 5;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.setFont("helvetica", "normal");
   doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
-  // Email icon and text on RIGHT side (aligned to right margin)
+  // Email icon and text on RIGHT side
   const emailWidth = doc.getTextWidth(emailText);
-  const emailTextX = pageWidth - margin;
-  const emailIconX = emailTextX - emailWidth - emailIconSize - 1;
+  const emailEndX = pageWidth - margin - billBoxWidth - 5;
+  const emailTextX = emailEndX - emailWidth;
+  const emailIconX = emailTextX - emailIconSize - 1;
   doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, emailIconSize, emailIconSize);
-  doc.text(emailText, emailTextX, phoneTextY, { align: "right" });
+  doc.text(emailText, emailTextX, phoneTextY);
 
   // CASH/CREDIT BILL box on the right with double border
   const billBoxHeight = 8;
