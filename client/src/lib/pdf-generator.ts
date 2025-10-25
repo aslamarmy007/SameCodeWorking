@@ -240,9 +240,12 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
+    const gstinLabelWidth = doc.getTextWidth("GSTIN: ");
     doc.text("GSTIN: ", leftBoxX + 3, billToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.gstin, leftBoxX + 3 + doc.getTextWidth("GSTIN: "), billToY);
+    const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
+    const gstinLines = doc.splitTextToSize(data.customer.gstin, gstinTextWidth);
+    doc.text(gstinLines, leftBoxX + 3 + gstinLabelWidth, billToY);
   }
   
   // SHIP TO Box
@@ -317,9 +320,12 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
+    const gstinLabelWidth = doc.getTextWidth("GSTIN: ");
     doc.text("GSTIN: ", rightBoxX + 3, shipToY);
     doc.setFont("helvetica", "normal");
-    doc.text(data.shipping.gstin, rightBoxX + 3 + doc.getTextWidth("GSTIN: "), shipToY);
+    const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
+    const gstinLines = doc.splitTextToSize(data.shipping.gstin, gstinTextWidth);
+    doc.text(gstinLines, rightBoxX + 3 + gstinLabelWidth, shipToY);
   }
   
   yPos += boxHeight + 4;
