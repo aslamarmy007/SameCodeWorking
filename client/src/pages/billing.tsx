@@ -447,7 +447,15 @@ export default function BillingPage() {
   };
 
   const canProceedFromConfig = billConfig.billDate !== "";
-  const canProceedFromCustomer = customerData.shopName.trim() !== "";
+  const canProceedFromCustomer = 
+    customerData.shopName.trim() !== "" && 
+    customerData.city.trim() !== "" && 
+    customerData.state.trim() !== "" &&
+    (sameAsbilling || (
+      shippingData.shopName.trim() !== "" && 
+      shippingData.city.trim() !== "" && 
+      shippingData.state.trim() !== ""
+    ));
   const canProceedFromProducts = billItems.length > 0;
   const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
   const canGeneratePDF = billItems.length > 0 && allItemsHaveValidQuantity;
