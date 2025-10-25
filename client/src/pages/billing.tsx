@@ -1109,7 +1109,7 @@ export default function BillingPage() {
                               onChange={(e) =>
                                 setCustomerData({ ...customerData, shopName: e.target.value.slice(0, 50) })
                               }
-                              placeholder="Enter shop name"
+                              placeholder="Enter shop name (required)"
                               className="text-base"
                               maxLength={50}
                               data-testid="input-edit-shop-name"
@@ -1194,7 +1194,7 @@ export default function BillingPage() {
                             onChange={(e) =>
                               setCustomerData({ ...customerData, address: e.target.value.slice(0, 200) })
                             }
-                            placeholder="Enter address"
+                            placeholder="Enter address (optional)"
                             className="text-base min-h-[80px]"
                             maxLength={200}
                             data-testid="input-edit-address"
@@ -1212,7 +1212,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                                 setCustomerData({ ...customerData, city: value });
                               }}
-                              placeholder="Enter city"
+                              placeholder="Enter city (required)"
                               className="text-base"
                               maxLength={40}
                               data-testid="input-edit-city"
@@ -1230,7 +1230,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                                 setCustomerData({ ...customerData, state: value });
                               }}
-                              placeholder="Enter state"
+                              placeholder="Enter state (required)"
                               className="text-base"
                               maxLength={40}
                               data-testid="input-edit-state"
@@ -1244,10 +1244,11 @@ export default function BillingPage() {
                             <Input
                               id="editPostalCode"
                               value={customerData.postalCode}
-                              onChange={(e) =>
-                                setCustomerData({ ...customerData, postalCode: e.target.value.slice(0, 15) })
-                              }
-                              placeholder="Enter postal code"
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                                setCustomerData({ ...customerData, postalCode: value });
+                              }}
+                              placeholder="Enter postal code (optional)"
                               className="text-base"
                               maxLength={15}
                               data-testid="input-edit-postal-code"
@@ -1300,7 +1301,7 @@ export default function BillingPage() {
                           onChange={(e) =>
                             setCustomerData({ ...customerData, shopName: e.target.value.slice(0, 50) })
                           }
-                          placeholder="Enter shop name"
+                          placeholder="Enter shop name (required)"
                           className="text-base"
                           maxLength={50}
                           data-testid="input-shop-name"
@@ -1385,7 +1386,7 @@ export default function BillingPage() {
                         onChange={(e) =>
                           setCustomerData({ ...customerData, address: e.target.value.slice(0, 200) })
                         }
-                        placeholder="Enter address"
+                        placeholder="Enter address (optional)"
                         className="text-base min-h-[80px]"
                         maxLength={200}
                         data-testid="input-address"
@@ -1403,7 +1404,7 @@ export default function BillingPage() {
                             const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                             setCustomerData({ ...customerData, city: value });
                           }}
-                          placeholder="Enter city"
+                          placeholder="Enter city (required)"
                           className="text-base"
                           maxLength={40}
                           data-testid="input-city"
@@ -1421,7 +1422,7 @@ export default function BillingPage() {
                             const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                             setCustomerData({ ...customerData, state: value });
                           }}
-                          placeholder="Enter state"
+                          placeholder="Enter state (required)"
                           className="text-base"
                           maxLength={40}
                           data-testid="input-state"
@@ -1435,10 +1436,11 @@ export default function BillingPage() {
                         <Input
                           id="postalCode"
                           value={customerData.postalCode}
-                          onChange={(e) =>
-                            setCustomerData({ ...customerData, postalCode: e.target.value.slice(0, 15) })
-                          }
-                          placeholder="Enter postal code"
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                            setCustomerData({ ...customerData, postalCode: value });
+                          }}
+                          placeholder="Enter postal code (optional)"
                           className="text-base"
                           maxLength={15}
                           data-testid="input-postal-code"
@@ -1693,7 +1695,7 @@ export default function BillingPage() {
                                   onChange={(e) =>
                                     setShippingData({ ...shippingData, shopName: e.target.value.slice(0, 50) })
                                   }
-                                  placeholder="Enter shop name"
+                                  placeholder="Enter shop name (required)"
                                   className="text-base"
                                   maxLength={50}
                                   data-testid="input-edit-shipping-shop-name"
@@ -1778,7 +1780,7 @@ export default function BillingPage() {
                                 onChange={(e) =>
                                   setShippingData({ ...shippingData, address: e.target.value.slice(0, 200) })
                                 }
-                                placeholder="Enter address"
+                                placeholder="Enter address (optional)"
                                 className="text-base min-h-[80px]"
                                 maxLength={200}
                                 data-testid="input-edit-shipping-address"
@@ -1796,7 +1798,7 @@ export default function BillingPage() {
                                     const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                                     setShippingData({ ...shippingData, city: value });
                                   }}
-                                  placeholder="Enter city"
+                                  placeholder="Enter city (required)"
                                   className="text-base"
                                   maxLength={40}
                                   data-testid="input-edit-shipping-city"
@@ -1814,7 +1816,7 @@ export default function BillingPage() {
                                     const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                                     setShippingData({ ...shippingData, state: value });
                                   }}
-                                  placeholder="Enter state"
+                                  placeholder="Enter state (required)"
                                   className="text-base"
                                   maxLength={40}
                                   data-testid="input-edit-shipping-state"
@@ -1828,10 +1830,11 @@ export default function BillingPage() {
                                 <Input
                                   id="editShippingPostalCode"
                                   value={shippingData.postalCode}
-                                  onChange={(e) =>
-                                    setShippingData({ ...shippingData, postalCode: e.target.value.slice(0, 15) })
-                                  }
-                                  placeholder="Enter postal code"
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                                    setShippingData({ ...shippingData, postalCode: value });
+                                  }}
+                                  placeholder="Enter postal code (optional)"
                                   className="text-base"
                                   maxLength={15}
                                   data-testid="input-edit-shipping-postal-code"
@@ -1882,7 +1885,7 @@ export default function BillingPage() {
                               onChange={(e) =>
                                 setShippingData({ ...shippingData, shopName: e.target.value.slice(0, 50) })
                               }
-                              placeholder="Enter shop name"
+                              placeholder="Enter shop name (required)"
                               className="text-base"
                               maxLength={50}
                             />
@@ -1963,7 +1966,7 @@ export default function BillingPage() {
                             onChange={(e) =>
                               setShippingData({ ...shippingData, address: e.target.value.slice(0, 200) })
                             }
-                            placeholder="Enter address"
+                            placeholder="Enter address (optional)"
                             className="text-base min-h-[80px]"
                             maxLength={200}
                           />
@@ -1980,7 +1983,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                                 setShippingData({ ...shippingData, city: value });
                               }}
-                              placeholder="Enter city"
+                              placeholder="Enter city (required)"
                               className="text-base"
                               maxLength={40}
                               required
@@ -1997,7 +2000,7 @@ export default function BillingPage() {
                                 const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
                                 setShippingData({ ...shippingData, state: value });
                               }}
-                              placeholder="Enter state"
+                              placeholder="Enter state (required)"
                               className="text-base"
                               maxLength={40}
                               required
@@ -2010,10 +2013,11 @@ export default function BillingPage() {
                             <Input
                               id="shippingPostalCode"
                               value={shippingData.postalCode}
-                              onChange={(e) =>
-                                setShippingData({ ...shippingData, postalCode: e.target.value.slice(0, 15) })
-                              }
-                              placeholder="Enter postal code"
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                                setShippingData({ ...shippingData, postalCode: value });
+                              }}
+                              placeholder="Enter postal code (optional)"
                               className="text-base"
                               maxLength={15}
                             />
