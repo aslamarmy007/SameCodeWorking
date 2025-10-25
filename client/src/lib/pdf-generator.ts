@@ -284,9 +284,9 @@ export function generateInvoicePDF(data: InvoiceData) {
     const addressParts = [data.shipping.address, data.shipping.city, data.shipping.state].filter(Boolean);
     let addressText = addressParts.join(", ");
     if (data.shipping.postalCode) {
-      addressText += ", INDIA - " + data.shipping.postalCode + ".";
+      addressText += ",INDIA - " + data.shipping.postalCode + ".";
     } else {
-      addressText += ", INDIA.";
+      addressText += ",INDIA.";
     }
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, rightBoxX + 3, shipToY);
