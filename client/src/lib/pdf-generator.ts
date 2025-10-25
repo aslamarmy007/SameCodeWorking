@@ -99,19 +99,18 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   doc.setFontSize(9);
   
-  // Phone icon and text on LEFT side
-  const phoneStartX = margin + logoWidth + 5;
+  // Phone icon and text on LEFT side (aligned to left margin)
+  const phoneStartX = margin;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.setFont("helvetica", "normal");
   doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
-  // Email icon and text on RIGHT side
+  // Email icon and text on RIGHT side (aligned to right margin)
   const emailWidth = doc.getTextWidth(emailText);
-  const emailEndX = pageWidth - margin - billBoxWidth - 5;
-  const emailTextX = emailEndX - emailWidth;
-  const emailIconX = emailTextX - emailIconSize - 1;
+  const emailTextX = pageWidth - margin;
+  const emailIconX = emailTextX - emailWidth - emailIconSize - 1;
   doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, emailIconSize, emailIconSize);
-  doc.text(emailText, emailTextX, phoneTextY);
+  doc.text(emailText, emailTextX, phoneTextY, { align: "right" });
 
   // CASH/CREDIT BILL box on the right with double border
   const billBoxHeight = 8;
