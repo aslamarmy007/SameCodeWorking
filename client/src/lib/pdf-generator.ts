@@ -84,14 +84,15 @@ export function generateInvoicePDF(data: InvoiceData) {
   const billBoxY = yPos - 1;
   
   doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(0.4);
   doc.roundedRect(billBoxX, billBoxY, billBoxWidth, billBoxHeight, 2, 2, 'S');
-  doc.roundedRect(billBoxX + 1, billBoxY + 1, billBoxWidth - 2, billBoxHeight - 2, 2, 2, 'S');
+  doc.setLineWidth(0.4);
+  doc.roundedRect(billBoxX + 1.5, billBoxY + 1.5, billBoxWidth - 3, billBoxHeight - 3, 1.5, 1.5, 'S');
   
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
-  doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + 5.5, { align: "center" });
+  doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
 
   yPos += 28;
 
