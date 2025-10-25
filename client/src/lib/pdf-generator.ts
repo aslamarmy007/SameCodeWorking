@@ -92,28 +92,29 @@ export function generateInvoicePDF(data: InvoiceData) {
   const phoneIconSize = 3;
   const phoneTextY = centerStartY + 27;
   const phoneNumbersText = "89409 30276 | 94443 70934";
-  
-  doc.setFontSize(9);
-  const textWidth = doc.getTextWidth(phoneNumbersText);
-  const phoneIconX = (pageWidth / 2) - (textWidth / 2) - phoneIconSize - 1;
-  
-  doc.addImage(phoneIcon, 'PNG', phoneIconX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
-  
-  doc.setFont("helvetica", "normal");
-  doc.text(phoneNumbersText, pageWidth / 2, phoneTextY, { align: "center" });
-  
-  // Email with icon (5px space after phone number)
-  const emailTextY = phoneTextY + 5;
-  const emailText = "ayeshaAacf@gmail.com";
+  const emailText = "ayeshaacf@gmail.com";
   const emailIconSize = 3;
   
   doc.setFontSize(9);
-  const emailTextWidth = doc.getTextWidth(emailText);
-  const emailIconX = (pageWidth / 2) - (emailTextWidth / 2) - emailIconSize - 1;
   
-  doc.addImage(emailIcon, 'PNG', emailIconX, emailTextY - 2.5, emailIconSize, emailIconSize);
+  // Calculate combined width for centering (phone + space + email)
+  const phoneWidth = doc.getTextWidth(phoneNumbersText);
+  const emailWidth = doc.getTextWidth(emailText);
+  const spaceBetween = 10; // Space between phone and email
+  const totalContentWidth = phoneIconSize + 1 + phoneWidth + spaceBetween + emailIconSize + 1 + emailWidth;
+  
+  // Starting X position for phone icon (to center everything)
+  const startX = (pageWidth / 2) - (totalContentWidth / 2);
+  
+  // Phone icon and text
+  doc.addImage(phoneIcon, 'PNG', startX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.setFont("helvetica", "normal");
-  doc.text(emailText, pageWidth / 2, emailTextY, { align: "center" });
+  doc.text(phoneNumbersText, startX + phoneIconSize + 1, phoneTextY);
+  
+  // Email icon and text (on same line)
+  const emailStartX = startX + phoneIconSize + 1 + phoneWidth + spaceBetween;
+  doc.addImage(emailIcon, 'PNG', emailStartX, phoneTextY - 2.5, emailIconSize, emailIconSize);
+  doc.text(emailText, emailStartX + emailIconSize + 1, phoneTextY);
 
   // CASH/CREDIT BILL box on the right with double border
   const billBoxWidth = 30;
