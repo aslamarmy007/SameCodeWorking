@@ -384,7 +384,10 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   const rowHeight = 7;
   
-  // Subtotal row
+  // Subtotal row with navy light blue background
+  doc.setFillColor(220, 235, 245);
+  doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
+  
   doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
   doc.text("Subtotal:", totalsBoxX + 3, yPos + 5);
