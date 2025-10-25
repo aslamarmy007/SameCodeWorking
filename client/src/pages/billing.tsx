@@ -666,6 +666,116 @@ export default function BillingPage() {
     }
   };
 
+  const handleUpdateShippingCustomer = () => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
+    const phoneRegex = /^\d{10}$/;
+    const gstinRegex = /^[a-zA-Z0-9]+$/;
+    
+    // Validate shop name (required)
+    if (!shippingData.shopName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Shop name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!shopNameRegex.test(shippingData.shopName.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Shop name can only contain letters and numbers",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate customer name (optional)
+    if (shippingData.name.trim() && !nameRegex.test(shippingData.name.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate phone
+    if (shippingData.phone.trim() && !phoneRegex.test(shippingData.phone.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Phone number must be exactly 10 digits",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate GSTIN
+    if (shippingData.gstin.trim()) {
+      if (!gstinRegex.test(shippingData.gstin.trim())) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN can only contain letters and numbers",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (shippingData.gstin.trim().length > 15) {
+        toast({
+          title: "Validation Error",
+          description: "GSTIN must be maximum 15 characters",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    // Validate city (required)
+    if (!shippingData.city.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "City is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(shippingData.city.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "City must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate state (required)
+    if (!shippingData.state.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "State is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!nameRegex.test(shippingData.state.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "State must contain only letters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Update shipping customer in database if it has an ID
+    if (shippingData.id) {
+      updateCustomerMutation.mutate(shippingData);
+      setIsEditingShippingCustomer(false);
+    }
+  };
+
   const handleGeneratePDF = async () => {
     // Validate all items have quantity >= 0.1
     if (!allItemsHaveValidQuantity) {
@@ -1553,43 +1663,22 @@ export default function BillingPage() {
                             </div>
                             <div className="flex gap-2 mt-4">
                               <Button
-                                onClick={() => {
-                                  if (!shippingData.shopName.trim()) {
-                                    toast({
-                                      title: "Validation Error",
-                                      description: "Shop name is required",
-                                      variant: "destructive",
-                                    });
-                                    return;
-                                  }
-                                  if (!shippingData.city.trim()) {
-                                    toast({
-                                      title: "Validation Error",
-                                      description: "City is required",
-                                      variant: "destructive",
-                                    });
-                                    return;
-                                  }
-                                  if (!shippingData.state.trim()) {
-                                    toast({
-                                      title: "Validation Error",
-                                      description: "State is required",
-                                      variant: "destructive",
-                                    });
-                                    return;
-                                  }
-                                  setIsEditingShippingCustomer(false);
-                                  toast({
-                                    title: "Success",
-                                    description: "Shipping customer details updated",
-                                  });
-                                }}
-                                disabled={!shippingData.shopName.trim() || !shippingData.city.trim() || !shippingData.state.trim()}
+                                onClick={handleUpdateShippingCustomer}
+                                disabled={updateCustomerMutation.isPending || !shippingData.shopName.trim() || !shippingData.city.trim() || !shippingData.state.trim()}
                                 className="flex-1 text-base py-6 bg-success hover:bg-success/90 text-success-foreground"
                                 data-testid="button-update-shipping-customer"
                               >
-                                <Save className="w-4 h-4 mr-2" />
-                                Update Shipping Customer
+                                {updateCustomerMutation.isPending ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Updating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save className="w-4 h-4 mr-2" />
+                                    Update Shipping Customer
+                                  </>
+                                )}
                               </Button>
                               <Button
                                 variant="outline"
