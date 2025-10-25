@@ -457,8 +457,10 @@ export default function BillingPage() {
       shippingData.state.trim() !== ""
     ));
   const allItemsHaveValidQuantity = billItems.every(item => item.quantity >= 0.1);
-  const canProceedFromProducts = billItems.length === 0 || allItemsHaveValidQuantity;
-  const canGeneratePDF = billItems.length === 0 || (billItems.length > 0 && allItemsHaveValidQuantity);
+  const hasValidProducts = billItems.length > 0 && allItemsHaveValidQuantity;
+  const hasAnyCharges = additionalCharges.transport > 0 || additionalCharges.packaging > 0 || additionalCharges.other > 0;
+  const canProceedFromProducts = hasValidProducts || hasAnyCharges;
+  const canGeneratePDF = hasValidProducts || hasAnyCharges;
 
   const handleSaveCustomer = () => {
     const nameRegex = /^[a-zA-Z\s]+$/;
