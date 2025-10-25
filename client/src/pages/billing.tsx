@@ -875,13 +875,13 @@ export default function BillingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#667eea] to-[#764ba2]">
-      <div className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white py-4 sm:py-8 rounded-b-[20px] sm:rounded-b-[30px] shadow-lg mb-4 sm:mb-8">
+      <div className="mx-2.5 mt-2.5 bg-white/20 dark:bg-white/10 backdrop-blur-md text-white py-4 sm:py-8 rounded-[20px] sm:rounded-[30px] shadow-lg mb-4 sm:mb-8 border border-white/30">
         <div className="text-center px-2">
           <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1 sm:mb-2">
             <Sprout className="w-6 h-6 sm:w-10 sm:h-10" />
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold">AYESHA Coco Pith</h1>
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold">AYESHA COCO PITH & FIBER INDUSTRIES</h1>
           </div>
-          <p className="text-sm sm:text-lg opacity-90">Professional Billing System</p>
+          <p className="text-sm sm:text-lg opacity-90">Billing System</p>
         </div>
       </div>
 
