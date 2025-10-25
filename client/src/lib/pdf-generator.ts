@@ -91,7 +91,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("ALANGUDI, PUDUKKOTTAI, TAMIL NADU, INDIA - 622301.", pageWidth / 2, centerStartY + 23, { align: "center" });
   
   const phoneIconSize = 3;
-  const phoneTextY = centerStartY + 29;
+  const phoneTextY = centerStartY + 32;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
   const emailIconSize = 3;
