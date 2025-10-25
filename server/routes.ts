@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCustomerSchema, insertInvoiceSchema, insertInvoiceItemSchema } from "@shared/schema";
+import { insertCustomerSchema, insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Customer routes
@@ -104,6 +104,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/products", async (req, res) => {
+    try {
+      const validated = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(validated);
+      res.status(201).json(product);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Validation error",
+          message: error.errors[0]?.message || "Invalid product data",
+          details: error.errors
+        });
+      }
+      res.status(400).json({ error: "Invalid product data" });
+    }
+  });
+
+  app.put("/api/products/:id", async (req, res) => {
+    try {
+      const validated = insertProductSchema.partial().parse(req.body);
+      const product = await storage.updateProduct(req.params.id, validated);
+      if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid product data" });
+    }
+  });
+
+  app.delete("/api/products/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteProduct(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete product" });
+    }
+  });
+
   // Invoice routes
   app.get("/api/invoices", async (_req, res) => {
     try {
@@ -164,6 +206,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Invoice creation error:", error);
       res.status(400).json({ error: "Invalid invoice data" });
+    }
+  });
+
+  app.put("/api/invoices/:id", async (req, res) => {
+    try {
+      const { items, ...invoiceData } = req.body;
+      const validated = insertInvoiceSchema.partial().parse(invoiceData);
+      const invoice = await storage.updateInvoice(req.params.id, validated);
+      
+      if (!invoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+
+      if (items && Array.isArray(items)) {
+        await storage.deleteInvoiceItems(invoice.id);
+        for (const item of items) {
+          const validatedItem = insertInvoiceItemSchema.parse({
+            ...item,
+            invoiceId: invoice.id,
+            quantity: item.quantity.toString(),
+          });
+          await storage.createInvoiceItem(validatedItem);
+        }
+      }
+
+      const invoiceItems = await storage.getInvoiceItems(invoice.id);
+      res.json({ invoice, items: invoiceItems });
+    } catch (error) {
+      console.error("Invoice update error:", error);
+      res.status(400).json({ error: "Invalid invoice data" });
+    }
+  });
+
+  app.delete("/api/invoices/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteInvoice(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete invoice" });
+    }
+  });
+
+  app.get("/api/invoices/filter/date-range", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: "startDate and endDate are required" });
+      }
+
+      const invoices = await storage.getInvoicesByDateRange(
+        startDate as string,
+        endDate as string
+      );
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to filter invoices" });
     }
   });
 
