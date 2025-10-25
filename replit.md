@@ -70,7 +70,7 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 ## Data Models
 
 ### Customer
-- id, name, shopName, phone, gstin, address, city, state, postalCode
+- id, name, shopName, phone, gstin, address, city, state, postalCode, createdAt
 
 ### Product
 - id, name, description, hsn, defaultPrice, unit
@@ -128,6 +128,15 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
   - Dialog-based forms using shared schemas from @shared/schema.ts
   - Proper cache invalidation for filtered queries
   - Navigation between Billing and Dashboard pages
+  - Removed "State" column from customer table display
+- [2025-10-25] Added customer filtering and sorting in dashboard:
+  - Search by shop name or contact name (combined search field)
+  - Search by phone number
+  - Filter by city (dropdown with unique cities from customer data)
+  - Sort options: A to Z, Z to A, New to Old, Old to New
+  - Real-time filtering and sorting with results counter
+  - Added createdAt timestamp to customer schema for chronological sorting
+  - Clear buttons on search fields for better UX
 
 ## Development Status
 - ✅ Schema and data models defined
