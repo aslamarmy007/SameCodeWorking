@@ -504,12 +504,12 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFontSize(8);
   doc.text("1. Payment due within 30 days from the date of invoice", margin, footerY + 4.5);
   doc.text("2. Goods once sold cannot be returned or exchanged", margin, footerY + 8.5);
-  doc.text("3. Interest @ 18% p.a. will be charged on delayed payments", margin, footerY + 12.5);
+  doc.text("3. Interest will be charged on delayed payments", margin, footerY + 12.5);
   
   // Signature section
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.text("For AYESHA Coco Pith", pageWidth - margin - 3, footerY + 8, { align: "right" });
+  doc.text("For AYESHA Coco Pith & Fiber Industries", pageWidth - margin - 3, footerY + 8, { align: "right" });
   
   doc.setLineWidth(0.3);
   doc.line(pageWidth - 55, footerY + 13, pageWidth - margin - 3, footerY + 13);
