@@ -664,14 +664,13 @@ export default function Dashboard() {
                           <TableHead>Contact Name</TableHead>
                           <TableHead>Phone</TableHead>
                           <TableHead>City</TableHead>
-                          <TableHead>State</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {customers.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center text-gray-500" data-testid="text-no-customers">
+                            <TableCell colSpan={5} className="text-center text-gray-500" data-testid="text-no-customers">
                               No customers found. Add your first customer to get started.
                             </TableCell>
                           </TableRow>
@@ -682,7 +681,6 @@ export default function Dashboard() {
                               <TableCell>{customer.name}</TableCell>
                               <TableCell>{customer.phone}</TableCell>
                               <TableCell>{customer.city}</TableCell>
-                              <TableCell>{customer.state}</TableCell>
                               <TableCell className="text-right">
                                 <Button
                                   variant="ghost"
