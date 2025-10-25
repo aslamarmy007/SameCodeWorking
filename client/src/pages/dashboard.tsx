@@ -138,7 +138,17 @@ export default function Dashboard() {
     },
     onError: (error: any) => {
       const errorData = error.body;
-      if (errorData?.error === "Validation error") {
+      if (error.status === 404) {
+        setCustomerDialogOpen(false);
+        setEditingCustomer(null);
+        customerForm.reset();
+        queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+        toast({
+          title: "Customer not found",
+          description: "This customer may have been deleted",
+          variant: "destructive",
+        });
+      } else if (errorData?.error === "Validation error") {
         toast({
           title: "Validation Error",
           description: errorData.message || "Please check all fields and try again",
@@ -157,8 +167,18 @@ export default function Dashboard() {
       toast({ title: "Customer deleted successfully" });
       setDeleteCustomerId(null);
     },
-    onError: () => {
-      toast({ title: "Failed to delete customer", variant: "destructive" });
+    onError: (error: any) => {
+      setDeleteCustomerId(null);
+      if (error.status === 404) {
+        queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+        toast({ 
+          title: "Customer not found", 
+          description: "This customer may have already been deleted",
+          variant: "destructive" 
+        });
+      } else {
+        toast({ title: "Failed to delete customer", variant: "destructive" });
+      }
     },
   });
 
@@ -199,8 +219,18 @@ export default function Dashboard() {
       toast({ title: "Product deleted successfully" });
       setDeleteProductId(null);
     },
-    onError: () => {
-      toast({ title: "Failed to delete product", variant: "destructive" });
+    onError: (error: any) => {
+      setDeleteProductId(null);
+      if (error.status === 404) {
+        queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+        toast({ 
+          title: "Product not found", 
+          description: "This product may have already been deleted",
+          variant: "destructive" 
+        });
+      } else {
+        toast({ title: "Failed to delete product", variant: "destructive" });
+      }
     },
   });
 
@@ -217,8 +247,23 @@ export default function Dashboard() {
       toast({ title: "Bill deleted successfully" });
       setDeleteInvoiceId(null);
     },
-    onError: () => {
-      toast({ title: "Failed to delete bill", variant: "destructive" });
+    onError: (error: any) => {
+      setDeleteInvoiceId(null);
+      if (error.status === 404) {
+        queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+        if (billDateRange.startDate && billDateRange.endDate) {
+          queryClient.invalidateQueries({ 
+            queryKey: ["/api/invoices/filter/date-range", billDateRange.startDate, billDateRange.endDate] 
+          });
+        }
+        toast({ 
+          title: "Bill not found", 
+          description: "This bill may have already been deleted",
+          variant: "destructive" 
+        });
+      } else {
+        toast({ title: "Failed to delete bill", variant: "destructive" });
+      }
     },
   });
 
