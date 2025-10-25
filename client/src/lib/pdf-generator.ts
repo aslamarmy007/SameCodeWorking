@@ -205,7 +205,12 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     const addressParts = [data.customer.address, data.customer.city, data.customer.state].filter(Boolean);
-    const addressText = addressParts.join(", ");
+    let addressText = addressParts.join(", ");
+    if (data.customer.postalCode) {
+      addressText += ", India - " + data.customer.postalCode + ".";
+    } else {
+      addressText += ", India.";
+    }
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, leftBoxX + 3, billToY);
     billToY += (splitAddress.length * 4);
@@ -277,7 +282,12 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     const addressParts = [data.shipping.address, data.shipping.city, data.shipping.state].filter(Boolean);
-    const addressText = addressParts.join(", ");
+    let addressText = addressParts.join(", ");
+    if (data.shipping.postalCode) {
+      addressText += ", India - " + data.shipping.postalCode + ".";
+    } else {
+      addressText += ", India.";
+    }
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, rightBoxX + 3, shipToY);
     shipToY += (splitAddress.length * 4);
