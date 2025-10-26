@@ -376,7 +376,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFontSize(9);
   
   data.items.forEach((item, index) => {
-    if (yPos > pageHeight - 50) {
+    if (yPos > pageHeight - 25) {
       doc.addPage();
       yPos = 18;
       
