@@ -54,30 +54,17 @@ interface InvoiceData {
   signedBy?: string;
 }
 
-export function generateInvoicePDF(data: InvoiceData) {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
-  
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
-  let yPos = 18;
-
-  // Professional border around the page
+function drawPageBorder(doc: jsPDF, pageWidth: number, pageHeight: number) {
   doc.setDrawColor(100, 100, 100);
   doc.setLineWidth(0.5);
   doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+}
 
-  // Header section with logo, center details, and CASH/CREDIT BILL
-  // Logo on the left
+function drawCompanyHeader(doc: jsPDF, pageWidth: number, margin: number, yPos: number): number {
   const logoWidth = 30;
   const logoHeight = 30;
   doc.addImage(logoImage, 'PNG', margin, yPos - 2, logoWidth, logoHeight);
 
-  // Center company details - all caps and center aligned
   const centerStartY = yPos + 12;
   doc.setFontSize(45);
   doc.setTextColor(51, 74, 94);
@@ -98,26 +85,22 @@ export function generateInvoicePDF(data: InvoiceData) {
   const phoneTextY = centerStartY + 29;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
-  const emailIconSize = 3;
   const billBoxWidth = 30;
   
   doc.setFontSize(9);
   
-  // Phone icon and text on LEFT side
   const phoneStartX = margin + logoWidth + 5;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.setFont("helvetica", "normal");
   doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
-  // Email icon and text on RIGHT side
   const emailWidth = doc.getTextWidth(emailText);
   const emailEndX = pageWidth - margin - billBoxWidth - 5;
   const emailTextX = emailEndX - emailWidth;
-  const emailIconX = emailTextX - emailIconSize - 1;
-  doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, emailIconSize, emailIconSize);
+  const emailIconX = emailTextX - phoneIconSize - 1;
+  doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.text(emailText, emailTextX, phoneTextY);
 
-  // CASH/CREDIT BILL box on the right with double border
   const billBoxHeight = 8;
   const billBoxX = pageWidth - margin - billBoxWidth;
   const billBoxY = yPos - 1;
@@ -133,15 +116,15 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setTextColor(0, 0, 0);
   doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
 
-  yPos += 46;
+  return yPos + 46;
+}
 
-  // Thick separator line
+function drawInvoiceDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, invoiceNumber: string, billDate: string): number {
   doc.setDrawColor(52, 73, 94);
   doc.setLineWidth(0.8);
   doc.line(margin, yPos, pageWidth - margin, yPos);
   yPos += 8;
 
-  // Invoice title and details in a box
   doc.setFillColor(52, 73, 94);
   doc.rect(margin, yPos, pageWidth - (2 * margin), 11, "F");
   
@@ -151,14 +134,13 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("TAX INVOICE", margin + 4, yPos + 7.5);
   
   doc.setFontSize(10);
-  doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 4, yPos + 7.5, { align: "right" });
+  doc.text("Invoice No: " + invoiceNumber, pageWidth - margin - 4, yPos + 7.5, { align: "right" });
   yPos += 16;
 
-  // Date - positioned properly within margins
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  const formattedDate = new Date(data.billDate).toLocaleDateString('en-IN', { 
+  const formattedDate = new Date(billDate).toLocaleDateString('en-IN', { 
     day: '2-digit', 
     month: 'short', 
     year: 'numeric' 
@@ -166,18 +148,19 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("Date: " + formattedDate, pageWidth - margin - 4, yPos, { align: "right" });
   yPos += 5;
 
-  // Customer details boxes - Bill To and Ship To side by side
-  const boxWidth = (pageWidth - (2 * margin) - 4) / 2; // 4mm gap between boxes
+  return yPos;
+}
+
+function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any): number {
+  const boxWidth = (pageWidth - (2 * margin) - 4) / 2;
   const boxHeight = 42;
   const leftBoxX = margin;
   const rightBoxX = margin + boxWidth + 4;
   
-  // BILL TO Box
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.3);
   doc.rect(leftBoxX, yPos, boxWidth, boxHeight);
   
-  // "Bill To" header with background
   doc.setFillColor(240, 240, 240);
   doc.rect(leftBoxX, yPos, boxWidth, 7, "F");
   
@@ -188,30 +171,30 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   let billToY = yPos + 13;
   
-  if (data.customer.shopName) {
+  if (customer.shopName) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(data.customer.shopName, leftBoxX + 3, billToY);
+    doc.text(customer.shopName, leftBoxX + 3, billToY);
     billToY += 4.5;
   }
   
-  if (data.customer.name) {
+  if (customer.name) {
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(data.customer.name, leftBoxX + 3, billToY);
+    doc.text(customer.name, leftBoxX + 3, billToY);
     billToY += 4.5;
   }
   
-  if (data.customer.address || data.customer.city || data.customer.state) {
+  if (customer.address || customer.city || customer.state) {
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
-    const addressParts = [data.customer.address, data.customer.city, data.customer.state].filter(Boolean);
+    const addressParts = [customer.address, customer.city, customer.state].filter(Boolean);
     let addressText = addressParts.join(", ");
-    if (data.customer.postalCode) {
-      addressText += ", INDIA - " + data.customer.postalCode + ".";
+    if (customer.postalCode) {
+      addressText += ", INDIA - " + customer.postalCode + ".";
     } else {
       addressText += ", INDIA.";
     }
@@ -220,27 +203,27 @@ export function generateInvoicePDF(data: InvoiceData) {
     billToY += (splitAddress.length * 4);
   }
   
-  if (data.customer.phone) {
+  if (customer.phone) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     const phoneIconSmallSize = 2.5;
     doc.addImage(phoneIconSmall, 'PNG', leftBoxX + 3, billToY - 2, phoneIconSmallSize, phoneIconSmallSize);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.phone, leftBoxX + 3 + phoneIconSmallSize + 1, billToY);
+    doc.text(customer.phone, leftBoxX + 3 + phoneIconSmallSize + 1, billToY);
     billToY += 4;
   }
   
-  if (data.customer.email) {
+  if (customer.email) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     const envelopeIconSize = 2.5;
     doc.addImage(envelopeIcon, 'PNG', leftBoxX + 3, billToY - 2, envelopeIconSize, envelopeIconSize);
     doc.setFont("helvetica", "normal");
-    doc.text(data.customer.email, leftBoxX + 3 + envelopeIconSize + 1, billToY);
+    doc.text(customer.email, leftBoxX + 3 + envelopeIconSize + 1, billToY);
     billToY += 4;
   }
   
-  if (data.customer.gstin) {
+  if (customer.gstin) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
@@ -248,16 +231,14 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.text("GSTIN: ", leftBoxX + 3, billToY);
     doc.setFont("helvetica", "normal");
     const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
-    const gstinLines = doc.splitTextToSize(data.customer.gstin, gstinTextWidth);
+    const gstinLines = doc.splitTextToSize(customer.gstin, gstinTextWidth);
     doc.text(gstinLines, leftBoxX + 3 + gstinLabelWidth, billToY);
   }
   
-  // SHIP TO Box
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.3);
   doc.rect(rightBoxX, yPos, boxWidth, boxHeight);
   
-  // "Ship To" header with background
   doc.setFillColor(240, 240, 240);
   doc.rect(rightBoxX, yPos, boxWidth, 7, "F");
   
@@ -268,30 +249,30 @@ export function generateInvoicePDF(data: InvoiceData) {
   
   let shipToY = yPos + 13;
   
-  if (data.shipping.shopName) {
+  if (shipping.shopName) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(data.shipping.shopName, rightBoxX + 3, shipToY);
+    doc.text(shipping.shopName, rightBoxX + 3, shipToY);
     shipToY += 4.5;
   }
   
-  if (data.shipping.name) {
+  if (shipping.name) {
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(data.shipping.name, rightBoxX + 3, shipToY);
+    doc.text(shipping.name, rightBoxX + 3, shipToY);
     shipToY += 4.5;
   }
   
-  if (data.shipping.address || data.shipping.city || data.shipping.state) {
+  if (shipping.address || shipping.city || shipping.state) {
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
-    const addressParts = [data.shipping.address, data.shipping.city, data.shipping.state].filter(Boolean);
+    const addressParts = [shipping.address, shipping.city, shipping.state].filter(Boolean);
     let addressText = addressParts.join(", ");
-    if (data.shipping.postalCode) {
-      addressText += ",INDIA - " + data.shipping.postalCode + ".";
+    if (shipping.postalCode) {
+      addressText += ",INDIA - " + shipping.postalCode + ".";
     } else {
       addressText += ",INDIA.";
     }
@@ -300,27 +281,27 @@ export function generateInvoicePDF(data: InvoiceData) {
     shipToY += (splitAddress.length * 4);
   }
   
-  if (data.shipping.phone) {
+  if (shipping.phone) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     const phoneIconSmallSize = 2.5;
     doc.addImage(phoneIconSmall, 'PNG', rightBoxX + 3, shipToY - 2, phoneIconSmallSize, phoneIconSmallSize);
     doc.setFont("helvetica", "normal");
-    doc.text(data.shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
+    doc.text(shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
     shipToY += 4;
   }
   
-  if (data.shipping.email) {
+  if (shipping.email) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     const envelopeIconSize = 2.5;
     doc.addImage(envelopeIcon, 'PNG', rightBoxX + 3, shipToY - 2, envelopeIconSize, envelopeIconSize);
     doc.setFont("helvetica", "normal");
-    doc.text(data.shipping.email, rightBoxX + 3 + envelopeIconSize + 1, shipToY);
+    doc.text(shipping.email, rightBoxX + 3 + envelopeIconSize + 1, shipToY);
     shipToY += 4;
   }
   
-  if (data.shipping.gstin) {
+  if (shipping.gstin) {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
@@ -328,16 +309,38 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.text("GSTIN: ", rightBoxX + 3, shipToY);
     doc.setFont("helvetica", "normal");
     const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
-    const gstinLines = doc.splitTextToSize(data.shipping.gstin, gstinTextWidth);
+    const gstinLines = doc.splitTextToSize(shipping.gstin, gstinTextWidth);
     doc.text(gstinLines, rightBoxX + 3 + gstinLabelWidth, shipToY);
   }
   
-  yPos += boxHeight + 4;
+  return yPos + boxHeight + 4;
+}
 
-  // Items table with professional styling
+function drawCompletePageHeader(doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, data: InvoiceData, startY: number): number {
+  drawPageBorder(doc, pageWidth, pageHeight);
+  let yPos = startY;
+  yPos = drawCompanyHeader(doc, pageWidth, margin, yPos);
+  yPos = drawInvoiceDetails(doc, pageWidth, margin, yPos, data.invoiceNumber, data.billDate);
+  yPos = drawCustomerDetails(doc, pageWidth, margin, yPos, data.customer, data.shipping);
+  return yPos;
+}
+
+export function generateInvoicePDF(data: InvoiceData) {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  let yPos = 18;
+
+  yPos = drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
+
   const tableStartY = yPos;
   
-  // Table header
   doc.setFillColor(52, 73, 94);
   doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
   
@@ -352,35 +355,33 @@ export function generateInvoicePDF(data: InvoiceData) {
   const col5 = pageWidth / 2 + 50;
   const col6 = pageWidth - margin - 3;
   
+  const rateIconSize = 3;
+  
   doc.text("S.No", col1, yPos + 6);
   doc.text("Description", col2, yPos + 6);
   doc.text("HSN", col3, yPos + 6);
   doc.text("Qty/Kg", col4, yPos + 6, { align: "center" });
   
-  // Add rupee icon before "Rate"
-  const rateIconSize = 3;
   const rateTextWidth = doc.getTextWidth("Rate");
   doc.addImage(rupeeIcon, 'PNG', col5 - rateTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
   doc.text("Rate", col5, yPos + 6, { align: "right" });
   
-  // Add rupee icon before "Amount"
   const amountTextWidth = doc.getTextWidth("Amount");
   doc.addImage(rupeeIcon, 'PNG', col6 - amountTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
   doc.text("Amount", col6, yPos + 6, { align: "right" });
   yPos += 9;
 
-  // Table items
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   
   data.items.forEach((item, index) => {
-    // Check if we need a new page
-    if (yPos > pageHeight - 80) {
+    if (yPos > pageHeight - 50) {
       doc.addPage();
-      yPos = 20;
+      yPos = 18;
       
-      // Redraw table header on new page
+      yPos = drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
+      
       doc.setFillColor(52, 73, 94);
       doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
       doc.setTextColor(255, 255, 255);
@@ -391,12 +392,10 @@ export function generateInvoicePDF(data: InvoiceData) {
       doc.text("HSN", col3, yPos + 6);
       doc.text("Qty/Kg", col4, yPos + 6, { align: "center" });
       
-      // Add rupee icon before "Rate" on new page
       const newPageRateTextWidth = doc.getTextWidth("Rate");
       doc.addImage(rupeeIcon, 'PNG', col5 - newPageRateTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
       doc.text("Rate", col5, yPos + 6, { align: "right" });
       
-      // Add rupee icon before "Amount" on new page
       const newPageAmountTextWidth = doc.getTextWidth("Amount");
       doc.addImage(rupeeIcon, 'PNG', col6 - newPageAmountTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
       doc.text("Amount", col6, yPos + 6, { align: "right" });
@@ -406,7 +405,6 @@ export function generateInvoicePDF(data: InvoiceData) {
       doc.setFontSize(9);
     }
 
-    // Alternate row colors
     if (index % 2 === 0) {
       doc.setFillColor(250, 250, 250);
       doc.rect(margin, yPos, pageWidth - (2 * margin), 7, "F");
@@ -421,7 +419,6 @@ export function generateInvoicePDF(data: InvoiceData) {
     
     yPos += 7;
     
-    // Light separator line
     doc.setDrawColor(230, 230, 230);
     doc.setLineWidth(0.1);
     doc.line(margin, yPos, pageWidth - margin, yPos);
@@ -429,114 +426,13 @@ export function generateInvoicePDF(data: InvoiceData) {
 
   yPos += 6;
 
-  // Check if we need a new page for totals section
-  // Estimate space needed: totals (7 rows avg) + grand total + words + lorry + footer (32mm)
   const estimatedSpaceNeeded = 100;
   if (yPos + estimatedSpaceNeeded > pageHeight - 10) {
-    // Add new page
     doc.addPage();
     yPos = 18;
-    
-    // Professional border around the new page
-    doc.setDrawColor(100, 100, 100);
-    doc.setLineWidth(0.5);
-    doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
-    
-    // Add complete header on new page
-    const logoWidth = 30;
-    const logoHeight = 30;
-    doc.addImage(logoImage, 'PNG', margin, yPos - 2, logoWidth, logoHeight);
-    
-    const centerStartY = yPos + 12;
-    doc.setFontSize(45);
-    doc.setTextColor(51, 74, 94);
-    doc.setFont("times", "bold");
-    doc.text("AYESHA", pageWidth / 2, centerStartY, { align: "center" });
-    
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    doc.text("COCO PITH & FIBER INDUSTRIES", pageWidth / 2, centerStartY + 11, { align: "center" });
-    
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI", pageWidth / 2, centerStartY + 18, { align: "center" });
-    doc.text("ALANGUDI, PUDUKKOTTAI, TAMIL NADU, INDIA - 622301.", pageWidth / 2, centerStartY + 23, { align: "center" });
-    
-    const phoneIconSize = 3;
-    const phoneTextY = centerStartY + 29;
-    const phoneNumbersText = "89409 30276 | 94443 70934";
-    const emailText = "ayeshaacf@gmail.com";
-    const emailIconSize = 3;
-    const billBoxWidth = 30;
-    
-    doc.setFontSize(9);
-    
-    // Phone icon and text on LEFT side
-    const phoneStartX = margin + logoWidth + 5;
-    doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
-    doc.setFont("helvetica", "normal");
-    doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
-    
-    // Email icon and text on RIGHT side
-    const emailWidth = doc.getTextWidth(emailText);
-    const emailEndX = pageWidth - margin - billBoxWidth - 5;
-    const emailTextX = emailEndX - emailWidth;
-    const emailIconX = emailTextX - emailIconSize - 1;
-    doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, emailIconSize, emailIconSize);
-    doc.text(emailText, emailTextX, phoneTextY);
-    
-    // CASH/CREDIT BILL box on the right with double border
-    const billBoxHeight = 8;
-    const billBoxX = pageWidth - margin - billBoxWidth;
-    const billBoxY = yPos - 1;
-    
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.4);
-    doc.roundedRect(billBoxX, billBoxY, billBoxWidth, billBoxHeight, 2, 2, 'S');
-    doc.setLineWidth(0.4);
-    doc.roundedRect(billBoxX + 1.5, billBoxY + 1.5, billBoxWidth - 3, billBoxHeight - 3, 1.5, 1.5, 'S');
-    
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
-    
-    yPos += 46;
-    
-    // Thick separator line
-    doc.setDrawColor(52, 73, 94);
-    doc.setLineWidth(0.8);
-    doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 8;
-    
-    // Invoice title and details in a box
-    doc.setFillColor(52, 73, 94);
-    doc.rect(margin, yPos, pageWidth - (2 * margin), 11, "F");
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text("TAX INVOICE", margin + 4, yPos + 7.5);
-    
-    doc.setFontSize(10);
-    doc.text("Invoice No: " + data.invoiceNumber, pageWidth - margin - 4, yPos + 7.5, { align: "right" });
-    yPos += 16;
-    
-    // Date - positioned properly within margins
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    const formattedDate2 = new Date(data.billDate).toLocaleDateString('en-IN', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    });
-    doc.text("Date: " + formattedDate2, pageWidth - margin - 4, yPos, { align: "right" });
-    yPos += 10;
+    yPos = drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
   }
 
-  // Totals section with professional styling (no left/right borders)
   const totalsBoxX = pageWidth - 85;
   const totalsBoxWidth = 70;
   
@@ -548,7 +444,6 @@ export function generateInvoicePDF(data: InvoiceData) {
   const rupeeIconSize = 2.2;
   const iconSpacing = 1;
   
-  // Subtotal row with navy light blue background
   doc.setFillColor(220, 235, 245);
   doc.rect(totalsBoxX, yPos, totalsBoxWidth, rowHeight, "F");
   
@@ -562,12 +457,10 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text(subtotalAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
   yPos += rowHeight;
   
-  // Horizontal line after subtotal
   doc.setDrawColor(230, 230, 230);
   doc.setLineWidth(0.3);
   doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
 
-  // Additional charges
   if (data.transport > 0) {
     doc.setFont("helvetica", "normal");
     doc.text("Transport:", totalsBoxX + 3, yPos + 5);
@@ -604,18 +497,15 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
   }
 
-  // GST - Split into SGST and CGST (half of total GST each)
   const allGstRates = Array.from(new Set(data.items.map(item => item.gstRate)));
   if (allGstRates.length > 0) {
     const sortedRates = allGstRates.sort((a, b) => a - b);
     
-    // Filter out 0% unless all rates are 0%
     const nonZeroRates = sortedRates.filter(rate => rate > 0);
     const ratesToShow = nonZeroRates.length > 0 ? nonZeroRates : sortedRates;
     const sgstCgstRates = ratesToShow.map(rate => rate / 2);
     const halfGstAmount = data.gstAmount / 2;
     
-    // SGST row
     doc.setFont("helvetica", "normal");
     if (sgstCgstRates.length === 1) {
       doc.text(`SGST (${sgstCgstRates[0]}%):`, totalsBoxX + 3, yPos + 5);
@@ -630,7 +520,6 @@ export function generateInvoicePDF(data: InvoiceData) {
     yPos += rowHeight;
     doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
     
-    // CGST row
     doc.setFont("helvetica", "normal");
     if (sgstCgstRates.length === 1) {
       doc.text(`CGST (${sgstCgstRates[0]}%):`, totalsBoxX + 3, yPos + 5);
@@ -645,11 +534,9 @@ export function generateInvoicePDF(data: InvoiceData) {
     yPos += rowHeight;
   }
 
-  // Calculate round off
   const roundedTotal = Math.round(data.grandTotal);
   const roundOffAmount = roundedTotal - data.grandTotal;
   
-  // Round Off row
   doc.setDrawColor(230, 230, 230);
   doc.setLineWidth(0.3);
   doc.line(totalsBoxX, yPos, totalsBoxX + totalsBoxWidth, yPos);
@@ -664,7 +551,6 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text(roundOffText, totalsBoxX + totalsBoxWidth - 3, yPos + 5, { align: "right" });
   yPos += rowHeight;
 
-  // Grand total row with dark background
   const grandTotalRowHeight = 9;
   doc.setFillColor(52, 73, 94);
   doc.rect(totalsBoxX, yPos, totalsBoxWidth, grandTotalRowHeight, "F");
@@ -674,7 +560,6 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("helvetica", "bold");
   doc.text("Grand Total:", totalsBoxX + 3, yPos + 6);
   
-  // Add rupee icon before grand total amount (rounded)
   const grandTotalIconSize = 3.5;
   const grandTotalAmount = roundedTotal.toFixed(2);
   const grandTotalTextWidth = doc.getTextWidth(grandTotalAmount);
@@ -682,7 +567,6 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text(grandTotalAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 6, { align: "right" });
   yPos += grandTotalRowHeight + 5;
 
-  // Amount in words (using rounded total)
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(8);
   doc.setFont("helvetica", "italic");
@@ -690,7 +574,6 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
   yPos += 8;
 
-  // Lorry number if provided
   if (data.lorryNumber) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -700,12 +583,10 @@ export function generateInvoicePDF(data: InvoiceData) {
     yPos += 5;
   }
 
-  // Footer section - ensure minimum spacing from content above
   const minFooterY = yPos + 5;
   const fixedFooterY = pageHeight - 42;
   const footerY = Math.max(minFooterY, fixedFooterY);
   
-  // Terms & Conditions
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
@@ -717,12 +598,10 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.text("2. Goods once sold cannot be returned or exchanged", margin, footerY + 8.5);
   doc.text("3. Interest will be charged on delayed payments", margin, footerY + 12.5);
   
-  // Signature section
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.text("For AYESHA Coco Pith & Fiber Industries", pageWidth - margin - 3, footerY + 4, { align: "right" });
   
-  // Add signature if enabled
   if (data.eSignatureEnabled && data.signedBy) {
     let signatureImage = null;
     let signatoryName = "";
@@ -734,21 +613,18 @@ export function generateInvoicePDF(data: InvoiceData) {
       signatureImage = zupearSignature;
       signatoryName = "Zupear";
     } else if (data.signedBy === "Salman") {
-      signatureImage = aslamSignature; // Using Aslam's signature as placeholder for Salman
+      signatureImage = aslamSignature;
       signatoryName = "Salman";
     }
     
     if (signatureImage) {
-      // Add signature image below company name
       const sigWidth = 30;
       const sigHeight = 12;
       doc.addImage(signatureImage, 'PNG', pageWidth - margin - sigWidth - 3, footerY + 7, sigWidth, sigHeight);
       
-      // Add line below signature
       doc.setLineWidth(0.3);
       doc.line(pageWidth - 55, footerY + 20, pageWidth - margin - 3, footerY + 20);
       
-      // Add signatory name
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
       doc.text(signatoryName, pageWidth - margin - 3, footerY + 23.5, { align: "right" });
@@ -757,7 +633,6 @@ export function generateInvoicePDF(data: InvoiceData) {
       doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 27, { align: "right" });
     }
   } else {
-    // Without signature - just show line and text
     doc.setLineWidth(0.3);
     doc.line(pageWidth - 55, footerY + 13, pageWidth - margin - 3, footerY + 13);
     
@@ -766,7 +641,6 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.text("Authorized Signatory", pageWidth - margin - 3, footerY + 17, { align: "right" });
   }
 
-  // Save and download the PDF
   const fileName = "Invoice-" + data.invoiceNumber + "-" + new Date().getTime() + ".pdf";
   
   try {
@@ -793,7 +667,6 @@ export function generateInvoicePDF(data: InvoiceData) {
   }
 }
 
-// Helper function to convert number to words (Indian system)
 function numberToWords(num: number): string {
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
   const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
