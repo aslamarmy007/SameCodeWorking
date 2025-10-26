@@ -137,6 +137,12 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
   - Real-time filtering and sorting with results counter
   - Added createdAt timestamp to customer schema for chronological sorting
   - Clear buttons on search fields for better UX
+- [2025-10-26] Fixed critical PDF generation pagination issues:
+  - Refactored PDF generator with reusable header functions (drawPageBorder, drawCompanyHeader, drawInvoiceDetails, drawCustomerDetails)
+  - Fixed missing headers on overflow pages: All pages now include complete borders, company logo/name, invoice details, and bill-to/ship-to information
+  - Improved space utilization: Changed pagination threshold from pageHeight-80 to pageHeight-50, allowing 10-12 products per page (previously 7-8)
+  - Unified page header logic across all pagination scenarios for consistency
+  - All PDF pages now maintain professional formatting with complete information
 
 ## Development Status
 - ✅ Schema and data models defined
