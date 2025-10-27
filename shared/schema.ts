@@ -24,16 +24,12 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
 }).extend({
   name: z.string()
     .optional()
-    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
-      message: "Customer name must contain only letters"
-    })
     .refine((val) => !val || val.length <= 50, {
       message: "Customer name must be maximum 50 characters"
     }),
   shopName: z.string()
     .min(1, "Shop name is required")
-    .max(50, "Shop name must be maximum 50 characters")
-    .regex(/^[a-zA-Z0-9\s]+$/, "Shop name can only contain letters and numbers"),
+    .max(50, "Shop name must be maximum 50 characters"),
   phone: z.string()
     .optional()
     .refine((val) => !val || /^\d{10}$/.test(val), {
@@ -59,12 +55,10 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
     }),
   city: z.string()
     .min(1, "City is required")
-    .max(40, "City must be maximum 40 characters")
-    .regex(/^[a-zA-Z\s]+$/, "City must contain only letters"),
+    .max(40, "City must be maximum 40 characters"),
   state: z.string()
     .min(1, "State is required")
-    .max(40, "State must be maximum 40 characters")
-    .regex(/^[a-zA-Z\s]+$/, "State must contain only letters"),
+    .max(40, "State must be maximum 40 characters"),
   postalCode: z.string()
     .optional()
     .refine((val) => !val || val.length <= 15, {

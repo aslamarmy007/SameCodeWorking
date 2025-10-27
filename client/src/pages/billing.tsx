@@ -494,8 +494,6 @@ export default function BillingPage() {
   const canGeneratePDF = hasValidProducts || hasAnyCharges;
 
   const handleSaveCustomer = () => {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
     const phoneRegex = /^\d{10}$/;
     const gstinRegex = /^[a-zA-Z0-9]+$/;
     
@@ -504,25 +502,6 @@ export default function BillingPage() {
       toast({
         title: "Validation Error",
         description: "Shop name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!shopNameRegex.test(customerData.shopName.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Shop name can only contain letters and numbers",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate customer name (optional)
-    if (customerData.name.trim() && !nameRegex.test(customerData.name.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Customer name must contain only letters",
         variant: "destructive",
       });
       return;
@@ -568,29 +547,11 @@ export default function BillingPage() {
       return;
     }
     
-    if (!nameRegex.test(customerData.city.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "City must contain only letters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Validate state (required)
     if (!customerData.state.trim()) {
       toast({
         title: "Validation Error",
         description: "State is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!nameRegex.test(customerData.state.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "State must contain only letters",
         variant: "destructive",
       });
       return;
@@ -616,8 +577,6 @@ export default function BillingPage() {
   };
 
   const handleUpdateCustomer = () => {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
     const phoneRegex = /^\d{10}$/;
     const gstinRegex = /^[a-zA-Z0-9]+$/;
     
@@ -626,25 +585,6 @@ export default function BillingPage() {
       toast({
         title: "Validation Error",
         description: "Shop name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!shopNameRegex.test(customerData.shopName.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Shop name can only contain letters and numbers",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate customer name (optional)
-    if (customerData.name.trim() && !nameRegex.test(customerData.name.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Customer name must contain only letters",
         variant: "destructive",
       });
       return;
@@ -690,29 +630,11 @@ export default function BillingPage() {
       return;
     }
     
-    if (!nameRegex.test(customerData.city.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "City must contain only letters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Validate state (required)
     if (!customerData.state.trim()) {
       toast({
         title: "Validation Error",
         description: "State is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!nameRegex.test(customerData.state.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "State must contain only letters",
         variant: "destructive",
       });
       return;
@@ -738,8 +660,6 @@ export default function BillingPage() {
   };
 
   const handleUpdateShippingCustomer = () => {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
     const phoneRegex = /^\d{10}$/;
     const gstinRegex = /^[a-zA-Z0-9]+$/;
     
@@ -748,25 +668,6 @@ export default function BillingPage() {
       toast({
         title: "Validation Error",
         description: "Shop name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!shopNameRegex.test(shippingData.shopName.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Shop name can only contain letters and numbers",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate customer name (optional)
-    if (shippingData.name.trim() && !nameRegex.test(shippingData.name.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Customer name must contain only letters",
         variant: "destructive",
       });
       return;
@@ -812,29 +713,11 @@ export default function BillingPage() {
       return;
     }
     
-    if (!nameRegex.test(shippingData.city.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "City must contain only letters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Validate state (required)
     if (!shippingData.state.trim()) {
       toast({
         title: "Validation Error",
         description: "State is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!nameRegex.test(shippingData.state.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "State must contain only letters",
         variant: "destructive",
       });
       return;
@@ -1199,7 +1082,7 @@ export default function BillingPage() {
                               id="editCustomerName"
                               value={customerData.name}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                                const value = e.target.value.slice(0, 50);
                                 setCustomerData({ ...customerData, name: value });
                               }}
                               placeholder="Enter name (optional)"
@@ -1285,7 +1168,7 @@ export default function BillingPage() {
                               id="editCity"
                               value={customerData.city}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                const value = e.target.value.slice(0, 40);
                                 setCustomerData({ ...customerData, city: value });
                               }}
                               placeholder="Enter city (required)"
@@ -1303,7 +1186,7 @@ export default function BillingPage() {
                               id="editState"
                               value={customerData.state}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                const value = e.target.value.slice(0, 40);
                                 setCustomerData({ ...customerData, state: value });
                               }}
                               placeholder="Enter state (required)"
@@ -1391,7 +1274,7 @@ export default function BillingPage() {
                           id="customerName"
                           value={customerData.name}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                            const value = e.target.value.slice(0, 50);
                             setCustomerData({ ...customerData, name: value });
                           }}
                           placeholder="Enter name (optional)"
@@ -1477,7 +1360,7 @@ export default function BillingPage() {
                           id="city"
                           value={customerData.city}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                            const value = e.target.value.slice(0, 40);
                             setCustomerData({ ...customerData, city: value });
                           }}
                           placeholder="Enter city (required)"
@@ -1495,7 +1378,7 @@ export default function BillingPage() {
                           id="state"
                           value={customerData.state}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                            const value = e.target.value.slice(0, 40);
                             setCustomerData({ ...customerData, state: value });
                           }}
                           placeholder="Enter state (required)"
@@ -1785,7 +1668,7 @@ export default function BillingPage() {
                                   id="editShippingCustomerName"
                                   value={shippingData.name}
                                   onChange={(e) => {
-                                    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                                    const value = e.target.value.slice(0, 50);
                                     setShippingData({ ...shippingData, name: value });
                                   }}
                                   placeholder="Enter name (optional)"
@@ -1871,7 +1754,7 @@ export default function BillingPage() {
                                   id="editShippingCity"
                                   value={shippingData.city}
                                   onChange={(e) => {
-                                    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                    const value = e.target.value.slice(0, 40);
                                     setShippingData({ ...shippingData, city: value });
                                   }}
                                   placeholder="Enter city (required)"
@@ -1889,7 +1772,7 @@ export default function BillingPage() {
                                   id="editShippingState"
                                   value={shippingData.state}
                                   onChange={(e) => {
-                                    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                    const value = e.target.value.slice(0, 40);
                                     setShippingData({ ...shippingData, state: value });
                                   }}
                                   placeholder="Enter state (required)"
@@ -1974,7 +1857,7 @@ export default function BillingPage() {
                               id="shippingCustomerName"
                               value={shippingData.name}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50);
+                                const value = e.target.value.slice(0, 50);
                                 setShippingData({ ...shippingData, name: value });
                               }}
                               placeholder="Enter name (optional)"
@@ -2056,7 +1939,7 @@ export default function BillingPage() {
                               id="shippingCity"
                               value={shippingData.city}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                const value = e.target.value.slice(0, 40);
                                 setShippingData({ ...shippingData, city: value });
                               }}
                               placeholder="Enter city (required)"
@@ -2073,7 +1956,7 @@ export default function BillingPage() {
                               id="shippingState"
                               value={shippingData.state}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 40);
+                                const value = e.target.value.slice(0, 40);
                                 setShippingData({ ...shippingData, state: value });
                               }}
                               placeholder="Enter state (required)"
@@ -2101,8 +1984,6 @@ export default function BillingPage() {
                         </div>
                         <Button
                           onClick={() => {
-                            const nameRegex = /^[a-zA-Z\s]+$/;
-                            const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
                             const phoneRegex = /^\d{10}$/;
                             const gstinRegex = /^[a-zA-Z0-9]+$/;
                             
@@ -2111,25 +1992,6 @@ export default function BillingPage() {
                               toast({
                                 title: "Validation Error",
                                 description: "Shop name is required",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            
-                            if (!shopNameRegex.test(shippingData.shopName.trim())) {
-                              toast({
-                                title: "Validation Error",
-                                description: "Shop name can only contain letters and numbers",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            
-                            // Validate customer name (optional)
-                            if (shippingData.name.trim() && !nameRegex.test(shippingData.name.trim())) {
-                              toast({
-                                title: "Validation Error",
-                                description: "Customer name must contain only letters",
                                 variant: "destructive",
                               });
                               return;
@@ -2175,29 +2037,11 @@ export default function BillingPage() {
                               return;
                             }
                             
-                            if (!nameRegex.test(shippingData.city.trim())) {
-                              toast({
-                                title: "Validation Error",
-                                description: "City must contain only letters",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            
                             // Validate state (required)
                             if (!shippingData.state.trim()) {
                               toast({
                                 title: "Validation Error",
                                 description: "State is required",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            
-                            if (!nameRegex.test(shippingData.state.trim())) {
-                              toast({
-                                title: "Validation Error",
-                                description: "State must contain only letters",
                                 variant: "destructive",
                               });
                               return;
