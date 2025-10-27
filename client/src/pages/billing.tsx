@@ -112,6 +112,14 @@ export default function BillingPage() {
     lorryNumber: "",
   });
 
+  const validateNameCityState = (value: string): string => {
+    return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
+  };
+
+  const validateAddress = (value: string): string => {
+    return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s,.\-/\n]/g, '');
+  };
+
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
   });
@@ -1075,13 +1083,13 @@ export default function BillingPage() {
                           </div>
                           <div>
                             <Label htmlFor="editCustomerName" className="text-base font-semibold mb-2 block">
-                              Customer Name (Optional)
+                              Customer Name
                             </Label>
                             <Input
                               id="editCustomerName"
                               value={customerData.name}
                               onChange={(e) => {
-                                const value = e.target.value.slice(0, 50);
+                                const value = validateNameCityState(e.target.value).slice(0, 50);
                                 setCustomerData({ ...customerData, name: value });
                               }}
                               placeholder="Enter name (optional)"
@@ -1150,7 +1158,7 @@ export default function BillingPage() {
                             id="editAddress"
                             value={customerData.address}
                             onChange={(e) =>
-                              setCustomerData({ ...customerData, address: e.target.value.slice(0, 200) })
+                              setCustomerData({ ...customerData, address: validateAddress(e.target.value).slice(0, 200) })
                             }
                             placeholder="Enter address (optional)"
                             className="text-base min-h-[80px]"
@@ -1167,7 +1175,7 @@ export default function BillingPage() {
                               id="editCity"
                               value={customerData.city}
                               onChange={(e) => {
-                                const value = e.target.value.slice(0, 40);
+                                const value = validateNameCityState(e.target.value).slice(0, 40);
                                 setCustomerData({ ...customerData, city: value });
                               }}
                               placeholder="Enter city (required)"
@@ -1185,7 +1193,7 @@ export default function BillingPage() {
                               id="editState"
                               value={customerData.state}
                               onChange={(e) => {
-                                const value = e.target.value.slice(0, 40);
+                                const value = validateNameCityState(e.target.value).slice(0, 40);
                                 setCustomerData({ ...customerData, state: value });
                               }}
                               placeholder="Enter state (required)"
@@ -1271,7 +1279,7 @@ export default function BillingPage() {
                           id="customerName"
                           value={customerData.name}
                           onChange={(e) => {
-                            const value = e.target.value.slice(0, 50);
+                            const value = validateNameCityState(e.target.value).slice(0, 50);
                             setCustomerData({ ...customerData, name: value });
                           }}
                           placeholder="Enter name (optional)"
@@ -1338,7 +1346,7 @@ export default function BillingPage() {
                         id="address"
                         value={customerData.address}
                         onChange={(e) =>
-                          setCustomerData({ ...customerData, address: e.target.value.slice(0, 200) })
+                          setCustomerData({ ...customerData, address: validateAddress(e.target.value).slice(0, 200) })
                         }
                         placeholder="Enter address (optional)"
                         className="text-base min-h-[80px]"
@@ -1355,7 +1363,7 @@ export default function BillingPage() {
                           id="city"
                           value={customerData.city}
                           onChange={(e) => {
-                            const value = e.target.value.slice(0, 40);
+                            const value = validateNameCityState(e.target.value).slice(0, 40);
                             setCustomerData({ ...customerData, city: value });
                           }}
                           placeholder="Enter city (required)"
@@ -1373,7 +1381,7 @@ export default function BillingPage() {
                           id="state"
                           value={customerData.state}
                           onChange={(e) => {
-                            const value = e.target.value.slice(0, 40);
+                            const value = validateNameCityState(e.target.value).slice(0, 40);
                             setCustomerData({ ...customerData, state: value });
                           }}
                           placeholder="Enter state (required)"
@@ -1663,7 +1671,7 @@ export default function BillingPage() {
                                   id="editShippingCustomerName"
                                   value={shippingData.name}
                                   onChange={(e) => {
-                                    const value = e.target.value.slice(0, 50);
+                                    const value = validateNameCityState(e.target.value).slice(0, 50);
                                     setShippingData({ ...shippingData, name: value });
                                   }}
                                   placeholder="Enter name (optional)"
@@ -1732,7 +1740,7 @@ export default function BillingPage() {
                                 id="editShippingAddress"
                                 value={shippingData.address}
                                 onChange={(e) =>
-                                  setShippingData({ ...shippingData, address: e.target.value.slice(0, 200) })
+                                  setShippingData({ ...shippingData, address: validateAddress(e.target.value).slice(0, 200) })
                                 }
                                 placeholder="Enter address (optional)"
                                 className="text-base min-h-[80px]"
@@ -1749,7 +1757,7 @@ export default function BillingPage() {
                                   id="editShippingCity"
                                   value={shippingData.city}
                                   onChange={(e) => {
-                                    const value = e.target.value.slice(0, 40);
+                                    const value = validateNameCityState(e.target.value).slice(0, 40);
                                     setShippingData({ ...shippingData, city: value });
                                   }}
                                   placeholder="Enter city (required)"
@@ -1767,7 +1775,7 @@ export default function BillingPage() {
                                   id="editShippingState"
                                   value={shippingData.state}
                                   onChange={(e) => {
-                                    const value = e.target.value.slice(0, 40);
+                                    const value = validateNameCityState(e.target.value).slice(0, 40);
                                     setShippingData({ ...shippingData, state: value });
                                   }}
                                   placeholder="Enter state (required)"
@@ -1850,7 +1858,7 @@ export default function BillingPage() {
                               id="shippingCustomerName"
                               value={shippingData.name}
                               onChange={(e) => {
-                                const value = e.target.value.slice(0, 50);
+                                const value = validateNameCityState(e.target.value).slice(0, 50);
                                 setShippingData({ ...shippingData, name: value });
                               }}
                               placeholder="Enter name (optional)"
@@ -1914,7 +1922,7 @@ export default function BillingPage() {
                             id="shippingAddress"
                             value={shippingData.address}
                             onChange={(e) =>
-                              setShippingData({ ...shippingData, address: e.target.value.slice(0, 200) })
+                              setShippingData({ ...shippingData, address: validateAddress(e.target.value).slice(0, 200) })
                             }
                             placeholder="Enter address (optional)"
                             className="text-base min-h-[80px]"
@@ -1930,7 +1938,7 @@ export default function BillingPage() {
                               id="shippingCity"
                               value={shippingData.city}
                               onChange={(e) => {
-                                const value = e.target.value.slice(0, 40);
+                                const value = validateNameCityState(e.target.value).slice(0, 40);
                                 setShippingData({ ...shippingData, city: value });
                               }}
                               placeholder="Enter city (required)"
@@ -1947,7 +1955,7 @@ export default function BillingPage() {
                               id="shippingState"
                               value={shippingData.state}
                               onChange={(e) => {
-                                const value = e.target.value.slice(0, 40);
+                                const value = validateNameCityState(e.target.value).slice(0, 40);
                                 setShippingData({ ...shippingData, state: value });
                               }}
                               placeholder="Enter state (required)"
