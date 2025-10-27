@@ -144,6 +144,18 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
   - Eliminated wasted space at bottom of pages - products now fill available space efficiently
   - Unified page header logic across all pagination scenarios for consistency
   - All PDF pages now maintain professional formatting with complete information
+- [2025-10-27] Implemented comprehensive Tamil language support:
+  - Added NotoSansTamil font to PDF generator for proper Tamil character rendering (Unicode U+0B80-U+0BFF)
+  - Fixed Tamil text rendering by calling setFontForText before each text draw operation
+  - Implemented conditional "India" translation: displays "இந்தியா" when city/state contain Tamil characters
+  - Shop name validation now allows Tamil letters, English letters, numbers, and spaces
+  - Created location history system with Combobox UI components for city and state fields
+  - Replaced all 8 city/state Input fields with Combobox components that show previously entered values
+  - Added locations table schema to store unique city and state values with deduplication
+  - Seeded default values: "TAMIL NADU" and "தமிழ்நாடு" for state options
+  - Extended MemStorage and API routes (GET /api/locations/:type, POST /api/locations)
+  - Fixed React Query cache invalidation to properly refresh location history after adding new values
+  - All city/state dropdowns now support both typing new values and selecting from history
 
 ## Development Status
 - ✅ Schema and data models defined
