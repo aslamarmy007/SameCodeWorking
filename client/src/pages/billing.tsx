@@ -42,6 +42,7 @@ type BillConfig = {
   gstEnabled: boolean;
   eSignatureEnabled: boolean;
   signedBy: string;
+  billType: string;
 };
 
 type CustomerData = {
@@ -72,6 +73,7 @@ export default function BillingPage() {
     gstEnabled: true,
     eSignatureEnabled: false,
     signedBy: "",
+    billType: "cash-credit",
   });
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: "",
@@ -302,6 +304,7 @@ export default function BillingPage() {
         lorryNumber: additionalCharges.lorryNumber,
         eSignatureEnabled: billConfig.eSignatureEnabled,
         signedBy: billConfig.signedBy,
+        billType: billConfig.billType,
       });
 
       toast({
@@ -316,6 +319,7 @@ export default function BillingPage() {
         gstEnabled: true,
         eSignatureEnabled: false,
         signedBy: "",
+        billType: "cash-credit",
       });
       setCustomerData({
         name: "",
@@ -985,6 +989,25 @@ export default function BillingPage() {
                         </Select>
                       </div>
                     )}
+                    <div>
+                      <Label htmlFor="billType" className="text-base font-semibold mb-2 block">
+                        Bill Type
+                      </Label>
+                      <Select
+                        value={billConfig.billType}
+                        onValueChange={(value) =>
+                          setBillConfig({ ...billConfig, billType: value })
+                        }
+                      >
+                        <SelectTrigger id="billType" className="text-base" data-testid="select-bill-type">
+                          <SelectValue placeholder="Select bill type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cash-credit">Cash/Credit Bill</SelectItem>
+                          <SelectItem value="purchase">Purchase Bill</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <Button
                     onClick={() => setCurrentStep(2)}
