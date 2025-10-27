@@ -147,3 +147,21 @@ export const invoiceItems = pgTable("invoice_items", {
 export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({ id: true });
 export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
+
+// Locations table for city and state history
+export const locations = pgTable("locations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type").notNull(), // "city" or "state"
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertLocationSchema = createInsertSchema(locations).omit({ 
+  id: true,
+  createdAt: true 
+}).extend({
+  type: z.enum(["city", "state"]),
+  value: z.string().min(1).max(40),
+});
+export type InsertLocation = z.infer<typeof insertLocationSchema>;
+export type Location = typeof locations.$inferSelect;
