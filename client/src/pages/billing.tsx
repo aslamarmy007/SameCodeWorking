@@ -1861,9 +1861,7 @@ export default function BillingPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="shippingPhone" className="text-base font-semibold mb-2 block">
-                              Phone (Optional)
-                            </Label>
+                            <Label htmlFor="shippingPhone" className="text-base font-semibold mb-2 block">Phone</Label>
                             <Input
                               id="shippingPhone"
                               type="tel"
