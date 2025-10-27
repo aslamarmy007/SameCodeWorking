@@ -1845,9 +1845,7 @@ export default function BillingPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="shippingCustomerName" className="text-base font-semibold mb-2 block">
-                              Customer Name (Optional)
-                            </Label>
+                            <Label htmlFor="shippingCustomerName" className="text-base font-semibold mb-2 block">Customer Name</Label>
                             <Input
                               id="shippingCustomerName"
                               value={shippingData.name}
