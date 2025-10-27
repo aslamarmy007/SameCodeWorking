@@ -117,7 +117,7 @@ export default function BillingPage() {
   };
 
   const validateShopName = (value: string): string => {
-    return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
+    return value.replace(/[^a-zA-Z0-9\u0B80-\u0BFF\s]/g, '');
   };
 
   const validateGSTIN = (value: string): string => {
