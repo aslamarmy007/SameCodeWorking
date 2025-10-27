@@ -783,7 +783,6 @@ export default function BillingPage() {
           <div className="w-16 sm:w-20 flex-shrink-0"></div>
         </div>
       </div>
-
       <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-4 sm:pb-8">
         <StepProgress currentStep={currentStep} />
 
@@ -1267,9 +1266,7 @@ export default function BillingPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="customerName" className="text-base font-semibold mb-2 block">
-                          Customer Name (Optional)
-                        </Label>
+                        <Label htmlFor="customerName" className="text-base font-semibold mb-2 block">Customer Name</Label>
                         <Input
                           id="customerName"
                           value={customerData.name}
