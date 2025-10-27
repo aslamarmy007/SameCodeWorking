@@ -84,6 +84,13 @@ function setFontForText(doc: jsPDF, text: string, style: "normal" | "bold" = "no
   }
 }
 
+function getIndiaText(city: string, state: string): string {
+  if (hasTamilCharacters(city) || hasTamilCharacters(state)) {
+    return "இந்தியா";
+  }
+  return "INDIA";
+}
+
 function drawPageBorder(doc: jsPDF, pageWidth: number, pageHeight: number) {
   doc.setDrawColor(100, 100, 100);
   doc.setLineWidth(0.5);
@@ -283,13 +290,15 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
     doc.setTextColor(0, 0, 0);
     const addressParts = [customer.address, customer.city, customer.state].filter(Boolean);
     let addressText = addressParts.join(", ");
+    const indiaText = getIndiaText(customer.city, customer.state);
     if (customer.postalCode) {
-      addressText += ", INDIA - " + customer.postalCode + ".";
+      addressText += ", " + indiaText + " - " + customer.postalCode + ".";
     } else {
-      addressText += ", INDIA.";
+      addressText += ", " + indiaText + ".";
     }
     setFontForText(doc, addressText, "normal");
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
+    setFontForText(doc, addressText, "normal");
     doc.text(splitAddress, leftBoxX + 3, billToY);
     billToY += (splitAddress.length * 4);
   }
@@ -361,13 +370,15 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
     doc.setTextColor(0, 0, 0);
     const addressParts = [shipping.address, shipping.city, shipping.state].filter(Boolean);
     let addressText = addressParts.join(", ");
+    const indiaText = getIndiaText(shipping.city, shipping.state);
     if (shipping.postalCode) {
-      addressText += ",INDIA - " + shipping.postalCode + ".";
+      addressText += ", " + indiaText + " - " + shipping.postalCode + ".";
     } else {
-      addressText += ",INDIA.";
+      addressText += ", " + indiaText + ".";
     }
     setFontForText(doc, addressText, "normal");
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
+    setFontForText(doc, addressText, "normal");
     doc.text(splitAddress, rightBoxX + 3, shipToY);
     shipToY += (splitAddress.length * 4);
   }
