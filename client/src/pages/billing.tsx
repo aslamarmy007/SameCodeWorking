@@ -1657,7 +1657,7 @@ export default function BillingPage() {
                               </div>
                               <div>
                                 <Label htmlFor="editShippingCustomerName" className="text-base font-semibold mb-2 block">
-                                  Customer Name (Optional)
+                                  Customer Name
                                 </Label>
                                 <Input
                                   id="editShippingCustomerName"
