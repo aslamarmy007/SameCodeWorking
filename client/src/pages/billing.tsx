@@ -116,8 +116,16 @@ export default function BillingPage() {
     return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
   };
 
+  const validateShopName = (value: string): string => {
+    return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
+  };
+
+  const validateGSTIN = (value: string): string => {
+    return value.replace(/[^a-zA-Z0-9]/g, '');
+  };
+
   const validateAddress = (value: string): string => {
-    return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s,.\-/\n]/g, '');
+    return value.replace(/[^a-zA-Z\u0B80-\u0BFF0-9\s,.\-/():;"'\|[\]\\&\n]/g, '');
   };
 
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
@@ -1073,7 +1081,7 @@ export default function BillingPage() {
                               id="editShopName"
                               value={customerData.shopName}
                               onChange={(e) =>
-                                setCustomerData({ ...customerData, shopName: e.target.value.slice(0, 50) })
+                                setCustomerData({ ...customerData, shopName: validateShopName(e.target.value).slice(0, 50) })
                               }
                               placeholder="Enter shop name (required)"
                               className="text-base"
@@ -1099,9 +1107,7 @@ export default function BillingPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="editPhone" className="text-base font-semibold mb-2 block">
-                              Phone (Optional)
-                            </Label>
+                            <Label htmlFor="editPhone" className="text-base font-semibold mb-2 block">Phone</Label>
                             <Input
                               id="editPhone"
                               type="tel"
@@ -1140,7 +1146,7 @@ export default function BillingPage() {
                               id="editGstin"
                               value={customerData.gstin}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                                const value = validateGSTIN(e.target.value).slice(0, 15);
                                 setCustomerData({ ...customerData, gstin: value });
                               }}
                               placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
@@ -1265,7 +1271,7 @@ export default function BillingPage() {
                           id="shopName"
                           value={customerData.shopName}
                           onChange={(e) =>
-                            setCustomerData({ ...customerData, shopName: e.target.value.slice(0, 50) })
+                            setCustomerData({ ...customerData, shopName: validateShopName(e.target.value).slice(0, 50) })
                           }
                           placeholder="Enter shop name (required)"
                           className="text-base"
@@ -1328,7 +1334,7 @@ export default function BillingPage() {
                           id="gstin"
                           value={customerData.gstin}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                            const value = validateGSTIN(e.target.value).slice(0, 15);
                             setCustomerData({ ...customerData, gstin: value });
                           }}
                           placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
@@ -1655,7 +1661,7 @@ export default function BillingPage() {
                                   id="editShippingShopName"
                                   value={shippingData.shopName}
                                   onChange={(e) =>
-                                    setShippingData({ ...shippingData, shopName: e.target.value.slice(0, 50) })
+                                    setShippingData({ ...shippingData, shopName: validateShopName(e.target.value).slice(0, 50) })
                                   }
                                   placeholder="Enter shop name (required)"
                                   className="text-base"
@@ -1722,7 +1728,7 @@ export default function BillingPage() {
                                   id="editShippingGstin"
                                   value={shippingData.gstin}
                                   onChange={(e) => {
-                                    const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                                    const value = validateGSTIN(e.target.value).slice(0, 15);
                                     setShippingData({ ...shippingData, gstin: value });
                                   }}
                                   placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
@@ -1845,7 +1851,7 @@ export default function BillingPage() {
                               id="shippingShopName"
                               value={shippingData.shopName}
                               onChange={(e) =>
-                                setShippingData({ ...shippingData, shopName: e.target.value.slice(0, 50) })
+                                setShippingData({ ...shippingData, shopName: validateShopName(e.target.value).slice(0, 50) })
                               }
                               placeholder="Enter shop name (required)"
                               className="text-base"
@@ -1905,7 +1911,7 @@ export default function BillingPage() {
                               id="shippingGstin"
                               value={shippingData.gstin}
                               onChange={(e) => {
-                                const value = e.target.value.replace(/\s/g, '').slice(0, 15);
+                                const value = validateGSTIN(e.target.value).slice(0, 15);
                                 setShippingData({ ...shippingData, gstin: value });
                               }}
                               placeholder={billConfig.gstEnabled ? "Enter GSTIN (required)" : "Enter GSTIN (optional)"}
