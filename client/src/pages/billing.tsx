@@ -1281,9 +1281,7 @@ export default function BillingPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone" className="text-base font-semibold mb-2 block">
-                          Phone (Optional)
-                        </Label>
+                        <Label htmlFor="phone" className="text-base font-semibold mb-2 block">Phone</Label>
                         <Input
                           id="phone"
                           type="tel"
