@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCustomerSchema, insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema } from "@shared/schema";
+import { insertCustomerSchema, insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema, insertLocationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Customer routes
@@ -275,6 +275,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(items);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch invoice items" });
+    }
+  });
+
+  // Location routes
+  app.get("/api/locations/:type", async (req, res) => {
+    try {
+      const type = req.params.type;
+      if (type !== "city" && type !== "state") {
+        return res.status(400).json({ error: "Type must be 'city' or 'state'" });
+      }
+      const locations = await storage.getLocations(type);
+      res.json(locations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch locations" });
+    }
+  });
+
+  app.post("/api/locations", async (req, res) => {
+    try {
+      const validated = insertLocationSchema.parse(req.body);
+      const location = await storage.addLocation(validated);
+      res.status(201).json(location);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Validation error",
+          message: error.errors[0]?.message || "Invalid location data",
+          details: error.errors
+        });
+      }
+      res.status(400).json({ error: "Invalid location data" });
     }
   });
 

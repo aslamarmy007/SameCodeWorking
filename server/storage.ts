@@ -7,6 +7,8 @@ import {
   type InsertInvoice,
   type InvoiceItem,
   type InsertInvoiceItem,
+  type Location,
+  type InsertLocation,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -39,6 +41,10 @@ export interface IStorage {
   createInvoiceItem(item: InsertInvoiceItem): Promise<InvoiceItem>;
   getInvoiceItems(invoiceId: string): Promise<InvoiceItem[]>;
   deleteInvoiceItems(invoiceId: string): Promise<void>;
+
+  // Location operations
+  getLocations(type: "city" | "state"): Promise<string[]>;
+  addLocation(location: InsertLocation): Promise<Location>;
 }
 
 export class MemStorage implements IStorage {
@@ -46,6 +52,7 @@ export class MemStorage implements IStorage {
   private products: Map<string, Product>;
   private invoices: Map<string, Invoice>;
   private invoiceItems: Map<string, InvoiceItem>;
+  private locations: Map<string, Location>;
   private invoiceCounter: number;
 
   constructor() {
@@ -53,9 +60,28 @@ export class MemStorage implements IStorage {
     this.products = new Map();
     this.invoices = new Map();
     this.invoiceItems = new Map();
+    this.locations = new Map();
     this.invoiceCounter = 1;
 
     this.seedProducts();
+    this.seedLocations();
+  }
+
+  private seedLocations() {
+    const defaultLocations = [
+      { type: "state" as const, value: "TAMIL NADU" },
+      { type: "state" as const, value: "தமிழ்நாடு" },
+    ];
+
+    defaultLocations.forEach((location) => {
+      const id = randomUUID();
+      const locationWithId: Location = { 
+        ...location,
+        id,
+        createdAt: new Date(),
+      };
+      this.locations.set(id, locationWithId);
+    });
   }
 
   private seedProducts() {
@@ -353,6 +379,34 @@ export class MemStorage implements IStorage {
       .map(([id, _]) => id);
     
     itemsToDelete.forEach(id => this.invoiceItems.delete(id));
+  }
+
+  // Location operations
+  async getLocations(type: "city" | "state"): Promise<string[]> {
+    const locations = Array.from(this.locations.values())
+      .filter(loc => loc.type === type)
+      .map(loc => loc.value);
+    return Array.from(new Set(locations));
+  }
+
+  async addLocation(insertLocation: InsertLocation): Promise<Location> {
+    const existing = Array.from(this.locations.values()).find(
+      loc => loc.type === insertLocation.type && loc.value.toLowerCase() === insertLocation.value.toLowerCase()
+    );
+    
+    if (existing) {
+      return existing;
+    }
+
+    const id = randomUUID();
+    const location: Location = { 
+      id,
+      type: insertLocation.type,
+      value: insertLocation.value,
+      createdAt: new Date(),
+    };
+    this.locations.set(id, location);
+    return location;
   }
 }
 
