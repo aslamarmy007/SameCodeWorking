@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { StepProgress } from "@/components/step-progress";
 import { BillSummary } from "@/components/bill-summary";
@@ -134,6 +135,22 @@ export default function BillingPage() {
 
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+  });
+
+  const { data: cities = [] } = useQuery<string[]>({
+    queryKey: ["/api/locations/city"],
+  });
+
+  const { data: states = [] } = useQuery<string[]>({
+    queryKey: ["/api/locations/state"],
+  });
+
+  const saveLocationMutation = useMutation({
+    mutationFn: async (data: { type: "city" | "state"; value: string }) =>
+      apiRequest("POST", "/api/locations", data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/locations/${variables.type}`] });
+    },
   });
 
   const saveCustomerMutation = useMutation({
@@ -1177,36 +1194,40 @@ export default function BillingPage() {
                             <Label htmlFor="editCity" className="text-base font-semibold mb-2 block">
                               City <span className="text-destructive">*</span>
                             </Label>
-                            <Input
-                              id="editCity"
+                            <Combobox
                               value={customerData.city}
-                              onChange={(e) => {
-                                const value = validateNameCityState(e.target.value).slice(0, 40);
-                                setCustomerData({ ...customerData, city: value });
+                              onValueChange={(value) => {
+                                const validated = validateNameCityState(value).slice(0, 40);
+                                setCustomerData({ ...customerData, city: validated });
+                                if (validated && !cities.includes(validated)) {
+                                  saveLocationMutation.mutate({ type: "city", value: validated });
+                                }
                               }}
-                              placeholder="Enter city (required)"
+                              options={cities}
+                              placeholder="Select or enter city"
+                              emptyMessage="No city found. Type to add new."
                               className="text-base"
-                              maxLength={40}
-                              data-testid="input-edit-city"
-                              required
+                              testId="input-edit-city"
                             />
                           </div>
                           <div>
                             <Label htmlFor="editState" className="text-base font-semibold mb-2 block">
                               State <span className="text-destructive">*</span>
                             </Label>
-                            <Input
-                              id="editState"
+                            <Combobox
                               value={customerData.state}
-                              onChange={(e) => {
-                                const value = validateNameCityState(e.target.value).slice(0, 40);
-                                setCustomerData({ ...customerData, state: value });
+                              onValueChange={(value) => {
+                                const validated = validateNameCityState(value).slice(0, 40);
+                                setCustomerData({ ...customerData, state: validated });
+                                if (validated && !states.includes(validated)) {
+                                  saveLocationMutation.mutate({ type: "state", value: validated });
+                                }
                               }}
-                              placeholder="Enter state (required)"
+                              options={states}
+                              placeholder="Select or enter state"
+                              emptyMessage="No state found. Type to add new."
                               className="text-base"
-                              maxLength={40}
-                              data-testid="input-edit-state"
-                              required
+                              testId="input-edit-state"
                             />
                           </div>
                           <div>
@@ -1365,36 +1386,40 @@ export default function BillingPage() {
                         <Label htmlFor="city" className="text-base font-semibold mb-2 block">
                           City <span className="text-destructive">*</span>
                         </Label>
-                        <Input
-                          id="city"
+                        <Combobox
                           value={customerData.city}
-                          onChange={(e) => {
-                            const value = validateNameCityState(e.target.value).slice(0, 40);
-                            setCustomerData({ ...customerData, city: value });
+                          onValueChange={(value) => {
+                            const validated = validateNameCityState(value).slice(0, 40);
+                            setCustomerData({ ...customerData, city: validated });
+                            if (validated && !cities.includes(validated)) {
+                              saveLocationMutation.mutate({ type: "city", value: validated });
+                            }
                           }}
-                          placeholder="Enter city (required)"
+                          options={cities}
+                          placeholder="Select or enter city"
+                          emptyMessage="No city found. Type to add new."
                           className="text-base"
-                          maxLength={40}
-                          data-testid="input-city"
-                          required
+                          testId="input-city"
                         />
                       </div>
                       <div>
                         <Label htmlFor="state" className="text-base font-semibold mb-2 block">
                           State <span className="text-destructive">*</span>
                         </Label>
-                        <Input
-                          id="state"
+                        <Combobox
                           value={customerData.state}
-                          onChange={(e) => {
-                            const value = validateNameCityState(e.target.value).slice(0, 40);
-                            setCustomerData({ ...customerData, state: value });
+                          onValueChange={(value) => {
+                            const validated = validateNameCityState(value).slice(0, 40);
+                            setCustomerData({ ...customerData, state: validated });
+                            if (validated && !states.includes(validated)) {
+                              saveLocationMutation.mutate({ type: "state", value: validated });
+                            }
                           }}
-                          placeholder="Enter state (required)"
+                          options={states}
+                          placeholder="Select or enter state"
+                          emptyMessage="No state found. Type to add new."
                           className="text-base"
-                          maxLength={40}
-                          data-testid="input-state"
-                          required
+                          testId="input-state"
                         />
                       </div>
                       <div>
@@ -1759,36 +1784,40 @@ export default function BillingPage() {
                                 <Label htmlFor="editShippingCity" className="text-base font-semibold mb-2 block">
                                   City <span className="text-destructive">*</span>
                                 </Label>
-                                <Input
-                                  id="editShippingCity"
+                                <Combobox
                                   value={shippingData.city}
-                                  onChange={(e) => {
-                                    const value = validateNameCityState(e.target.value).slice(0, 40);
-                                    setShippingData({ ...shippingData, city: value });
+                                  onValueChange={(value) => {
+                                    const validated = validateNameCityState(value).slice(0, 40);
+                                    setShippingData({ ...shippingData, city: validated });
+                                    if (validated && !cities.includes(validated)) {
+                                      saveLocationMutation.mutate({ type: "city", value: validated });
+                                    }
                                   }}
-                                  placeholder="Enter city (required)"
+                                  options={cities}
+                                  placeholder="Select or enter city"
+                                  emptyMessage="No city found. Type to add new."
                                   className="text-base"
-                                  maxLength={40}
-                                  data-testid="input-edit-shipping-city"
-                                  required
+                                  testId="input-edit-shipping-city"
                                 />
                               </div>
                               <div>
                                 <Label htmlFor="editShippingState" className="text-base font-semibold mb-2 block">
                                   State <span className="text-destructive">*</span>
                                 </Label>
-                                <Input
-                                  id="editShippingState"
+                                <Combobox
                                   value={shippingData.state}
-                                  onChange={(e) => {
-                                    const value = validateNameCityState(e.target.value).slice(0, 40);
-                                    setShippingData({ ...shippingData, state: value });
+                                  onValueChange={(value) => {
+                                    const validated = validateNameCityState(value).slice(0, 40);
+                                    setShippingData({ ...shippingData, state: validated });
+                                    if (validated && !states.includes(validated)) {
+                                      saveLocationMutation.mutate({ type: "state", value: validated });
+                                    }
                                   }}
-                                  placeholder="Enter state (required)"
+                                  options={states}
+                                  placeholder="Select or enter state"
+                                  emptyMessage="No state found. Type to add new."
                                   className="text-base"
-                                  maxLength={40}
-                                  data-testid="input-edit-shipping-state"
-                                  required
+                                  testId="input-edit-shipping-state"
                                 />
                               </div>
                               <div>
@@ -1940,34 +1969,38 @@ export default function BillingPage() {
                             <Label htmlFor="shippingCity" className="text-base font-semibold mb-2 block">
                               City <span className="text-destructive">*</span>
                             </Label>
-                            <Input
-                              id="shippingCity"
+                            <Combobox
                               value={shippingData.city}
-                              onChange={(e) => {
-                                const value = validateNameCityState(e.target.value).slice(0, 40);
-                                setShippingData({ ...shippingData, city: value });
+                              onValueChange={(value) => {
+                                const validated = validateNameCityState(value).slice(0, 40);
+                                setShippingData({ ...shippingData, city: validated });
+                                if (validated && !cities.includes(validated)) {
+                                  saveLocationMutation.mutate({ type: "city", value: validated });
+                                }
                               }}
-                              placeholder="Enter city (required)"
+                              options={cities}
+                              placeholder="Select or enter city"
+                              emptyMessage="No city found. Type to add new."
                               className="text-base"
-                              maxLength={40}
-                              required
                             />
                           </div>
                           <div>
                             <Label htmlFor="shippingState" className="text-base font-semibold mb-2 block">
                               State <span className="text-destructive">*</span>
                             </Label>
-                            <Input
-                              id="shippingState"
+                            <Combobox
                               value={shippingData.state}
-                              onChange={(e) => {
-                                const value = validateNameCityState(e.target.value).slice(0, 40);
-                                setShippingData({ ...shippingData, state: value });
+                              onValueChange={(value) => {
+                                const validated = validateNameCityState(value).slice(0, 40);
+                                setShippingData({ ...shippingData, state: validated });
+                                if (validated && !states.includes(validated)) {
+                                  saveLocationMutation.mutate({ type: "state", value: validated });
+                                }
                               }}
-                              placeholder="Enter state (required)"
+                              options={states}
+                              placeholder="Select or enter state"
+                              emptyMessage="No state found. Type to add new."
                               className="text-base"
-                              maxLength={40}
-                              required
                             />
                           </div>
                           <div>
