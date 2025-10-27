@@ -8,6 +8,7 @@ import emailIcon from "@assets/email_1761393720944.png";
 import envelopeIcon from "@assets/envelope_1761394845490.png";
 import aslamSignature from "@assets/pngegg_1761410687109.png";
 import zupearSignature from "@assets/signature_1761410697487.png";
+import { tamilFontBase64 } from "./tamil-font";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -53,6 +54,34 @@ interface InvoiceData {
   eSignatureEnabled?: boolean;
   signedBy?: string;
   billType?: string;
+}
+
+let tamilFontLoaded = false;
+
+function setupTamilFont(doc: jsPDF) {
+  if (!tamilFontLoaded) {
+    try {
+      doc.addFileToVFS("NotoSansTamil-Regular.ttf", tamilFontBase64);
+      doc.addFont("NotoSansTamil-Regular.ttf", "NotoSansTamil", "normal");
+      tamilFontLoaded = true;
+    } catch (error) {
+      console.error("Failed to load Tamil font:", error);
+    }
+  }
+}
+
+function hasTamilCharacters(text: string): boolean {
+  if (!text) return false;
+  const tamilRegex = /[\u0B80-\u0BFF]/;
+  return tamilRegex.test(text);
+}
+
+function setFontForText(doc: jsPDF, text: string, style: "normal" | "bold" = "normal") {
+  if (hasTamilCharacters(text)) {
+    doc.setFont("NotoSansTamil", "normal");
+  } else {
+    doc.setFont("helvetica", style);
+  }
 }
 
 function drawPageBorder(doc: jsPDF, pageWidth: number, pageHeight: number) {
@@ -235,7 +264,7 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (customer.shopName) {
     doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
+    setFontForText(doc, customer.shopName, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(customer.shopName, leftBoxX + 3, billToY);
     billToY += 4.5;
@@ -243,7 +272,7 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (customer.name) {
     doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
+    setFontForText(doc, customer.name, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(customer.name, leftBoxX + 3, billToY);
     billToY += 4.5;
@@ -251,7 +280,6 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (customer.address || customer.city || customer.state) {
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     const addressParts = [customer.address, customer.city, customer.state].filter(Boolean);
     let addressText = addressParts.join(", ");
@@ -260,6 +288,7 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
     } else {
       addressText += ", INDIA.";
     }
+    setFontForText(doc, addressText, "normal");
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, leftBoxX + 3, billToY);
     billToY += (splitAddress.length * 4);
@@ -313,7 +342,7 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (shipping.shopName) {
     doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
+    setFontForText(doc, shipping.shopName, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(shipping.shopName, rightBoxX + 3, shipToY);
     shipToY += 4.5;
@@ -321,7 +350,7 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (shipping.name) {
     doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
+    setFontForText(doc, shipping.name, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(shipping.name, rightBoxX + 3, shipToY);
     shipToY += 4.5;
@@ -329,7 +358,6 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (shipping.address || shipping.city || shipping.state) {
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     const addressParts = [shipping.address, shipping.city, shipping.state].filter(Boolean);
     let addressText = addressParts.join(", ");
@@ -338,6 +366,7 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
     } else {
       addressText += ",INDIA.";
     }
+    setFontForText(doc, addressText, "normal");
     const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
     doc.text(splitAddress, rightBoxX + 3, shipToY);
     shipToY += (splitAddress.length * 4);
@@ -393,6 +422,8 @@ export function generateInvoicePDF(data: InvoiceData) {
     unit: 'mm',
     format: 'a4'
   });
+  
+  setupTamilFont(doc);
   
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
