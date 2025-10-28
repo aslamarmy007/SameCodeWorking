@@ -15,8 +15,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Pencil, Trash2, Plus, Download, Eye, LayoutDashboard, Search, X } from "lucide-react";
+import { Pencil, Trash2, Plus, Download, Eye, LayoutDashboard, Search, X, Check, ChevronsUpDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { Customer, Product, Invoice } from "@shared/schema";
 import { insertCustomerSchema, insertProductSchema } from "@shared/schema";
@@ -50,12 +54,14 @@ export default function Dashboard() {
   // Product filters and selection
   const [productNameSearch, setProductNameSearch] = useState("");
   const [productHsnSearch, setProductHsnSearch] = useState("");
-  const [productPriceFilter, setProductPriceFilter] = useState<{ type: "range" | "fixed"; from: string; to: string; fixed: string }>({ type: "range", from: "", to: "", fixed: "" });
+  const [productPriceRange, setProductPriceRange] = useState<[number, number]>([0, 10000]);
   const [productUnitFilter, setProductUnitFilter] = useState("all");
   const [productGstFilter, setProductGstFilter] = useState("all");
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [viewingMultipleProducts, setViewingMultipleProducts] = useState<Product[]>([]);
+  const [productNameComboOpen, setProductNameComboOpen] = useState(false);
+  const [productHsnComboOpen, setProductHsnComboOpen] = useState(false);
 
   // Fetch customers
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
@@ -576,23 +582,11 @@ export default function Dashboard() {
       );
     }
 
-    // Filter by price
-    if (productPriceFilter.type === "range") {
-      if (productPriceFilter.from) {
-        unselectedProducts = unselectedProducts.filter(product => 
-          parseFloat(product.defaultPrice) >= parseFloat(productPriceFilter.from)
-        );
-      }
-      if (productPriceFilter.to) {
-        unselectedProducts = unselectedProducts.filter(product => 
-          parseFloat(product.defaultPrice) <= parseFloat(productPriceFilter.to)
-        );
-      }
-    } else if (productPriceFilter.type === "fixed" && productPriceFilter.fixed) {
-      unselectedProducts = unselectedProducts.filter(product => 
-        parseFloat(product.defaultPrice) === parseFloat(productPriceFilter.fixed)
-      );
-    }
+    // Filter by price range
+    unselectedProducts = unselectedProducts.filter(product => {
+      const price = parseFloat(product.defaultPrice);
+      return price >= productPriceRange[0] && price <= productPriceRange[1];
+    });
 
     // Filter by unit
     if (productUnitFilter && productUnitFilter !== "all") {
@@ -612,9 +606,16 @@ export default function Dashboard() {
     return [...selectedProducts, ...unselectedProducts];
   };
 
-  // Get unique units and GST rates for filter dropdowns
+  // Get unique values for filter dropdowns and comboboxes
   const uniqueUnits = Array.from(new Set(products.map(p => p.unit).filter(Boolean))).sort();
   const uniqueGstRates = Array.from(new Set(products.map(p => p.gstRate).filter(Boolean))).sort((a, b) => parseFloat(a) - parseFloat(b));
+  const uniqueProductNames = Array.from(new Set(products.map(p => p.name).filter(Boolean))).sort();
+  const uniqueHsnCodes = Array.from(new Set(products.map(p => p.hsn).filter(Boolean))).sort();
+  
+  // Calculate min and max prices for slider
+  const prices = products.map(p => parseFloat(p.defaultPrice));
+  const minPrice = prices.length > 0 ? Math.floor(Math.min(...prices)) : 0;
+  const maxPrice = prices.length > 0 ? Math.ceil(Math.max(...prices)) : 10000;
 
   const filteredProducts = getFilteredProducts();
 
@@ -1139,28 +1140,110 @@ export default function Dashboard() {
                 {/* Filter Section */}
                 <div className="mb-6 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Product Name Search */}
+                    {/* Product Name Combobox */}
                     <div>
-                      <Label htmlFor="productNameSearch">Product Name</Label>
-                      <Input
-                        id="productNameSearch"
-                        value={productNameSearch}
-                        onChange={(e) => setProductNameSearch(e.target.value)}
-                        placeholder="Search by product name..."
-                        data-testid="input-filter-product-name"
-                      />
+                      <Label>Product Name</Label>
+                      <Popover open={productNameComboOpen} onOpenChange={setProductNameComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productNameComboOpen}
+                            className="w-full justify-between"
+                            data-testid="button-filter-product-name"
+                          >
+                            {productNameSearch || "Search product name..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandInput 
+                              placeholder="Search product name..." 
+                              value={productNameSearch}
+                              onValueChange={setProductNameSearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No product found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueProductNames.filter(name => 
+                                  name.toLowerCase().includes(productNameSearch.toLowerCase())
+                                ).map((name) => (
+                                  <CommandItem
+                                    key={name}
+                                    value={name}
+                                    onSelect={(currentValue) => {
+                                      setProductNameSearch(currentValue === productNameSearch ? "" : currentValue);
+                                      setProductNameComboOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        productNameSearch === name ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
-                    {/* HSN Code Search */}
+                    {/* HSN Code Combobox */}
                     <div>
-                      <Label htmlFor="productHsnSearch">HSN Code</Label>
-                      <Input
-                        id="productHsnSearch"
-                        value={productHsnSearch}
-                        onChange={(e) => setProductHsnSearch(e.target.value)}
-                        placeholder="Search by HSN code..."
-                        data-testid="input-filter-hsn"
-                      />
+                      <Label>HSN Code</Label>
+                      <Popover open={productHsnComboOpen} onOpenChange={setProductHsnComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productHsnComboOpen}
+                            className="w-full justify-between"
+                            data-testid="button-filter-hsn"
+                          >
+                            {productHsnSearch || "Search HSN code..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandInput 
+                              placeholder="Search HSN code..." 
+                              value={productHsnSearch}
+                              onValueChange={setProductHsnSearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No HSN code found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueHsnCodes.filter(hsn => 
+                                  hsn.toLowerCase().includes(productHsnSearch.toLowerCase())
+                                ).map((hsn) => (
+                                  <CommandItem
+                                    key={hsn}
+                                    value={hsn}
+                                    onSelect={(currentValue) => {
+                                      setProductHsnSearch(currentValue === productHsnSearch ? "" : currentValue);
+                                      setProductHsnComboOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        productHsnSearch === hsn ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {hsn}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
                     {/* Unit Filter */}
@@ -1194,68 +1277,35 @@ export default function Dashboard() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
 
-                    {/* Price Filter Type */}
-                    <div>
-                      <Label htmlFor="priceFilterType">Price Filter Type</Label>
-                      <Select 
-                        value={productPriceFilter.type} 
-                        onValueChange={(value: "range" | "fixed") => 
-                          setProductPriceFilter({ ...productPriceFilter, type: value })
-                        }
-                      >
-                        <SelectTrigger id="priceFilterType" data-testid="select-filter-price-type">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="range">Price Range</SelectItem>
-                          <SelectItem value="fixed">Fixed Price</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Price Range or Fixed */}
-                    {productPriceFilter.type === "range" ? (
-                      <>
-                        <div>
-                          <Label htmlFor="priceFrom">Price From</Label>
-                          <Input
-                            id="priceFrom"
-                            type="number"
-                            step="0.01"
-                            value={productPriceFilter.from}
-                            onChange={(e) => setProductPriceFilter({ ...productPriceFilter, from: e.target.value })}
-                            placeholder="Min price"
-                            data-testid="input-filter-price-from"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="priceTo">Price To</Label>
-                          <Input
-                            id="priceTo"
-                            type="number"
-                            step="0.01"
-                            value={productPriceFilter.to}
-                            onChange={(e) => setProductPriceFilter({ ...productPriceFilter, to: e.target.value })}
-                            placeholder="Max price"
-                            data-testid="input-filter-price-to"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div>
-                        <Label htmlFor="priceFixed">Fixed Price</Label>
-                        <Input
-                          id="priceFixed"
-                          type="number"
-                          step="0.01"
-                          value={productPriceFilter.fixed}
-                          onChange={(e) => setProductPriceFilter({ ...productPriceFilter, fixed: e.target.value })}
-                          placeholder="Exact price"
-                          data-testid="input-filter-price-fixed"
-                        />
+                  {/* Price Range Slider */}
+                  <div className="space-y-4">
+                    <Label>Price Range</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+                        <div className="text-xs text-gray-500 mb-1">Min</div>
+                        <div className="text-lg font-semibold">₹{productPriceRange[0]}</div>
                       </div>
-                    )}
+                      <span className="text-gray-400">—</span>
+                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+                        <div className="text-xs text-gray-500 mb-1">Max</div>
+                        <div className="text-lg font-semibold">₹{productPriceRange[1]}</div>
+                      </div>
+                    </div>
+                    <Slider
+                      min={minPrice}
+                      max={maxPrice}
+                      step={1}
+                      value={productPriceRange}
+                      onValueChange={(value) => setProductPriceRange(value as [number, number])}
+                      className="mt-2"
+                      data-testid="slider-price-range"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>₹{minPrice}</span>
+                      <span>₹{maxPrice}</span>
+                    </div>
                   </div>
 
                   {/* Clear Filters Button */}
@@ -1265,7 +1315,7 @@ export default function Dashboard() {
                       onClick={() => {
                         setProductNameSearch("");
                         setProductHsnSearch("");
-                        setProductPriceFilter({ type: "range", from: "", to: "", fixed: "" });
+                        setProductPriceRange([minPrice, maxPrice]);
                         setProductUnitFilter("all");
                         setProductGstFilter("all");
                       }}
