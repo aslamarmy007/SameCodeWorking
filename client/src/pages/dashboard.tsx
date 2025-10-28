@@ -749,7 +749,7 @@ export default function Dashboard() {
                               name="gstin"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>GSTIN</FormLabel>
+                                  <FormLabel>GSTIN (optional)</FormLabel>
                                   <FormControl>
                                     <Input {...field} data-testid="input-customer-gstin" />
                                   </FormControl>
