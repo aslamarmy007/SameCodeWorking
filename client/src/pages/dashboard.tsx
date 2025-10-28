@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -39,10 +40,10 @@ export default function Dashboard() {
     endDate: "",
   });
   const [customerNameSearch, setCustomerNameSearch] = useState("");
-  const [customerPhoneSearch, setCustomerPhoneSearch] = useState("");
   const [customerCityFilter, setCustomerCityFilter] = useState("all");
   const [customerSortOption, setCustomerSortOption] = useState("a-z");
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
+  const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
 
   // Fetch customers
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
@@ -421,6 +422,40 @@ export default function Dashboard() {
     setProductDialogOpen(true);
   };
 
+  const handleSelectCustomer = (customerId: string, checked: boolean) => {
+    setSelectedCustomerIds(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(customerId);
+      } else {
+        newSet.delete(customerId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllCustomers = (checked: boolean) => {
+    if (checked) {
+      setSelectedCustomerIds(new Set(filteredCustomers.map(c => c.id)));
+    } else {
+      setSelectedCustomerIds(new Set());
+    }
+  };
+
+  const handleBulkDeleteCustomers = () => {
+    selectedCustomerIds.forEach(id => {
+      deleteCustomerMutation.mutate(id);
+    });
+    setSelectedCustomerIds(new Set());
+  };
+
+  const handleBulkViewCustomers = () => {
+    const selectedCustomers = customers.filter(c => selectedCustomerIds.has(c.id));
+    if (selectedCustomers.length > 0) {
+      setViewingCustomer(selectedCustomers[0]);
+    }
+  };
+
   const handleDownloadInvoice = async (invoice: Invoice) => {
     try {
       const response = await fetch(`/api/invoices/${invoice.id}/items`);
@@ -487,52 +522,53 @@ export default function Dashboard() {
 
   // Filter and sort customers
   const getFilteredAndSortedCustomers = () => {
-    let filtered = [...customers];
+    // Separate selected and unselected customers
+    const selectedCustomers = customers.filter(c => selectedCustomerIds.has(c.id));
+    let unselectedCustomers = customers.filter(c => !selectedCustomerIds.has(c.id));
 
+    // Apply filters only to unselected customers
     // Filter by name (shop name or contact name)
     if (customerNameSearch.trim()) {
       const searchLower = customerNameSearch.toLowerCase();
-      filtered = filtered.filter(customer => 
+      unselectedCustomers = unselectedCustomers.filter(customer => 
         (customer.shopName?.toLowerCase() || "").includes(searchLower) ||
         (customer.name?.toLowerCase() || "").includes(searchLower)
       );
     }
 
-    // Filter by phone
-    if (customerPhoneSearch.trim()) {
-      filtered = filtered.filter(customer => 
-        (customer.phone || "").includes(customerPhoneSearch)
-      );
-    }
-
     // Filter by city
     if (customerCityFilter && customerCityFilter !== "all") {
-      filtered = filtered.filter(customer => 
+      unselectedCustomers = unselectedCustomers.filter(customer => 
         customer.city === customerCityFilter
       );
     }
 
-    // Sort
-    filtered.sort((a, b) => {
+    // Sort unselected customers
+    unselectedCustomers.sort((a, b) => {
       switch (customerSortOption) {
         case "a-z":
           return (a.shopName || "").localeCompare(b.shopName || "");
         case "z-a":
           return (b.shopName || "").localeCompare(a.shopName || "");
-        case "new-old":
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateB - dateA;
-        case "old-new":
-          const dateA2 = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB2 = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateA2 - dateB2;
         default:
           return 0;
       }
     });
 
-    return filtered;
+    // Sort selected customers
+    selectedCustomers.sort((a, b) => {
+      switch (customerSortOption) {
+        case "a-z":
+          return (a.shopName || "").localeCompare(b.shopName || "");
+        case "z-a":
+          return (b.shopName || "").localeCompare(a.shopName || "");
+        default:
+          return 0;
+      }
+    });
+
+    // Combine: selected customers first, then unselected
+    return [...selectedCustomers, ...unselectedCustomers];
   };
 
   // Get unique cities for filter dropdown
@@ -739,7 +775,7 @@ export default function Dashboard() {
                   <>
                     {/* Filter and Search Controls */}
                     <div className="mb-6 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Name Search */}
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -755,27 +791,6 @@ export default function Dashboard() {
                               onClick={() => setCustomerNameSearch("")}
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                               data-testid="button-clear-name-search"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Phone Search */}
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            placeholder="Search by phone"
-                            value={customerPhoneSearch}
-                            onChange={(e) => setCustomerPhoneSearch(e.target.value)}
-                            className="pl-10 pr-10"
-                            data-testid="input-search-customer-phone"
-                          />
-                          {customerPhoneSearch && (
-                            <button
-                              onClick={() => setCustomerPhoneSearch("")}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                              data-testid="button-clear-phone-search"
                             >
                               <X className="h-4 w-4" />
                             </button>
@@ -805,15 +820,42 @@ export default function Dashboard() {
                           <SelectContent>
                             <SelectItem value="a-z" data-testid="sort-option-a-z">A to Z</SelectItem>
                             <SelectItem value="z-a" data-testid="sort-option-z-a">Z to A</SelectItem>
-                            <SelectItem value="new-old" data-testid="sort-option-new-old">New to Old</SelectItem>
-                            <SelectItem value="old-new" data-testid="sort-option-old-new">Old to New</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
-                      {/* Results count */}
-                      <div className="text-sm text-gray-600 dark:text-gray-400" data-testid="text-customer-count">
-                        Showing {filteredCustomers.length} of {customers.length} customers
+                      {/* Bulk Actions and Results count */}
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600 dark:text-gray-400" data-testid="text-customer-count">
+                          Showing {filteredCustomers.length} of {customers.length} customers
+                          {selectedCustomerIds.size > 0 && (
+                            <span className="ml-2 font-semibold text-indigo-600 dark:text-indigo-400">
+                              ({selectedCustomerIds.size} selected)
+                            </span>
+                          )}
+                        </div>
+                        {selectedCustomerIds.size > 0 && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleBulkViewCustomers}
+                              data-testid="button-bulk-view"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Selected
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={handleBulkDeleteCustomers}
+                              data-testid="button-bulk-delete"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Selected
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -821,6 +863,13 @@ export default function Dashboard() {
                       <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-12">
+                            <Checkbox
+                              checked={filteredCustomers.length > 0 && filteredCustomers.every(c => selectedCustomerIds.has(c.id))}
+                              onCheckedChange={handleSelectAllCustomers}
+                              data-testid="checkbox-select-all"
+                            />
+                          </TableHead>
                           <TableHead>Shop Name</TableHead>
                           <TableHead>Contact Name</TableHead>
                           <TableHead>City</TableHead>
@@ -830,7 +879,7 @@ export default function Dashboard() {
                       <TableBody>
                         {filteredCustomers.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={4} className="text-center text-gray-500" data-testid="text-no-customers">
+                            <TableCell colSpan={5} className="text-center text-gray-500" data-testid="text-no-customers">
                               {customers.length === 0 
                                 ? "No customers found. Add your first customer to get started."
                                 : "No customers match your search criteria."}
@@ -838,7 +887,18 @@ export default function Dashboard() {
                           </TableRow>
                         ) : (
                           filteredCustomers.map((customer) => (
-                            <TableRow key={customer.id} data-testid={`row-customer-${customer.id}`}>
+                            <TableRow 
+                              key={customer.id} 
+                              data-testid={`row-customer-${customer.id}`}
+                              className={selectedCustomerIds.has(customer.id) ? "bg-indigo-50 dark:bg-indigo-900/20" : ""}
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedCustomerIds.has(customer.id)}
+                                  onCheckedChange={(checked) => handleSelectCustomer(customer.id, checked as boolean)}
+                                  data-testid={`checkbox-customer-${customer.id}`}
+                                />
+                              </TableCell>
                               <TableCell className="font-medium">{customer.shopName}</TableCell>
                               <TableCell>{customer.name}</TableCell>
                               <TableCell>{customer.city}</TableCell>
