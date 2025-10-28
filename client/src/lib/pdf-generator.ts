@@ -231,6 +231,7 @@ function drawCompanyHeader(doc: jsPDF, pageWidth: number, margin: number, yPos: 
   doc.text("•", separator2X, phoneTextY);
   
   const gstinTextX = separator2X + doc.getTextWidth("•") + 3;
+  doc.setFont("helvetica", "bold");
   doc.text(gstinText, gstinTextX, phoneTextY);
 
   const billBoxHeight = 8;
@@ -306,6 +307,7 @@ function drawCompanyHeaderWithBillType(doc: jsPDF, pageWidth: number, margin: nu
   doc.text("•", separator2X, phoneTextY);
   
   const gstinTextX = separator2X + doc.getTextWidth("•") + 3;
+  doc.setFont("helvetica", "bold");
   doc.text(gstinText, gstinTextX, phoneTextY);
 
   const billBoxHeight = 8;
