@@ -736,7 +736,7 @@ export default function Dashboard() {
                               name="email"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Email</FormLabel>
+                                  <FormLabel>Email (optional)</FormLabel>
                                   <FormControl>
                                     <Input {...field} data-testid="input-customer-email" />
                                   </FormControl>
