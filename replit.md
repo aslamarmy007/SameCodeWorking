@@ -178,12 +178,26 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
   - Made category field MANDATORY in product creation/edit forms
   - Moved category field to FIRST position (before product name) in form
   - Implemented category autocomplete using datalist with previously entered values
-  - Updated validation: max 15 characters (reduced from 30), supports Tamil/English letters, numbers, and special characters: - _ / \ $ % & * ( ) ; : ' " . , ! @ #
+  - Updated validation: max 30 characters (increased from 15), supports Tamil/English letters, numbers, and special characters: - _ / \ $ % & * ( ) ; : ' " . , ! @ #
+  - Product name also increased to max 30 characters (from 15)
   - No consecutive spaces allowed in category names
   - Added category filter combo box BEFORE product name filter in product management
   - Category filter supports search and autocomplete from existing categories
   - Filtering logic updated to include category-based filtering
   - uniqueCategories computed from all products for autocomplete suggestions
+  - Removed placeholders from category and unit input fields for cleaner UI
+- [2025-10-28] Implemented multi-select filters in product management dashboard:
+  - Converted category filter to multi-select with checkbox interface
+  - Converted HSN code filter to multi-select with checkbox interface
+  - Converted unit type filter from dropdown to multi-select with checkbox interface
+  - Converted GST rate filter from dropdown to multi-select with checkbox interface
+  - All multi-select filters use Set data structure for efficient filtering
+  - Each filter shows count of selected items in label (e.g., "Category (2)")
+  - Filter buttons display "X selected" when items are chosen
+  - Individual "Clear" buttons below each filter for easy reset
+  - Filters support search functionality (category and HSN code)
+  - Multi-select allows filtering by multiple values simultaneously (e.g., show products from "Grow Bags" AND "Coir Pith" categories)
+  - Updated filtering logic to handle Set-based selections instead of single values
 
 ## Development Status
 - ✅ Schema and data models defined
