@@ -88,6 +88,7 @@ export default function Dashboard() {
   // Customer form
   const customerForm = useForm<z.infer<typeof customerFormSchema>>({
     resolver: zodResolver(customerFormSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       shopName: "",
