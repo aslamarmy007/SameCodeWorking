@@ -297,12 +297,12 @@ export default function BillingPage() {
       };
       return await apiRequest<{ invoice: any; items: any[] }>("POST", "/api/invoices", invoiceData);
     },
-    onSuccess: (response: { invoice: any; items: any[] }) => {
+    onSuccess: async (response: { invoice: any; items: any[] }) => {
       const { invoice } = response;
       const finalShippingData = sameAsbilling ? customerData : shippingData;
       
       // Generate PDF
-      generateInvoicePDF({
+      await generateInvoicePDF({
         invoiceNumber: invoice.invoiceNumber,
         billDate: billConfig.billDate,
         customer: {

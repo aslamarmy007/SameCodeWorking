@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import logoImage from "@assets/cocologo_1761383042737.png";
 import phoneIcon from "@assets/telephone-call_1761384507432.png";
 import phoneIconSmall from "@assets/phone-call_1761390258977.png";
@@ -69,6 +70,86 @@ function hasTamilCharacters(text: string): boolean {
   if (!text) return false;
   const tamilRegex = /[\u0B80-\u0BFF]/;
   return tamilRegex.test(text);
+}
+
+async function renderTamilTextAsImage(
+  text: string,
+  fontSize: number,
+  fontWeight: string = "normal",
+  color: string = "#000000",
+  maxWidth?: number
+): Promise<string> {
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.top = '-9999px';
+  container.style.fontSize = `${fontSize}px`;
+  container.style.fontFamily = "'Noto Sans Tamil', sans-serif";
+  container.style.fontWeight = fontWeight;
+  container.style.color = color;
+  container.style.padding = '2px';
+  container.style.whiteSpace = maxWidth ? 'normal' : 'nowrap';
+  container.style.backgroundColor = 'transparent';
+  
+  if (maxWidth) {
+    container.style.maxWidth = `${maxWidth}px`;
+    container.style.wordWrap = 'break-word';
+  }
+  
+  container.textContent = text;
+  document.body.appendChild(container);
+  
+  try {
+    const canvas = await html2canvas(container, {
+      backgroundColor: null,
+      scale: 3,
+      logging: false
+    });
+    
+    const imageData = canvas.toDataURL('image/png');
+    document.body.removeChild(container);
+    
+    return imageData;
+  } catch (error) {
+    document.body.removeChild(container);
+    console.error("Failed to render Tamil text:", error);
+    throw error;
+  }
+}
+
+async function addTamilText(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  fontSize: number,
+  fontWeight: string = "normal",
+  color: string = "#000000",
+  align: "left" | "center" | "right" = "left",
+  maxWidth?: number
+): Promise<{ width: number; height: number }> {
+  const imageData = await renderTamilTextAsImage(text, fontSize, fontWeight, color, maxWidth);
+  
+  const img = new Image();
+  await new Promise((resolve) => {
+    img.onload = resolve;
+    img.src = imageData;
+  });
+  
+  const mmPerPx = 25.4 / 96;
+  const imgWidthMM = (img.width / 3) * mmPerPx;
+  const imgHeightMM = (img.height / 3) * mmPerPx;
+  
+  let finalX = x;
+  if (align === "center") {
+    finalX = x - (imgWidthMM / 2);
+  } else if (align === "right") {
+    finalX = x - imgWidthMM;
+  }
+  
+  doc.addImage(imageData, 'PNG', finalX, y - imgHeightMM + (fontSize * 0.3), imgWidthMM, imgHeightMM);
+  
+  return { width: imgWidthMM, height: imgHeightMM };
 }
 
 function setFontForText(doc: jsPDF, text: string, style: "normal" | "bold" = "normal") {
@@ -244,7 +325,7 @@ function drawInvoiceDetails(doc: jsPDF, pageWidth: number, margin: number, yPos:
   return yPos;
 }
 
-function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any): number {
+async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any): Promise<number> {
   const boxWidth = (pageWidth - (2 * margin) - 4) / 2;
   const boxHeight = 42;
   const leftBoxX = margin;
@@ -266,18 +347,28 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (customer.shopName) {
     doc.setFontSize(10);
-    setFontForText(doc, customer.shopName, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(customer.shopName, leftBoxX + 3, billToY);
-    billToY += 4.5;
+    if (hasTamilCharacters(customer.shopName)) {
+      const result = await addTamilText(doc, customer.shopName, leftBoxX + 3, billToY, 10, "bold", "#000000");
+      billToY += result.height + 1;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.text(customer.shopName, leftBoxX + 3, billToY);
+      billToY += 4.5;
+    }
   }
   
   if (customer.name) {
     doc.setFontSize(8);
-    setFontForText(doc, customer.name, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(customer.name, leftBoxX + 3, billToY);
-    billToY += 4.5;
+    if (hasTamilCharacters(customer.name)) {
+      const result = await addTamilText(doc, customer.name, leftBoxX + 3, billToY, 8, "bold", "#000000");
+      billToY += result.height + 1;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.text(customer.name, leftBoxX + 3, billToY);
+      billToY += 4.5;
+    }
   }
   
   if (customer.address || customer.city || customer.state) {
@@ -291,11 +382,16 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
     } else {
       addressText += ", " + indiaText + ".";
     }
-    setFontForText(doc, addressText, "normal");
-    const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
-    setFontForText(doc, addressText, "normal");
-    doc.text(splitAddress, leftBoxX + 3, billToY);
-    billToY += (splitAddress.length * 4);
+    
+    if (hasTamilCharacters(addressText)) {
+      const result = await addTamilText(doc, addressText, leftBoxX + 3, billToY, 8, "normal", "#000000", "left", (boxWidth - 6) * 3.78);
+      billToY += result.height + 1;
+    } else {
+      doc.setFont("helvetica", "normal");
+      const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
+      doc.text(splitAddress, leftBoxX + 3, billToY);
+      billToY += (splitAddress.length * 4);
+    }
   }
   
   if (customer.phone) {
@@ -346,18 +442,28 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   
   if (shipping.shopName) {
     doc.setFontSize(10);
-    setFontForText(doc, shipping.shopName, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(shipping.shopName, rightBoxX + 3, shipToY);
-    shipToY += 4.5;
+    if (hasTamilCharacters(shipping.shopName)) {
+      const result = await addTamilText(doc, shipping.shopName, rightBoxX + 3, shipToY, 10, "bold", "#000000");
+      shipToY += result.height + 1;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.text(shipping.shopName, rightBoxX + 3, shipToY);
+      shipToY += 4.5;
+    }
   }
   
   if (shipping.name) {
     doc.setFontSize(8);
-    setFontForText(doc, shipping.name, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(shipping.name, rightBoxX + 3, shipToY);
-    shipToY += 4.5;
+    if (hasTamilCharacters(shipping.name)) {
+      const result = await addTamilText(doc, shipping.name, rightBoxX + 3, shipToY, 8, "bold", "#000000");
+      shipToY += result.height + 1;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.text(shipping.name, rightBoxX + 3, shipToY);
+      shipToY += 4.5;
+    }
   }
   
   if (shipping.address || shipping.city || shipping.state) {
@@ -371,11 +477,16 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
     } else {
       addressText += ", " + indiaText + ".";
     }
-    setFontForText(doc, addressText, "normal");
-    const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
-    setFontForText(doc, addressText, "normal");
-    doc.text(splitAddress, rightBoxX + 3, shipToY);
-    shipToY += (splitAddress.length * 4);
+    
+    if (hasTamilCharacters(addressText)) {
+      const result = await addTamilText(doc, addressText, rightBoxX + 3, shipToY, 8, "normal", "#000000", "left", (boxWidth - 6) * 3.78);
+      shipToY += result.height + 1;
+    } else {
+      doc.setFont("helvetica", "normal");
+      const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
+      doc.text(splitAddress, rightBoxX + 3, shipToY);
+      shipToY += (splitAddress.length * 4);
+    }
   }
   
   if (shipping.phone) {
@@ -413,16 +524,16 @@ function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos
   return yPos + boxHeight + 4;
 }
 
-function drawCompletePageHeader(doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, data: InvoiceData, startY: number): number {
+async function drawCompletePageHeader(doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, data: InvoiceData, startY: number): Promise<number> {
   drawPageBorder(doc, pageWidth, pageHeight);
   let yPos = startY;
   yPos = drawCompanyHeaderWithBillType(doc, pageWidth, margin, yPos, data.billType || "cash-credit");
   yPos = drawInvoiceDetails(doc, pageWidth, margin, yPos, data.invoiceNumber, data.billDate);
-  yPos = drawCustomerDetails(doc, pageWidth, margin, yPos, data.customer, data.shipping);
+  yPos = await drawCustomerDetails(doc, pageWidth, margin, yPos, data.customer, data.shipping);
   return yPos;
 }
 
-export function generateInvoicePDF(data: InvoiceData) {
+export async function generateInvoicePDF(data: InvoiceData) {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -436,7 +547,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   const margin = 15;
   let yPos = 18;
 
-  yPos = drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
+  yPos = await drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
 
   const tableStartY = yPos;
   
@@ -474,12 +585,14 @@ export function generateInvoicePDF(data: InvoiceData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   
-  data.items.forEach((item, index) => {
+  for (let index = 0; index < data.items.length; index++) {
+    const item = data.items[index];
+    
     if (yPos > pageHeight - 25) {
       doc.addPage();
       yPos = 18;
       
-      yPos = drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
+      yPos = await drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
       
       doc.setFillColor(52, 73, 94);
       doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
@@ -521,7 +634,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     doc.setDrawColor(230, 230, 230);
     doc.setLineWidth(0.1);
     doc.line(margin, yPos, pageWidth - margin, yPos);
-  });
+  }
 
   yPos += 6;
 
@@ -529,7 +642,7 @@ export function generateInvoicePDF(data: InvoiceData) {
   if (yPos + estimatedSpaceNeeded > pageHeight - 10) {
     doc.addPage();
     yPos = 18;
-    yPos = drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
+    yPos = await drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
   }
 
   const totalsBoxX = pageWidth - 85;

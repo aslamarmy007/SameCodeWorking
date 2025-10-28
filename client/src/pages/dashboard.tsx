@@ -469,7 +469,7 @@ export default function Dashboard() {
         eSignatureEnabled: false,
       };
 
-      generateInvoicePDF(invoiceData);
+      await generateInvoicePDF(invoiceData);
       toast({ title: "Invoice downloaded successfully" });
     } catch (error) {
       toast({ title: "Failed to download invoice", variant: "destructive" });
