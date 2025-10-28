@@ -1590,9 +1590,6 @@ export default function Dashboard() {
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-address">{viewingCustomer.address || "-"}</p>
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button onClick={() => setViewingCustomer(null)} data-testid="button-close-view">Close</Button>
-                </DialogFooter>
               </div>
             )}
           </DialogContent>
@@ -1656,9 +1653,6 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            <DialogFooter>
-              <Button onClick={() => setViewingMultipleCustomers([])} data-testid="button-close-multiple-view">Close</Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
 
@@ -1722,9 +1716,6 @@ export default function Dashboard() {
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-description">{viewingProduct.description || "-"}</p>
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button onClick={() => setViewingProduct(null)} data-testid="button-close-product-view">Close</Button>
-                </DialogFooter>
               </div>
             )}
           </DialogContent>
@@ -1780,9 +1771,6 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            <DialogFooter>
-              <Button onClick={() => setViewingMultipleProducts([])} data-testid="button-close-multiple-product-view">Close</Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
 
