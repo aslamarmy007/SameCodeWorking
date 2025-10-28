@@ -378,12 +378,12 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     
     if (hasTamilCharacters(addressText)) {
       const result = await addTamilText(doc, addressText, leftBoxX + 3, billToY, 8, "normal", "#000000", "left", (boxWidth - 6) * 3.78);
-      billToY += result.height - 2;
+      billToY += result.height + 2;
     } else {
       doc.setFont("helvetica", "normal");
       const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
       doc.text(splitAddress, leftBoxX + 3, billToY);
-      billToY += (splitAddress.length * 4);
+      billToY += (splitAddress.length * 4) + 1;
     }
   }
   
@@ -463,12 +463,12 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     
     if (hasTamilCharacters(addressText)) {
       const result = await addTamilText(doc, addressText, rightBoxX + 3, shipToY, 8, "normal", "#000000", "left", (boxWidth - 6) * 3.78);
-      shipToY += result.height - 2;
+      shipToY += result.height + 2;
     } else {
       doc.setFont("helvetica", "normal");
       const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
       doc.text(splitAddress, rightBoxX + 3, shipToY);
-      shipToY += (splitAddress.length * 4);
+      shipToY += (splitAddress.length * 4) + 1;
     }
   }
   
