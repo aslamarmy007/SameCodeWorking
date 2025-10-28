@@ -343,7 +343,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(customer.shopName)) {
       const result = await addTamilText(doc, customer.shopName, leftBoxX + 3, billToY, 10, "bold", "#000000");
-      billToY += result.height - 3;
+      billToY += result.height;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(customer.shopName, leftBoxX + 3, billToY);
@@ -356,7 +356,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(customer.name)) {
       const result = await addTamilText(doc, customer.name, leftBoxX + 3, billToY, 8, "bold", "#000000");
-      billToY += result.height - 3;
+      billToY += result.height;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(customer.name, leftBoxX + 3, billToY);
@@ -428,7 +428,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(shipping.shopName)) {
       const result = await addTamilText(doc, shipping.shopName, rightBoxX + 3, shipToY, 10, "bold", "#000000");
-      shipToY += result.height - 3;
+      shipToY += result.height;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(shipping.shopName, rightBoxX + 3, shipToY);
@@ -441,7 +441,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(shipping.name)) {
       const result = await addTamilText(doc, shipping.name, rightBoxX + 3, shipToY, 8, "bold", "#000000");
-      shipToY += result.height - 3;
+      shipToY += result.height;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(shipping.name, rightBoxX + 3, shipToY);
