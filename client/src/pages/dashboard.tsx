@@ -147,6 +147,7 @@ export default function Dashboard() {
     defaultValues: {
       name: "",
       description: "",
+      category: "",
       hsn: "",
       defaultPrice: "",
       unit: "",
@@ -384,10 +385,12 @@ export default function Dashboard() {
     productForm.reset({
       name: product.name,
       description: product.description || "",
+      category: product.category || "",
       hsn: product.hsn,
       defaultPrice: product.defaultPrice,
       unit: product.unit,
       gstRate: product.gstRate,
+      stock: product.stock || "0",
     });
     setProductDialogOpen(true);
   };
@@ -1047,6 +1050,7 @@ export default function Dashboard() {
                       productForm.reset({
                         name: "",
                         description: "",
+                        category: "",
                         hsn: "",
                         defaultPrice: "",
                         unit: "",
@@ -1061,6 +1065,7 @@ export default function Dashboard() {
                         productForm.reset({
                           name: "",
                           description: "",
+                          category: "",
                           hsn: "",
                           defaultPrice: "",
                           unit: "",
@@ -1198,6 +1203,19 @@ export default function Dashboard() {
                                 <FormLabel className="text-sm font-medium">Description (Optional)</FormLabel>
                                 <FormControl>
                                   <Input {...field} value={field.value || ""} maxLength={50} data-testid="input-product-description" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={productForm.control}
+                            name="category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">Category (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value || ""} maxLength={30} placeholder="e.g., Blocks, Fiber, etc." data-testid="input-product-category" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

@@ -128,6 +128,7 @@ export const products = pgTable("products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   description: text("description"),
+  category: text("category"),
   hsn: text("hsn").notNull(),
   defaultPrice: decimal("default_price", { precision: 10, scale: 2 }).notNull(),
   unit: text("unit").notNull(),
@@ -210,6 +211,22 @@ export const insertProductSchema = createInsertSchema(products).omit({ id: true 
       return !/\s{2,}/.test(val);
     }, {
       message: "Description cannot have consecutive spaces"
+    }),
+  category: z.string()
+    .max(30, "Category must be maximum 30 characters")
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9\s]+$/;
+      return allowedChars.test(val);
+    }, {
+      message: "Category can only contain letters, Tamil letters, numbers and spaces"
+    })
+    .refine((val) => {
+      if (!val) return true;
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "Category cannot have consecutive spaces"
     }),
 });
 export type InsertProduct = z.infer<typeof insertProductSchema>;
