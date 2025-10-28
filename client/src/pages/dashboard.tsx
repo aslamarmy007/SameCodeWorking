@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [customerPhoneSearch, setCustomerPhoneSearch] = useState("");
   const [customerCityFilter, setCustomerCityFilter] = useState("all");
   const [customerSortOption, setCustomerSortOption] = useState("a-z");
+  const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
 
   // Fetch customers
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
@@ -566,9 +567,28 @@ export default function Dashboard() {
                     <CardTitle>Customer Management</CardTitle>
                     <CardDescription>Add, edit, and delete customer information</CardDescription>
                   </div>
-                  <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+                  <Dialog open={customerDialogOpen} onOpenChange={(open) => {
+                    setCustomerDialogOpen(open);
+                    if (!open) {
+                      setEditingCustomer(null);
+                      customerForm.reset();
+                    }
+                  }}>
                     <DialogTrigger asChild>
-                      <Button onClick={() => { setEditingCustomer(null); customerForm.reset(); }} data-testid="button-add-customer">
+                      <Button onClick={() => { 
+                        setEditingCustomer(null); 
+                        customerForm.reset({
+                          name: "",
+                          shopName: "",
+                          phone: "",
+                          email: "",
+                          gstin: "",
+                          address: "",
+                          city: "",
+                          state: "",
+                          postalCode: "",
+                        }); 
+                      }} data-testid="button-add-customer">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Customer
                       </Button>
@@ -803,7 +823,6 @@ export default function Dashboard() {
                         <TableRow>
                           <TableHead>Shop Name</TableHead>
                           <TableHead>Contact Name</TableHead>
-                          <TableHead>Phone</TableHead>
                           <TableHead>City</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -811,7 +830,7 @@ export default function Dashboard() {
                       <TableBody>
                         {filteredCustomers.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center text-gray-500" data-testid="text-no-customers">
+                            <TableCell colSpan={4} className="text-center text-gray-500" data-testid="text-no-customers">
                               {customers.length === 0 
                                 ? "No customers found. Add your first customer to get started."
                                 : "No customers match your search criteria."}
@@ -822,9 +841,16 @@ export default function Dashboard() {
                             <TableRow key={customer.id} data-testid={`row-customer-${customer.id}`}>
                               <TableCell className="font-medium">{customer.shopName}</TableCell>
                               <TableCell>{customer.name}</TableCell>
-                              <TableCell>{customer.phone}</TableCell>
                               <TableCell>{customer.city}</TableCell>
                               <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setViewingCustomer(customer)}
+                                  data-testid={`button-view-customer-${customer.id}`}
+                                >
+                                  <Eye className="h-4 w-4 text-blue-500" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -1128,6 +1154,61 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* View Customer Dialog */}
+        <Dialog open={!!viewingCustomer} onOpenChange={(open) => !open && setViewingCustomer(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Customer Details</DialogTitle>
+              <DialogDescription>View customer information</DialogDescription>
+            </DialogHeader>
+            {viewingCustomer && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Shop Name</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-shop-name">{viewingCustomer.shopName || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Contact Name</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-contact-name">{viewingCustomer.name || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Phone</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-phone">{viewingCustomer.phone || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Email</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-email">{viewingCustomer.email || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">GSTIN</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-gstin">{viewingCustomer.gstin || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">City</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-city">{viewingCustomer.city || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">State</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-state">{viewingCustomer.state || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Postal Code</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-postal-code">{viewingCustomer.postalCode || "-"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-sm font-medium text-gray-500">Address</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-address">{viewingCustomer.address || "-"}</p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => setViewingCustomer(null)} data-testid="button-close-view">Close</Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Delete Customer Confirmation */}
         <AlertDialog open={!!deleteCustomerId} onOpenChange={() => setDeleteCustomerId(null)}>
