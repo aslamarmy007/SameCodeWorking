@@ -723,7 +723,7 @@ export default function Dashboard() {
                               name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Phone</FormLabel>
+                                  <FormLabel>Phone (optional)</FormLabel>
                                   <FormControl>
                                     <Input {...field} value={field.value || ""} data-testid="input-customer-phone" />
                                   </FormControl>
