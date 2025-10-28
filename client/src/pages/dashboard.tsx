@@ -43,6 +43,7 @@ export default function Dashboard() {
   const [customerCityFilter, setCustomerCityFilter] = useState("all");
   const [customerSortOption, setCustomerSortOption] = useState("a-z");
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
+  const [viewingMultipleCustomers, setViewingMultipleCustomers] = useState<Customer[]>([]);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
 
   // Fetch customers
@@ -452,7 +453,7 @@ export default function Dashboard() {
   const handleBulkViewCustomers = () => {
     const selectedCustomers = customers.filter(c => selectedCustomerIds.has(c.id));
     if (selectedCustomers.length > 0) {
-      setViewingCustomer(selectedCustomers[0]);
+      setViewingMultipleCustomers(selectedCustomers);
     }
   };
 
@@ -1267,6 +1268,70 @@ export default function Dashboard() {
                 </DialogFooter>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* View Multiple Customers Dialog */}
+        <Dialog open={viewingMultipleCustomers.length > 0} onOpenChange={(open) => !open && setViewingMultipleCustomers([])}>
+          <DialogContent className="max-w-4xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Selected Customers Details ({viewingMultipleCustomers.length})</DialogTitle>
+              <DialogDescription>View all selected customer information</DialogDescription>
+            </DialogHeader>
+            <div className="overflow-y-auto max-h-[60vh] space-y-6 pr-2">
+              {viewingMultipleCustomers.map((customer, index) => (
+                <div 
+                  key={customer.id} 
+                  className="border-b pb-4 last:border-b-0"
+                  data-testid={`view-multiple-customer-${customer.id}`}
+                >
+                  <h3 className="text-lg font-semibold mb-3 text-indigo-600 dark:text-indigo-400">
+                    Customer {index + 1}: {customer.shopName}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Shop Name</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.shopName || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Contact Name</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.name || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Phone</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.phone || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Email</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.email || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">GSTIN</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.gstin || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">City</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.city || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">State</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.state || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Postal Code</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.postalCode || "-"}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-sm font-medium text-gray-500">Address</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.address || "-"}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setViewingMultipleCustomers([])} data-testid="button-close-multiple-view">Close</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
