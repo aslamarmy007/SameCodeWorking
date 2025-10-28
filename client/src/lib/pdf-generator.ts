@@ -201,21 +201,31 @@ function drawCompanyHeader(doc: jsPDF, pageWidth: number, margin: number, yPos: 
   const phoneTextY = centerStartY + 29;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
+  const gstinText = "GSTIN : 33DMEPM1042M1Z5";
   const billBoxWidth = 30;
   
-  doc.setFontSize(9);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
   
   const phoneStartX = margin + logoWidth + 5;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
-  doc.setFont("helvetica", "normal");
   doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
-  const emailWidth = doc.getTextWidth(emailText);
-  const emailEndX = pageWidth - margin - billBoxWidth - 5;
-  const emailTextX = emailEndX - emailWidth;
-  const emailIconX = emailTextX - phoneIconSize - 1;
+  const phoneEndX = phoneStartX + phoneIconSize + 1 + doc.getTextWidth(phoneNumbersText);
+  const separator1X = phoneEndX + 3;
+  doc.text("•", separator1X, phoneTextY);
+  
+  const emailIconX = separator1X + doc.getTextWidth("•") + 3;
   doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
+  const emailTextX = emailIconX + phoneIconSize + 1;
   doc.text(emailText, emailTextX, phoneTextY);
+  
+  const emailEndX = emailTextX + doc.getTextWidth(emailText);
+  const separator2X = emailEndX + 3;
+  doc.text("•", separator2X, phoneTextY);
+  
+  const gstinTextX = separator2X + doc.getTextWidth("•") + 3;
+  doc.text(gstinText, gstinTextX, phoneTextY);
 
   const billBoxHeight = 8;
   const billBoxX = pageWidth - margin - billBoxWidth;
@@ -260,21 +270,31 @@ function drawCompanyHeaderWithBillType(doc: jsPDF, pageWidth: number, margin: nu
   const phoneTextY = centerStartY + 29;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
+  const gstinText = "GSTIN : 33DMEPM1042M1Z5";
   const billBoxWidth = 30;
   
-  doc.setFontSize(9);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
   
   const phoneStartX = margin + logoWidth + 5;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
-  doc.setFont("helvetica", "normal");
   doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
-  const emailWidth = doc.getTextWidth(emailText);
-  const emailEndX = pageWidth - margin - billBoxWidth - 5;
-  const emailTextX = emailEndX - emailWidth;
-  const emailIconX = emailTextX - phoneIconSize - 1;
+  const phoneEndX = phoneStartX + phoneIconSize + 1 + doc.getTextWidth(phoneNumbersText);
+  const separator1X = phoneEndX + 3;
+  doc.text("•", separator1X, phoneTextY);
+  
+  const emailIconX = separator1X + doc.getTextWidth("•") + 3;
   doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
+  const emailTextX = emailIconX + phoneIconSize + 1;
   doc.text(emailText, emailTextX, phoneTextY);
+  
+  const emailEndX = emailTextX + doc.getTextWidth(emailText);
+  const separator2X = emailEndX + 3;
+  doc.text("•", separator2X, phoneTextY);
+  
+  const gstinTextX = separator2X + doc.getTextWidth("•") + 3;
+  doc.text(gstinText, gstinTextX, phoneTextY);
 
   const billBoxHeight = 8;
   const billBoxX = pageWidth - margin - billBoxWidth;
