@@ -417,7 +417,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
     const gstinLines = doc.splitTextToSize(customer.gstin, gstinTextWidth);
     doc.text(gstinLines, leftBoxX + 3 + gstinLabelWidth, billToY);
-    billToY += (gstinLines.length * 4) + 0.7;
+    billToY += (gstinLines.length * 4);
   }
   
   const shipToStartY = yPos + 13;
@@ -502,7 +502,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
     const gstinLines = doc.splitTextToSize(shipping.gstin, gstinTextWidth);
     doc.text(gstinLines, rightBoxX + 3 + gstinLabelWidth, shipToY);
-    shipToY += (gstinLines.length * 4) + 0.7;
+    shipToY += (gstinLines.length * 4);
   }
   
   const billToContentHeight = billToY - billToStartY;
