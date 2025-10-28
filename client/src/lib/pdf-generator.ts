@@ -87,8 +87,8 @@ async function renderTamilTextAsImage(
   container.style.fontFamily = "'Noto Sans Tamil', sans-serif";
   container.style.fontWeight = fontWeight;
   container.style.color = color;
-  container.style.padding = '8px 4px';
-  container.style.lineHeight = '1.4';
+  container.style.padding = '5px 4px';
+  container.style.lineHeight = '1.25';
   container.style.whiteSpace = maxWidth ? 'normal' : 'nowrap';
   container.style.backgroundColor = 'transparent';
   
@@ -343,7 +343,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(customer.shopName)) {
       const result = await addTamilText(doc, customer.shopName, leftBoxX + 3, billToY, 10, "bold", "#000000");
-      billToY += result.height - 2;
+      billToY += result.height - 3;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(customer.shopName, leftBoxX + 3, billToY);
@@ -356,7 +356,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(customer.name)) {
       const result = await addTamilText(doc, customer.name, leftBoxX + 3, billToY, 8, "bold", "#000000");
-      billToY += result.height - 2;
+      billToY += result.height - 3;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(customer.name, leftBoxX + 3, billToY);
@@ -417,7 +417,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
     const gstinLines = doc.splitTextToSize(customer.gstin, gstinTextWidth);
     doc.text(gstinLines, leftBoxX + 3 + gstinLabelWidth, billToY);
-    billToY += (gstinLines.length * 4) + 3;
+    billToY += (gstinLines.length * 4) + 0.7;
   }
   
   const shipToStartY = yPos + 13;
@@ -428,7 +428,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(shipping.shopName)) {
       const result = await addTamilText(doc, shipping.shopName, rightBoxX + 3, shipToY, 10, "bold", "#000000");
-      shipToY += result.height - 2;
+      shipToY += result.height - 3;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(shipping.shopName, rightBoxX + 3, shipToY);
@@ -441,7 +441,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setTextColor(0, 0, 0);
     if (hasTamilCharacters(shipping.name)) {
       const result = await addTamilText(doc, shipping.name, rightBoxX + 3, shipToY, 8, "bold", "#000000");
-      shipToY += result.height - 2;
+      shipToY += result.height - 3;
     } else {
       doc.setFont("helvetica", "bold");
       doc.text(shipping.name, rightBoxX + 3, shipToY);
@@ -502,7 +502,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
     const gstinLines = doc.splitTextToSize(shipping.gstin, gstinTextWidth);
     doc.text(gstinLines, rightBoxX + 3 + gstinLabelWidth, shipToY);
-    shipToY += (gstinLines.length * 4) + 3;
+    shipToY += (gstinLines.length * 4) + 0.7;
   }
   
   const billToContentHeight = billToY - billToStartY;
