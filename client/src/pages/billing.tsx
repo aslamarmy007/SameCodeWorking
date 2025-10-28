@@ -367,6 +367,11 @@ export default function BillingPage() {
         });
       }
 
+      // Invalidate cache to refresh dashboard
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices/drafts/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices/pending/all"] });
+
       // Reset form
       setCurrentStep(1);
       setBillConfig({

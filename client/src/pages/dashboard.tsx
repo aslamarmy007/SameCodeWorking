@@ -83,7 +83,7 @@ export default function Dashboard() {
     }
   }, [products]);
 
-  // Fetch invoices (filtered or all)
+  // Fetch invoices (filtered or all, excluding drafts)
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery<Invoice[]>({
     queryKey: billDateRange.startDate && billDateRange.endDate 
       ? ["/api/invoices/filter/date-range", billDateRange.startDate, billDateRange.endDate]
@@ -98,8 +98,20 @@ export default function Dashboard() {
       }
       const response = await fetch("/api/invoices");
       if (!response.ok) throw new Error("Failed to fetch invoices");
-      return response.json();
+      const data = await response.json();
+      // Filter out drafts from finalized invoices
+      return data.filter((invoice: Invoice) => !invoice.isDraft);
     },
+  });
+
+  // Fetch draft invoices
+  const { data: draftInvoices = [], isLoading: draftsLoading } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices/drafts/all"],
+  });
+
+  // Fetch pending payments (invoices with partial or full credit)
+  const { data: pendingInvoices = [], isLoading: pendingLoading } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices/pending/all"],
   });
 
   // Fetch cities and states
@@ -641,10 +653,12 @@ export default function Dashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6" data-testid="tabs-list">
+          <TabsList className="grid w-full grid-cols-5 mb-6" data-testid="tabs-list">
             <TabsTrigger value="customers" data-testid="tab-customers">Customers</TabsTrigger>
             <TabsTrigger value="products" data-testid="tab-products">Products</TabsTrigger>
-            <TabsTrigger value="bills" data-testid="tab-bills">Bills</TabsTrigger>
+            <TabsTrigger value="bills" data-testid="tab-bills">Invoices</TabsTrigger>
+            <TabsTrigger value="drafts" data-testid="tab-drafts">Drafts</TabsTrigger>
+            <TabsTrigger value="pending" data-testid="tab-pending">Pending Payments</TabsTrigger>
           </TabsList>
 
           {/* Customers Tab */}
@@ -1593,6 +1607,147 @@ export default function Dashboard() {
                                   data-testid={`button-delete-bill-${invoice.id}`}
                                 >
                                   <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Draft Invoices Tab */}
+          <TabsContent value="drafts" data-testid="content-drafts">
+            <Card>
+              <CardHeader>
+                <div>
+                  <CardTitle>Draft Invoices</CardTitle>
+                  <CardDescription>View and manage saved draft bills</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {draftsLoading ? (
+                  <p className="text-center py-4">Loading drafts...</p>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Invoice #</TableHead>
+                          <TableHead>Bill Date</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Total Amount</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {draftInvoices.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-gray-500" data-testid="text-no-drafts">
+                              No draft invoices found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          draftInvoices.map((invoice) => (
+                            <TableRow key={invoice.id} data-testid={`row-draft-${invoice.id}`}>
+                              <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                              <TableCell>{format(new Date(invoice.billDate), "dd MMM yyyy")}</TableCell>
+                              <TableCell>{invoice.shopName || invoice.customerName}</TableCell>
+                              <TableCell>₹{parseFloat(invoice.grandTotal).toFixed(2)}</TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDownloadInvoice(invoice)}
+                                  data-testid={`button-download-draft-${invoice.id}`}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setDeleteInvoiceId(invoice.id)}
+                                  data-testid={`button-delete-draft-${invoice.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pending Payments Tab */}
+          <TabsContent value="pending" data-testid="content-pending">
+            <Card>
+              <CardHeader>
+                <div>
+                  <CardTitle>Pending Payments</CardTitle>
+                  <CardDescription>View and track unpaid and partially paid invoices</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {pendingLoading ? (
+                  <p className="text-center py-4">Loading pending payments...</p>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Invoice #</TableHead>
+                          <TableHead>Bill Date</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Total Amount</TableHead>
+                          <TableHead>Paid Amount</TableHead>
+                          <TableHead>Balance</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingInvoices.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center text-gray-500" data-testid="text-no-pending">
+                              No pending payments found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          pendingInvoices.map((invoice) => (
+                            <TableRow key={invoice.id} data-testid={`row-pending-${invoice.id}`}>
+                              <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                              <TableCell>{format(new Date(invoice.billDate), "dd MMM yyyy")}</TableCell>
+                              <TableCell>{invoice.shopName || invoice.customerName}</TableCell>
+                              <TableCell>₹{parseFloat(invoice.grandTotal).toFixed(2)}</TableCell>
+                              <TableCell>₹{invoice.paidAmount ? parseFloat(invoice.paidAmount).toFixed(2) : "0.00"}</TableCell>
+                              <TableCell className="text-red-600 font-semibold">₹{invoice.balanceAmount ? parseFloat(invoice.balanceAmount).toFixed(2) : parseFloat(invoice.grandTotal).toFixed(2)}</TableCell>
+                              <TableCell>
+                                <span className={cn(
+                                  "px-2 py-1 rounded-full text-xs font-medium",
+                                  invoice.paymentStatus === "full_credit" 
+                                    ? "bg-red-100 text-red-800" 
+                                    : "bg-yellow-100 text-yellow-800"
+                                )}>
+                                  {invoice.paymentStatus === "full_credit" ? "Full Credit" : "Partial Paid"}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDownloadInvoice(invoice)}
+                                  data-testid={`button-download-pending-${invoice.id}`}
+                                >
+                                  <Download className="h-4 w-4" />
                                 </Button>
                               </TableCell>
                             </TableRow>
