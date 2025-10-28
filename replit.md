@@ -50,6 +50,11 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
    - Pre-defined products with HSN codes
    - Default pricing
    - Interactive product cards with hover effects
+   - Category-wise product organization with expand/collapse functionality
+   - Each category displays 3 products initially
+   - "Show All" button to expand and view all products in a category
+   - Category headers with product count badges
+   - Supports Tamil and English text in category names
 
 5. **Invoice Generation**
    - Real-time calculation of subtotals
@@ -73,7 +78,7 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
 - id, name, shopName, phone, gstin, address, city, state, postalCode, createdAt
 
 ### Product
-- id, name, description, hsn, defaultPrice, unit
+- id, name, description, category, hsn, defaultPrice, unit, gstRate, stock, createdAt
 
 ### Invoice
 - id, invoiceNumber, billDate, customer details, items, charges, totals
@@ -156,6 +161,19 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
   - Extended MemStorage and API routes (GET /api/locations/:type, POST /api/locations)
   - Fixed React Query cache invalidation to properly refresh location history after adding new values
   - All city/state dropdowns now support both typing new values and selecting from history
+- [2025-10-28] Implemented category-wise product display in billing system:
+  - Added category field to products schema with validation (max 30 chars, Tamil/English support)
+  - Updated product form in dashboard to include category input field
+  - Implemented category-wise grouping in billing page using useMemo for efficient rendering
+  - Products are organized by category with visual category headers
+  - Each category shows product count badge (e.g., "Grow Bags (3 products)")
+  - Initially displays 3 products per category for better UX
+  - "Show All" / "Show Less" expand/collapse buttons for categories with more than 3 products
+  - Expand/collapse state managed via Set for efficient re-rendering
+  - Products without category are grouped under "Uncategorized"
+  - All existing product card features (GST badges, hover effects, click-to-add) preserved
+  - Fully responsive design with proper spacing and layout
+  - Added ChevronDown and ChevronUp icons for expand/collapse UI
 
 ## Development Status
 - ✅ Schema and data models defined
