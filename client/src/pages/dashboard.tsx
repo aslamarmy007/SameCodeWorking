@@ -908,17 +908,16 @@ export default function Dashboard() {
 
                         {/* City Filter */}
                         <div>
-                          <Label>City {selectedCities.size > 0 && `(${selectedCities.size})`}</Label>
                           <Popover open={customerCityComboOpen} onOpenChange={setCustomerCityComboOpen}>
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={customerCityComboOpen}
-                                className="w-full justify-between"
+                                className="w-full justify-between h-10"
                                 data-testid="button-filter-city"
                               >
-                                {selectedCities.size > 0 ? `${selectedCities.size} selected` : "Select cities..."}
+                                {selectedCities.size > 0 ? `${selectedCities.size} cities selected` : "Filter by city"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
@@ -1657,6 +1656,11 @@ export default function Dashboard() {
                     </div>
                   </div>
 
+                  {/* Product Count Display */}
+                  <div className="text-sm text-gray-600 dark:text-gray-400" data-testid="text-product-count">
+                    Showing {filteredProducts.length} of {products.length} products
+                  </div>
+
                   {/* Clear Filters Button */}
                   <div className="flex justify-end">
                     <Button
@@ -1790,11 +1794,6 @@ export default function Dashboard() {
                     </Table>
                   </div>
                 )}
-                
-                {/* Product Count Display */}
-                <div className="mt-4 text-sm text-gray-600 dark:text-gray-400" data-testid="text-product-count">
-                  Showing {filteredProducts.length} of {products.length} products
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
