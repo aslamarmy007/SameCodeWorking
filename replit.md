@@ -174,6 +174,16 @@ A professional billing system for Ayesha Coco Pith, featuring customer managemen
   - All existing product card features (GST badges, hover effects, click-to-add) preserved
   - Fully responsive design with proper spacing and layout
   - Added ChevronDown and ChevronUp icons for expand/collapse UI
+- [2025-10-28] Enhanced product category management in dashboard:
+  - Made category field MANDATORY in product creation/edit forms
+  - Moved category field to FIRST position (before product name) in form
+  - Implemented category autocomplete using datalist with previously entered values
+  - Updated validation: max 15 characters (reduced from 30), supports Tamil/English letters, numbers, and special characters: - _ / \ $ % & * ( ) ; : ' " . , ! @ #
+  - No consecutive spaces allowed in category names
+  - Added category filter combo box BEFORE product name filter in product management
+  - Category filter supports search and autocomplete from existing categories
+  - Filtering logic updated to include category-based filtering
+  - uniqueCategories computed from all products for autocomplete suggestions
 
 ## Development Status
 - ✅ Schema and data models defined
