@@ -1,3 +1,4 @@
+
 import {
   type Customer,
   type InsertCustomer,
@@ -9,8 +10,14 @@ import {
   type InsertInvoiceItem,
   type Location,
   type InsertLocation,
+  customers,
+  products,
+  invoices,
+  invoiceItems,
+  locations,
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "../db/index";
+import { eq, and, gte, lte, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Customer operations
@@ -47,164 +54,127 @@ export interface IStorage {
   addLocation(location: InsertLocation): Promise<Location>;
 }
 
-export class MemStorage implements IStorage {
-  private customers: Map<string, Customer>;
-  private products: Map<string, Product>;
-  private invoices: Map<string, Invoice>;
-  private invoiceItems: Map<string, InvoiceItem>;
-  private locations: Map<string, Location>;
-  private invoiceCounter: number;
-
+export class DbStorage implements IStorage {
   constructor() {
-    this.customers = new Map();
-    this.products = new Map();
-    this.invoices = new Map();
-    this.invoiceItems = new Map();
-    this.locations = new Map();
-    this.invoiceCounter = 1;
-
-    this.seedProducts();
-    this.seedLocations();
+    this.seedDefaultData();
   }
 
-  private seedLocations() {
-    const defaultLocations = [
-      { type: "state" as const, value: "TAMIL NADU" },
-      { type: "state" as const, value: "தமிழ்நாடு" },
-    ];
+  private async seedDefaultData() {
+    // Seed default products if none exist
+    const existingProducts = await db.select().from(products).limit(1);
+    if (existingProducts.length === 0) {
+      const defaultProducts = [
+        {
+          name: "5kg Coco Peat Block",
+          description: "Compressed 5kg coco peat block, high quality",
+          hsn: "53082010",
+          defaultPrice: "450.00",
+          unit: "Block",
+          gstRate: "5.00",
+        },
+        {
+          name: "Grow Bag - Small",
+          description: "Small size grow bag for plants",
+          hsn: "53082010",
+          defaultPrice: "25.00",
+          unit: "Piece",
+          gstRate: "5.00",
+        },
+        {
+          name: "Grow Bag - Medium",
+          description: "Medium size grow bag for plants",
+          hsn: "53082010",
+          defaultPrice: "35.00",
+          unit: "Piece",
+          gstRate: "5.00",
+        },
+        {
+          name: "Grow Bag - Large",
+          description: "Large size grow bag for plants",
+          hsn: "53082010",
+          defaultPrice: "50.00",
+          unit: "Piece",
+          gstRate: "5.00",
+        },
+        {
+          name: "Coco Peat Powder",
+          description: "Fine coco peat powder, 1kg pack",
+          hsn: "53082010",
+          defaultPrice: "120.00",
+          unit: "Kg",
+          gstRate: "0.00",
+        },
+        {
+          name: "Coir Disc",
+          description: "Compressed coir disc, expands in water",
+          hsn: "53082010",
+          defaultPrice: "15.00",
+          unit: "Piece",
+          gstRate: "0.00",
+        },
+        {
+          name: "Coco Chips",
+          description: "Premium coco chips for better drainage",
+          hsn: "53082010",
+          defaultPrice: "180.00",
+          unit: "Kg",
+          gstRate: "5.00",
+        },
+        {
+          name: "Coir Rope",
+          description: "Natural coir rope, 10m length",
+          hsn: "56072900",
+          defaultPrice: "80.00",
+          unit: "Roll",
+          gstRate: "5.00",
+        },
+      ];
+      
+      await db.insert(products).values(defaultProducts);
+    }
 
-    defaultLocations.forEach((location) => {
-      const id = randomUUID();
-      const locationWithId: Location = { 
-        ...location,
-        id,
-        createdAt: new Date(),
-      };
-      this.locations.set(id, locationWithId);
-    });
-  }
-
-  private seedProducts() {
-    const defaultProducts = [
-      {
-        name: "5kg Coco Peat Block",
-        description: "Compressed 5kg coco peat block, high quality" as string | null,
-        hsn: "53082010",
-        defaultPrice: "450.00",
-        unit: "Block",
-        gstRate: "5.00",
-      },
-      {
-        name: "Grow Bag - Small",
-        description: "Small size grow bag for plants",
-        hsn: "53082010",
-        defaultPrice: "25.00",
-        unit: "Piece",
-        gstRate: "5.00",
-      },
-      {
-        name: "Grow Bag - Medium",
-        description: "Medium size grow bag for plants",
-        hsn: "53082010",
-        defaultPrice: "35.00",
-        unit: "Piece",
-        gstRate: "5.00",
-      },
-      {
-        name: "Grow Bag - Large",
-        description: "Large size grow bag for plants",
-        hsn: "53082010",
-        defaultPrice: "50.00",
-        unit: "Piece",
-        gstRate: "5.00",
-      },
-      {
-        name: "Coco Peat Powder",
-        description: "Fine coco peat powder, 1kg pack",
-        hsn: "53082010",
-        defaultPrice: "120.00",
-        unit: "Kg",
-        gstRate: "0.00",
-      },
-      {
-        name: "Coir Disc",
-        description: "Compressed coir disc, expands in water",
-        hsn: "53082010",
-        defaultPrice: "15.00",
-        unit: "Piece",
-        gstRate: "0.00",
-      },
-      {
-        name: "Coco Chips",
-        description: "Premium coco chips for better drainage",
-        hsn: "53082010",
-        defaultPrice: "180.00",
-        unit: "Kg",
-        gstRate: "5.00",
-      },
-      {
-        name: "Coir Rope",
-        description: "Natural coir rope, 10m length",
-        hsn: "56072900",
-        defaultPrice: "80.00",
-        unit: "Roll",
-        gstRate: "5.00",
-      },
-    ];
-
-    defaultProducts.forEach((product) => {
-      const id = randomUUID();
-      const productWithId: Product = { 
-        ...product,
-        id,
-        description: product.description || null
-      };
-      this.products.set(id, productWithId);
-    });
+    // Seed default locations if none exist
+    const existingLocations = await db.select().from(locations).limit(1);
+    if (existingLocations.length === 0) {
+      const defaultLocations = [
+        { type: "state" as const, value: "TAMIL NADU" },
+        { type: "state" as const, value: "தமிழ்நாடு" },
+      ];
+      
+      await db.insert(locations).values(defaultLocations);
+    }
   }
 
   // Customer operations
   async getAllCustomers(): Promise<Customer[]> {
-    return Array.from(this.customers.values());
+    return await db.select().from(customers);
   }
 
   async getCustomer(id: string): Promise<Customer | undefined> {
-    return this.customers.get(id);
+    const result = await db.select().from(customers).where(eq(customers.id, id)).limit(1);
+    return result[0];
   }
 
   async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
-    const id = randomUUID();
-    const customer: Customer = { 
-      id,
-      name: insertCustomer.name || null,
-      shopName: insertCustomer.shopName || null,
-      phone: insertCustomer.phone || null,
-      email: insertCustomer.email || null,
-      gstin: insertCustomer.gstin || null,
-      address: insertCustomer.address || null,
-      city: insertCustomer.city || null,
-      state: insertCustomer.state || null,
-      postalCode: insertCustomer.postalCode || null,
-      createdAt: new Date(),
-    };
-    this.customers.set(id, customer);
-    return customer;
+    const result = await db.insert(customers).values(insertCustomer).returning();
+    return result[0];
   }
 
   async updateCustomer(
     id: string,
     updates: Partial<InsertCustomer>
   ): Promise<Customer | undefined> {
-    const customer = this.customers.get(id);
-    if (!customer) return undefined;
-
-    const updated = { ...customer, ...updates };
-    this.customers.set(id, updated);
-    return updated;
+    const result = await db
+      .update(customers)
+      .set(updates)
+      .where(eq(customers.id, id))
+      .returning();
+    return result[0];
   }
 
   async deleteCustomer(id: string): Promise<boolean> {
-    return this.customers.delete(id);
+    const result = await db.delete(customers).where(eq(customers.id, id)).returning();
+    return result.length > 0;
   }
 
   async findDuplicateCustomer(name: string | undefined, shopName: string | null): Promise<Customer | undefined> {
@@ -214,200 +184,162 @@ export class MemStorage implements IStorage {
     
     const normalizedShopName = shopName.trim().toLowerCase();
     
-    return Array.from(this.customers.values()).find(customer => {
+    const allCustomers = await db.select().from(customers);
+    return allCustomers.find(customer => {
       const customerShopName = customer.shopName?.trim().toLowerCase() || null;
-      
       return customerShopName === normalizedShopName;
     });
   }
 
   // Product operations
   async getAllProducts(): Promise<Product[]> {
-    return Array.from(this.products.values());
+    return await db.select().from(products);
   }
 
   async getProduct(id: string): Promise<Product | undefined> {
-    return this.products.get(id);
+    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    return result[0];
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const id = randomUUID();
-    const product: Product = { 
-      id,
-      name: insertProduct.name,
-      description: insertProduct.description || null,
-      hsn: insertProduct.hsn,
-      defaultPrice: insertProduct.defaultPrice,
-      unit: insertProduct.unit,
-      gstRate: insertProduct.gstRate || "0",
-    };
-    this.products.set(id, product);
-    return product;
+    const result = await db.insert(products).values(insertProduct).returning();
+    return result[0];
   }
 
   async updateProduct(
     id: string,
     updates: Partial<InsertProduct>
   ): Promise<Product | undefined> {
-    const product = this.products.get(id);
-    if (!product) return undefined;
-
-    const updated: Product = { 
-      ...product, 
-      ...updates,
-      description: updates.description !== undefined ? updates.description || null : product.description,
-      gstRate: updates.gstRate !== undefined ? updates.gstRate : product.gstRate
-    };
-    this.products.set(id, updated);
-    return updated;
+    const result = await db
+      .update(products)
+      .set(updates)
+      .where(eq(products.id, id))
+      .returning();
+    return result[0];
   }
 
   async deleteProduct(id: string): Promise<boolean> {
-    return this.products.delete(id);
+    const result = await db.delete(products).where(eq(products.id, id)).returning();
+    return result.length > 0;
   }
 
   // Invoice operations
   async getAllInvoices(): Promise<Invoice[]> {
-    return Array.from(this.invoices.values());
+    return await db.select().from(invoices);
   }
 
   async getInvoice(id: string): Promise<Invoice | undefined> {
-    return this.invoices.get(id);
+    const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
+    return result[0];
   }
 
   async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
-    const id = randomUUID();
-    const invoice: Invoice = {
-      id,
-      invoiceNumber: insertInvoice.invoiceNumber,
-      billDate: insertInvoice.billDate,
-      customerId: insertInvoice.customerId,
-      customerName: insertInvoice.customerName,
-      shopName: insertInvoice.shopName || null,
-      phone: insertInvoice.phone || null,
-      email: insertInvoice.email || null,
-      gstin: insertInvoice.gstin || null,
-      address: insertInvoice.address || null,
-      city: insertInvoice.city || null,
-      state: insertInvoice.state || null,
-      postalCode: insertInvoice.postalCode || null,
-      shippingName: insertInvoice.shippingName || null,
-      shippingShopName: insertInvoice.shippingShopName || null,
-      shippingPhone: insertInvoice.shippingPhone || null,
-      shippingEmail: insertInvoice.shippingEmail || null,
-      shippingGstin: insertInvoice.shippingGstin || null,
-      shippingAddress: insertInvoice.shippingAddress || null,
-      shippingCity: insertInvoice.shippingCity || null,
-      shippingState: insertInvoice.shippingState || null,
-      shippingPostalCode: insertInvoice.shippingPostalCode || null,
-      subtotal: insertInvoice.subtotal,
-      transport: insertInvoice.transport || "0",
-      packaging: insertInvoice.packaging || "0",
-      otherCharges: insertInvoice.otherCharges || "0",
-      gstEnabled: insertInvoice.gstEnabled ?? true,
-      gstAmount: insertInvoice.gstAmount || "0",
-      grandTotal: insertInvoice.grandTotal,
-      lorryNumber: insertInvoice.lorryNumber || null,
-      createdAt: new Date(),
-    };
-    this.invoices.set(id, invoice);
-    return invoice;
-  }
-
-  async getNextInvoiceNumber(): Promise<string> {
-    const number = this.invoiceCounter++;
-    const year = new Date().getFullYear();
-    return `INV-${year}-${String(number).padStart(5, "0")}`;
-  }
-
-  // Invoice items operations
-  async createInvoiceItem(insertItem: InsertInvoiceItem): Promise<InvoiceItem> {
-    const id = randomUUID();
-    const item: InvoiceItem = { 
-      ...insertItem, 
-      id,
-      gstRate: insertItem.gstRate || "0",
-      gstAmount: insertItem.gstAmount || "0",
-    };
-    this.invoiceItems.set(id, item);
-    return item;
-  }
-
-  async getInvoiceItems(invoiceId: string): Promise<InvoiceItem[]> {
-    return Array.from(this.invoiceItems.values()).filter(
-      (item) => item.invoiceId === invoiceId
-    );
+    const result = await db.insert(invoices).values(insertInvoice).returning();
+    return result[0];
   }
 
   async updateInvoice(
     id: string,
     updates: Partial<InsertInvoice>
   ): Promise<Invoice | undefined> {
-    const invoice = this.invoices.get(id);
-    if (!invoice) return undefined;
-
-    const updated: Invoice = { 
-      ...invoice, 
-      ...updates,
-      createdAt: invoice.createdAt
-    };
-    this.invoices.set(id, updated);
-    return updated;
+    const result = await db
+      .update(invoices)
+      .set(updates)
+      .where(eq(invoices.id, id))
+      .returning();
+    return result[0];
   }
 
   async deleteInvoice(id: string): Promise<boolean> {
-    const deleted = this.invoices.delete(id);
-    if (deleted) {
-      await this.deleteInvoiceItems(id);
-    }
-    return deleted;
+    await this.deleteInvoiceItems(id);
+    const result = await db.delete(invoices).where(eq(invoices.id, id)).returning();
+    return result.length > 0;
   }
 
   async getInvoicesByDateRange(startDate: string, endDate: string): Promise<Invoice[]> {
-    const allInvoices = Array.from(this.invoices.values());
-    return allInvoices.filter(invoice => {
-      const invoiceDate = new Date(invoice.billDate);
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      return invoiceDate >= start && invoiceDate <= end;
-    });
+    return await db
+      .select()
+      .from(invoices)
+      .where(
+        and(
+          gte(invoices.billDate, startDate),
+          lte(invoices.billDate, endDate)
+        )
+      );
+  }
+
+  async getNextInvoiceNumber(): Promise<string> {
+    // Get the latest invoice to determine the next number
+    const latestInvoice = await db
+      .select()
+      .from(invoices)
+      .orderBy(sql`${invoices.createdAt} DESC`)
+      .limit(1);
+    
+    const year = new Date().getFullYear();
+    
+    if (latestInvoice.length === 0) {
+      return `INV-${year}-00001`;
+    }
+    
+    // Extract the number from the latest invoice number
+    const latestNumber = latestInvoice[0].invoiceNumber;
+    const match = latestNumber.match(/INV-\d{4}-(\d+)$/);
+    
+    if (match) {
+      const nextNumber = parseInt(match[1]) + 1;
+      return `INV-${year}-${String(nextNumber).padStart(5, "0")}`;
+    }
+    
+    return `INV-${year}-00001`;
+  }
+
+  // Invoice items operations
+  async createInvoiceItem(insertItem: InsertInvoiceItem): Promise<InvoiceItem> {
+    const result = await db.insert(invoiceItems).values(insertItem).returning();
+    return result[0];
+  }
+
+  async getInvoiceItems(invoiceId: string): Promise<InvoiceItem[]> {
+    return await db
+      .select()
+      .from(invoiceItems)
+      .where(eq(invoiceItems.invoiceId, invoiceId));
   }
 
   async deleteInvoiceItems(invoiceId: string): Promise<void> {
-    const itemsToDelete = Array.from(this.invoiceItems.entries())
-      .filter(([_, item]) => item.invoiceId === invoiceId)
-      .map(([id, _]) => id);
-    
-    itemsToDelete.forEach(id => this.invoiceItems.delete(id));
+    await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
   }
 
   // Location operations
   async getLocations(type: "city" | "state"): Promise<string[]> {
-    const locations = Array.from(this.locations.values())
-      .filter(loc => loc.type === type)
-      .map(loc => loc.value);
-    return Array.from(new Set(locations));
+    const result = await db
+      .select({ value: locations.value })
+      .from(locations)
+      .where(eq(locations.type, type));
+    
+    const uniqueValues = Array.from(new Set(result.map(r => r.value)));
+    return uniqueValues;
   }
 
   async addLocation(insertLocation: InsertLocation): Promise<Location> {
-    const existing = Array.from(this.locations.values()).find(
-      loc => loc.type === insertLocation.type && loc.value.toLowerCase() === insertLocation.value.toLowerCase()
+    // Check if location already exists (case-insensitive)
+    const allLocations = await db
+      .select()
+      .from(locations)
+      .where(eq(locations.type, insertLocation.type));
+    
+    const existing = allLocations.find(
+      loc => loc.value.toLowerCase() === insertLocation.value.toLowerCase()
     );
     
     if (existing) {
       return existing;
     }
 
-    const id = randomUUID();
-    const location: Location = { 
-      id,
-      type: insertLocation.type,
-      value: insertLocation.value,
-      createdAt: new Date(),
-    };
-    this.locations.set(id, location);
-    return location;
+    const result = await db.insert(locations).values(insertLocation).returning();
+    return result[0];
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DbStorage();

@@ -15,7 +15,7 @@ export const customers = pgTable("customers", {
   city: text("city"),
   state: text("state"),
   postalCode: text("postal_code"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({ 
@@ -133,6 +133,7 @@ export const products = pgTable("products", {
   unit: text("unit").notNull(),
   gstRate: decimal("gst_rate", { precision: 5, scale: 2 }).notNull().default("0"),
   stock: decimal("stock", { precision: 10, scale: 2 }).default("0"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({ id: true }).extend({
@@ -246,7 +247,7 @@ export const invoices = pgTable("invoices", {
   gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }).default("0"),
   grandTotal: decimal("grand_total", { precision: 10, scale: 2 }).notNull(),
   lorryNumber: text("lorry_number"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertInvoiceSchema = createInsertSchema(invoices).omit({ 
@@ -273,6 +274,7 @@ export const invoiceItems = pgTable("invoice_items", {
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   gstRate: decimal("gst_rate", { precision: 5, scale: 2 }).notNull().default("0"),
   gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }).notNull().default("0"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({ id: true });
@@ -284,7 +286,7 @@ export const locations = pgTable("locations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   type: text("type").notNull(), // "city" or "state"
   value: text("value").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertLocationSchema = createInsertSchema(locations).omit({ 
