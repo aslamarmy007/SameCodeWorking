@@ -53,8 +53,8 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
       message: "Shop name cannot have consecutive spaces"
     }),
   phone: z.string()
-    .min(1, "Phone number is required")
-    .refine((val) => /^\d{10}$/.test(val), {
+    .optional()
+    .refine((val) => !val || /^\d{10}$/.test(val), {
       message: "Phone number must be exactly 10 digits"
     }),
   email: z.string()

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -598,9 +599,9 @@ export default function Dashboard() {
                               name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Phone <span className="text-red-500">*</span></FormLabel>
+                                  <FormLabel>Phone</FormLabel>
                                   <FormControl>
-                                    <Input {...field} data-testid="input-customer-phone" />
+                                    <Input {...field} value={field.value || ""} data-testid="input-customer-phone" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -703,7 +704,7 @@ export default function Dashboard() {
                               <FormItem>
                                 <FormLabel>Address</FormLabel>
                                 <FormControl>
-                                  <Input {...field} data-testid="input-customer-address" />
+                                  <Textarea {...field} value={field.value || ""} rows={3} data-testid="input-customer-address" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
