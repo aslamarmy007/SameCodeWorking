@@ -58,9 +58,7 @@ export default function Dashboard() {
   const [productHsnSearch, setProductHsnSearch] = useState("");
   const [selectedHsnCodes, setSelectedHsnCodes] = useState<Set<string>>(new Set());
   const [productPriceRange, setProductPriceRange] = useState<[number, number]>([0, 10000]);
-  const [productUnitFilter, setProductUnitFilter] = useState("all");
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
-  const [productGstFilter, setProductGstFilter] = useState("all");
   const [selectedGstRates, setSelectedGstRates] = useState<Set<string>>(new Set());
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
