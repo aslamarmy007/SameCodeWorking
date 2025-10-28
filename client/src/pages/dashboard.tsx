@@ -1016,9 +1016,34 @@ export default function Dashboard() {
                     <CardTitle>Product Management</CardTitle>
                     <CardDescription>Add, edit, and delete product catalog</CardDescription>
                   </div>
-                  <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+                  <Dialog open={productDialogOpen} onOpenChange={(open) => {
+                    setProductDialogOpen(open);
+                    if (!open) {
+                      setEditingProduct(null);
+                      productForm.reset({
+                        name: "",
+                        description: "",
+                        hsn: "",
+                        defaultPrice: "",
+                        unit: "",
+                        gstRate: "0",
+                        stock: "0",
+                      });
+                    }
+                  }}>
                     <DialogTrigger asChild>
-                      <Button onClick={() => { setEditingProduct(null); productForm.reset(); }} data-testid="button-add-product">
+                      <Button onClick={() => { 
+                        setEditingProduct(null); 
+                        productForm.reset({
+                          name: "",
+                          description: "",
+                          hsn: "",
+                          defaultPrice: "",
+                          unit: "",
+                          gstRate: "0",
+                          stock: "0",
+                        }); 
+                      }} data-testid="button-add-product">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Product
                       </Button>
@@ -1038,9 +1063,11 @@ export default function Dashboard() {
                               name="name"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Product Name *</FormLabel>
+                                  <FormLabel className="text-sm font-medium">
+                                    Product Name <span className="text-red-500">*</span>
+                                  </FormLabel>
                                   <FormControl>
-                                    <Input {...field} data-testid="input-product-name" />
+                                    <Input {...field} maxLength={15} data-testid="input-product-name" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1051,9 +1078,9 @@ export default function Dashboard() {
                               name="hsn"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>HSN Code *</FormLabel>
+                                  <FormLabel className="text-sm font-medium">HSN Code (Optional)</FormLabel>
                                   <FormControl>
-                                    <Input {...field} data-testid="input-product-hsn" />
+                                    <Input {...field} maxLength={8} inputMode="numeric" data-testid="input-product-hsn" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1064,9 +1091,11 @@ export default function Dashboard() {
                               name="defaultPrice"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Price *</FormLabel>
+                                  <FormLabel className="text-sm font-medium">
+                                    Price <span className="text-red-500">*</span>
+                                  </FormLabel>
                                   <FormControl>
-                                    <Input type="number" step="0.01" {...field} data-testid="input-product-price" />
+                                    <Input {...field} inputMode="decimal" data-testid="input-product-price" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1077,9 +1106,18 @@ export default function Dashboard() {
                               name="unit"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Unit *</FormLabel>
+                                  <FormLabel className="text-sm font-medium">
+                                    Unit <span className="text-red-500">*</span>
+                                  </FormLabel>
                                   <FormControl>
-                                    <Input {...field} placeholder="e.g., Kg, Piece, Block" data-testid="input-product-unit" />
+                                    <div className="relative">
+                                      <Input {...field} list="unit-suggestions" placeholder="e.g., Kg, Piece, Block" data-testid="input-product-unit" />
+                                      <datalist id="unit-suggestions">
+                                        {uniqueUnits.map(unit => (
+                                          <option key={unit} value={unit} />
+                                        ))}
+                                      </datalist>
+                                    </div>
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1090,9 +1128,18 @@ export default function Dashboard() {
                               name="gstRate"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>GST Rate (%) *</FormLabel>
+                                  <FormLabel className="text-sm font-medium">
+                                    GST Rate (%) <span className="text-red-500">*</span>
+                                  </FormLabel>
                                   <FormControl>
-                                    <Input type="number" step="0.01" {...field} data-testid="input-product-gstrate" />
+                                    <div className="relative">
+                                      <Input {...field} list="gst-suggestions" inputMode="decimal" data-testid="input-product-gstrate" />
+                                      <datalist id="gst-suggestions">
+                                        {uniqueGstRates.map(rate => (
+                                          <option key={rate} value={rate} />
+                                        ))}
+                                      </datalist>
+                                    </div>
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1103,9 +1150,9 @@ export default function Dashboard() {
                               name="stock"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Stock</FormLabel>
+                                  <FormLabel className="text-sm font-medium">Stock (Optional)</FormLabel>
                                   <FormControl>
-                                    <Input type="number" step="0.01" {...field} value={field.value || "0"} data-testid="input-product-stock" />
+                                    <Input {...field} value={field.value || "0"} inputMode="decimal" data-testid="input-product-stock" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1117,9 +1164,9 @@ export default function Dashboard() {
                             name="description"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Description</FormLabel>
+                                <FormLabel className="text-sm font-medium">Description (Optional)</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value || ""} data-testid="input-product-description" />
+                                  <Input {...field} value={field.value || ""} maxLength={50} data-testid="input-product-description" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

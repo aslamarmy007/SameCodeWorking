@@ -135,7 +135,82 @@ export const products = pgTable("products", {
   stock: decimal("stock", { precision: 10, scale: 2 }).default("0"),
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({ id: true });
+export const insertProductSchema = createInsertSchema(products).omit({ id: true }).extend({
+  name: z.string()
+    .min(1, "Product name is required")
+    .max(15, "Product name must be maximum 15 characters")
+    .refine((val) => {
+      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9X\/+\-\\%&*#@.,;:"'\]\[\(\)_=$!|\s]+$/;
+      return allowedChars.test(val);
+    }, {
+      message: "Product name can only contain letters, Tamil letters, numbers and these special characters: X / + - \\ % & * # @ . , : ; \" ' ] [ ( ) _ = $ ! |"
+    })
+    .refine((val) => {
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "Product name cannot have consecutive spaces"
+    }),
+  hsn: z.string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      return /^\d{0,8}$/.test(val);
+    }, {
+      message: "HSN code must be only numbers, maximum 8 digits, no spaces"
+    }),
+  defaultPrice: z.string()
+    .min(1, "Price is required")
+    .refine((val) => {
+      return /^\d{1,10}(\.\d{1,2})?$/.test(val);
+    }, {
+      message: "Price must be a valid number with maximum 10 digits"
+    }),
+  unit: z.string()
+    .min(1, "Unit is required")
+    .refine((val) => {
+      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9X\/+\-\\%&*#@.,;:"'\]\[\(\)_=$!|\s]+$/;
+      return allowedChars.test(val);
+    }, {
+      message: "Unit can only contain letters, Tamil letters, numbers and these special characters: X / + - \\ % & * # @ . , : ; \" ' ] [ ( ) _ = $ ! |"
+    })
+    .refine((val) => {
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "Unit cannot have consecutive spaces"
+    }),
+  gstRate: z.string()
+    .min(1, "GST rate is required")
+    .refine((val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0 && num <= 100;
+    }, {
+      message: "GST rate must be between 0 and 100"
+    }),
+  stock: z.string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      return /^\d{1,10}(\.\d{1,2})?$/.test(val);
+    }, {
+      message: "Stock must be a valid number with maximum 10 digits"
+    }),
+  description: z.string()
+    .max(50, "Description must be maximum 50 characters")
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9X\/+\-\\%&*#@.,;:"'\]\[\(\)_=$!|\s]+$/;
+      return allowedChars.test(val);
+    }, {
+      message: "Description can only contain letters, Tamil letters, numbers and these special characters: X / + - \\ % & * # @ . , : ; \" ' ] [ ( ) _ = $ ! |"
+    })
+    .refine((val) => {
+      if (!val) return true;
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "Description cannot have consecutive spaces"
+    }),
+});
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
 
