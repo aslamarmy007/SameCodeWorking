@@ -45,7 +45,9 @@ export default function Dashboard() {
     endDate: "",
   });
   const [customerNameSearch, setCustomerNameSearch] = useState("");
-  const [customerCityFilter, setCustomerCityFilter] = useState("all");
+  const [selectedCities, setSelectedCities] = useState<Set<string>>(new Set());
+  const [customerCitySearch, setCustomerCitySearch] = useState("");
+  const [customerCityComboOpen, setCustomerCityComboOpen] = useState(false);
   const [customerSortOption, setCustomerSortOption] = useState("a-z");
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
   const [viewingMultipleCustomers, setViewingMultipleCustomers] = useState<Customer[]>([]);
@@ -515,10 +517,10 @@ export default function Dashboard() {
       );
     }
 
-    // Filter by city
-    if (customerCityFilter && customerCityFilter !== "all") {
+    // Filter by city (multi-select)
+    if (selectedCities.size > 0) {
       unselectedCustomers = unselectedCustomers.filter(customer => 
-        customer.city === customerCityFilter
+        customer.city && selectedCities.has(customer.city)
       );
     }
 
@@ -905,19 +907,65 @@ export default function Dashboard() {
                         </div>
 
                         {/* City Filter */}
-                        <Select value={customerCityFilter} onValueChange={setCustomerCityFilter}>
-                          <SelectTrigger data-testid="select-city-filter">
-                            <SelectValue placeholder="Filter by city" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all" data-testid="city-option-all">All Cities</SelectItem>
-                            {uniqueCities.map((city) => (
-                              <SelectItem key={city} value={city!} data-testid={`city-option-${city}`}>
-                                {city}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div>
+                          <Label>City {selectedCities.size > 0 && `(${selectedCities.size})`}</Label>
+                          <Popover open={customerCityComboOpen} onOpenChange={setCustomerCityComboOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={customerCityComboOpen}
+                                className="w-full justify-between"
+                                data-testid="button-filter-city"
+                              >
+                                {selectedCities.size > 0 ? `${selectedCities.size} selected` : "Select cities..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[300px] p-0">
+                              <Command>
+                                <CommandInput 
+                                  placeholder="Search city..." 
+                                  value={customerCitySearch}
+                                  onValueChange={setCustomerCitySearch}
+                                />
+                                <CommandList>
+                                  <CommandEmpty>No city found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {uniqueCities.filter(city => 
+                                      city && city.toLowerCase().includes(customerCitySearch.toLowerCase())
+                                    ).map((city) => city && (
+                                      <CommandItem
+                                        key={city}
+                                        value={city}
+                                        onSelect={() => {
+                                          const newSelected = new Set(selectedCities);
+                                          if (newSelected.has(city)) {
+                                            newSelected.delete(city);
+                                          } else {
+                                            newSelected.add(city);
+                                          }
+                                          setSelectedCities(newSelected);
+                                        }}
+                                      >
+                                        <Checkbox
+                                          checked={selectedCities.has(city)}
+                                          className="mr-2"
+                                        />
+                                        {city}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          {selectedCities.size > 0 && (
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedCities(new Set())} className="mt-1 h-7" data-testid="button-clear-cities">
+                              Clear
+                            </Button>
+                          )}
+                        </div>
 
                         {/* Sort Options */}
                         <Select value={customerSortOption} onValueChange={setCustomerSortOption}>
@@ -930,6 +978,44 @@ export default function Dashboard() {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {/* Selected Cities Table */}
+                      {selectedCities.size > 0 && (
+                        <div className="mt-4">
+                          <Label className="mb-2 block">Selected Cities</Label>
+                          <div className="border rounded-lg overflow-hidden">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="bg-gray-50 dark:bg-gray-800">
+                                  <TableHead>City</TableHead>
+                                  <TableHead className="text-right w-20">Action</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {Array.from(selectedCities).sort().map((city) => (
+                                  <TableRow key={city} data-testid={`row-selected-city-${city}`}>
+                                    <TableCell className="font-medium">{city}</TableCell>
+                                    <TableCell className="text-right">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          const newSelected = new Set(selectedCities);
+                                          newSelected.delete(city);
+                                          setSelectedCities(newSelected);
+                                        }}
+                                        data-testid={`button-remove-city-${city}`}
+                                      >
+                                        <X className="h-4 w-4 text-red-500" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Bulk Actions and Results count */}
                       <div className="flex items-center justify-between">
@@ -1576,11 +1662,12 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       onClick={() => {
+                        setSelectedCategories(new Set());
                         setProductNameSearch("");
-                        setProductHsnSearch("");
+                        setSelectedHsnCodes(new Set());
                         setProductPriceRange([minPrice, maxPrice]);
-                        setProductUnitFilter("all");
-                        setProductGstFilter("all");
+                        setSelectedUnits(new Set());
+                        setSelectedGstRates(new Set());
                       }}
                       data-testid="button-clear-product-filters"
                     >
@@ -1703,6 +1790,11 @@ export default function Dashboard() {
                     </Table>
                   </div>
                 )}
+                
+                {/* Product Count Display */}
+                <div className="mt-4 text-sm text-gray-600 dark:text-gray-400" data-testid="text-product-count">
+                  Showing {filteredProducts.length} of {products.length} products
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
