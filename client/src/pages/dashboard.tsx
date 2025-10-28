@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,6 +72,16 @@ export default function Dashboard() {
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
+
+  // Update price range when products change
+  useEffect(() => {
+    if (products.length > 0) {
+      const prices = products.map(p => parseFloat(p.defaultPrice));
+      const minPrice = Math.floor(Math.min(...prices));
+      const maxPrice = Math.ceil(Math.max(...prices));
+      setProductPriceRange([minPrice, maxPrice]);
+    }
+  }, [products]);
 
   // Fetch invoices (filtered or all)
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery<Invoice[]>({
@@ -1080,7 +1090,14 @@ export default function Dashboard() {
                                 <FormItem>
                                   <FormLabel className="text-sm font-medium">HSN Code (Optional)</FormLabel>
                                   <FormControl>
-                                    <Input {...field} maxLength={8} inputMode="numeric" data-testid="input-product-hsn" />
+                                    <div className="relative">
+                                      <Input {...field} list="hsn-suggestions" maxLength={8} inputMode="numeric" data-testid="input-product-hsn" />
+                                      <datalist id="hsn-suggestions">
+                                        {uniqueHsnCodes.map(hsn => (
+                                          <option key={hsn} value={hsn} />
+                                        ))}
+                                      </datalist>
+                                    </div>
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1412,9 +1429,10 @@ export default function Dashboard() {
                             />
                           </TableHead>
                           <TableHead>Product Name</TableHead>
-                          <TableHead>HSN</TableHead>
+                          <TableHead>HSN Code</TableHead>
                           <TableHead>Price</TableHead>
                           <TableHead>Unit</TableHead>
+                          <TableHead>GST Rate (%)</TableHead>
                           <TableHead>Stock</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -1422,7 +1440,7 @@ export default function Dashboard() {
                       <TableBody>
                         {filteredProducts.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={7} className="text-center text-gray-500" data-testid="text-no-products">
+                            <TableCell colSpan={8} className="text-center text-gray-500" data-testid="text-no-products">
                               {products.length === 0 
                                 ? "No products found. Add your first product to get started."
                                 : "No products match the current filters."}
@@ -1442,17 +1460,11 @@ export default function Dashboard() {
                                   data-testid={`checkbox-product-${product.id}`}
                                 />
                               </TableCell>
-                              <TableCell className="font-medium">
-                                <div className="flex items-center gap-2">
-                                  {product.name}
-                                  <span className="inline-flex items-center rounded-md bg-green-50 dark:bg-green-950 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20">
-                                    {parseFloat(product.gstRate).toFixed(0)}%
-                                  </span>
-                                </div>
-                              </TableCell>
+                              <TableCell className="font-medium">{product.name}</TableCell>
                               <TableCell>{product.hsn}</TableCell>
                               <TableCell>₹{parseFloat(product.defaultPrice).toFixed(2)}</TableCell>
                               <TableCell>{product.unit}</TableCell>
+                              <TableCell>{parseFloat(product.gstRate).toFixed(2)}%</TableCell>
                               <TableCell>{product.stock ? parseFloat(product.stock).toFixed(2) : "0.00"}</TableCell>
                               <TableCell className="text-right">
                                 <Button
