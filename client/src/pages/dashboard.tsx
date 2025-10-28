@@ -46,6 +46,16 @@ export default function Dashboard() {
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
   const [viewingMultipleCustomers, setViewingMultipleCustomers] = useState<Customer[]>([]);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
+  
+  // Product filters and selection
+  const [productNameSearch, setProductNameSearch] = useState("");
+  const [productHsnSearch, setProductHsnSearch] = useState("");
+  const [productPriceFilter, setProductPriceFilter] = useState<{ type: "range" | "fixed"; from: string; to: string; fixed: string }>({ type: "range", from: "", to: "", fixed: "" });
+  const [productUnitFilter, setProductUnitFilter] = useState("all");
+  const [productGstFilter, setProductGstFilter] = useState("all");
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [viewingMultipleProducts, setViewingMultipleProducts] = useState<Product[]>([]);
 
   // Fetch customers
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
@@ -105,6 +115,7 @@ export default function Dashboard() {
   // Product form
   const productForm = useForm<z.infer<typeof productFormSchema>>({
     resolver: zodResolver(productFormSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -112,6 +123,7 @@ export default function Dashboard() {
       defaultPrice: "",
       unit: "",
       gstRate: "0",
+      stock: "0",
     },
   });
 
@@ -505,6 +517,106 @@ export default function Dashboard() {
   const uniqueCities = Array.from(new Set(customers.map(c => c.city).filter(Boolean))).sort();
 
   const filteredCustomers = getFilteredAndSortedCustomers();
+
+  // Product handlers
+  const handleSelectProduct = (productId: string, checked: boolean) => {
+    setSelectedProductIds(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(productId);
+      } else {
+        newSet.delete(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllProducts = (checked: boolean) => {
+    if (checked) {
+      setSelectedProductIds(new Set(filteredProducts.map(p => p.id)));
+    } else {
+      setSelectedProductIds(new Set());
+    }
+  };
+
+  const handleBulkDeleteProducts = () => {
+    selectedProductIds.forEach(id => {
+      deleteProductMutation.mutate(id);
+    });
+    setSelectedProductIds(new Set());
+  };
+
+  const handleBulkViewProducts = () => {
+    const selectedProducts = products.filter(p => selectedProductIds.has(p.id));
+    if (selectedProducts.length > 0) {
+      setViewingMultipleProducts(selectedProducts);
+    }
+  };
+
+  // Filter products
+  const getFilteredProducts = () => {
+    // Separate selected and unselected products
+    const selectedProducts = products.filter(p => selectedProductIds.has(p.id));
+    let unselectedProducts = products.filter(p => !selectedProductIds.has(p.id));
+
+    // Apply filters only to unselected products
+    // Filter by product name
+    if (productNameSearch.trim()) {
+      const searchLower = productNameSearch.toLowerCase();
+      unselectedProducts = unselectedProducts.filter(product => 
+        (product.name?.toLowerCase() || "").includes(searchLower)
+      );
+    }
+
+    // Filter by HSN code
+    if (productHsnSearch.trim()) {
+      const searchLower = productHsnSearch.toLowerCase();
+      unselectedProducts = unselectedProducts.filter(product => 
+        (product.hsn?.toLowerCase() || "").includes(searchLower)
+      );
+    }
+
+    // Filter by price
+    if (productPriceFilter.type === "range") {
+      if (productPriceFilter.from) {
+        unselectedProducts = unselectedProducts.filter(product => 
+          parseFloat(product.defaultPrice) >= parseFloat(productPriceFilter.from)
+        );
+      }
+      if (productPriceFilter.to) {
+        unselectedProducts = unselectedProducts.filter(product => 
+          parseFloat(product.defaultPrice) <= parseFloat(productPriceFilter.to)
+        );
+      }
+    } else if (productPriceFilter.type === "fixed" && productPriceFilter.fixed) {
+      unselectedProducts = unselectedProducts.filter(product => 
+        parseFloat(product.defaultPrice) === parseFloat(productPriceFilter.fixed)
+      );
+    }
+
+    // Filter by unit
+    if (productUnitFilter && productUnitFilter !== "all") {
+      unselectedProducts = unselectedProducts.filter(product => 
+        product.unit === productUnitFilter
+      );
+    }
+
+    // Filter by GST rate
+    if (productGstFilter && productGstFilter !== "all") {
+      unselectedProducts = unselectedProducts.filter(product => 
+        product.gstRate === productGstFilter
+      );
+    }
+
+    // Combine: selected products first, then unselected
+    return [...selectedProducts, ...unselectedProducts];
+  };
+
+  // Get unique units and GST rates for filter dropdowns
+  const uniqueUnits = Array.from(new Set(products.map(p => p.unit).filter(Boolean))).sort();
+  const uniqueGstRates = Array.from(new Set(products.map(p => p.gstRate).filter(Boolean))).sort((a, b) => parseFloat(a) - parseFloat(b));
+
+  const filteredProducts = getFilteredProducts();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -985,6 +1097,19 @@ export default function Dashboard() {
                                 </FormItem>
                               )}
                             />
+                            <FormField
+                              control={productForm.control}
+                              name="stock"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Stock</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" step="0.01" {...field} value={field.value || "0"} data-testid="input-product-stock" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                           </div>
                           <FormField
                             control={productForm.control}
@@ -1011,6 +1136,170 @@ export default function Dashboard() {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Filter Section */}
+                <div className="mb-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Product Name Search */}
+                    <div>
+                      <Label htmlFor="productNameSearch">Product Name</Label>
+                      <Input
+                        id="productNameSearch"
+                        value={productNameSearch}
+                        onChange={(e) => setProductNameSearch(e.target.value)}
+                        placeholder="Search by product name..."
+                        data-testid="input-filter-product-name"
+                      />
+                    </div>
+
+                    {/* HSN Code Search */}
+                    <div>
+                      <Label htmlFor="productHsnSearch">HSN Code</Label>
+                      <Input
+                        id="productHsnSearch"
+                        value={productHsnSearch}
+                        onChange={(e) => setProductHsnSearch(e.target.value)}
+                        placeholder="Search by HSN code..."
+                        data-testid="input-filter-hsn"
+                      />
+                    </div>
+
+                    {/* Unit Filter */}
+                    <div>
+                      <Label htmlFor="productUnitFilter">Unit Type</Label>
+                      <Select value={productUnitFilter} onValueChange={setProductUnitFilter}>
+                        <SelectTrigger id="productUnitFilter" data-testid="select-filter-unit">
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Units</SelectItem>
+                          {uniqueUnits.map(unit => (
+                            <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* GST Rate Filter */}
+                    <div>
+                      <Label htmlFor="productGstFilter">GST Rate</Label>
+                      <Select value={productGstFilter} onValueChange={setProductGstFilter}>
+                        <SelectTrigger id="productGstFilter" data-testid="select-filter-gst">
+                          <SelectValue placeholder="Select GST rate" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All GST Rates</SelectItem>
+                          {uniqueGstRates.map(rate => (
+                            <SelectItem key={rate} value={rate}>{parseFloat(rate).toFixed(2)}%</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Price Filter Type */}
+                    <div>
+                      <Label htmlFor="priceFilterType">Price Filter Type</Label>
+                      <Select 
+                        value={productPriceFilter.type} 
+                        onValueChange={(value: "range" | "fixed") => 
+                          setProductPriceFilter({ ...productPriceFilter, type: value })
+                        }
+                      >
+                        <SelectTrigger id="priceFilterType" data-testid="select-filter-price-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="range">Price Range</SelectItem>
+                          <SelectItem value="fixed">Fixed Price</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Price Range or Fixed */}
+                    {productPriceFilter.type === "range" ? (
+                      <>
+                        <div>
+                          <Label htmlFor="priceFrom">Price From</Label>
+                          <Input
+                            id="priceFrom"
+                            type="number"
+                            step="0.01"
+                            value={productPriceFilter.from}
+                            onChange={(e) => setProductPriceFilter({ ...productPriceFilter, from: e.target.value })}
+                            placeholder="Min price"
+                            data-testid="input-filter-price-from"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="priceTo">Price To</Label>
+                          <Input
+                            id="priceTo"
+                            type="number"
+                            step="0.01"
+                            value={productPriceFilter.to}
+                            onChange={(e) => setProductPriceFilter({ ...productPriceFilter, to: e.target.value })}
+                            placeholder="Max price"
+                            data-testid="input-filter-price-to"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <Label htmlFor="priceFixed">Fixed Price</Label>
+                        <Input
+                          id="priceFixed"
+                          type="number"
+                          step="0.01"
+                          value={productPriceFilter.fixed}
+                          onChange={(e) => setProductPriceFilter({ ...productPriceFilter, fixed: e.target.value })}
+                          placeholder="Exact price"
+                          data-testid="input-filter-price-fixed"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setProductNameSearch("");
+                        setProductHsnSearch("");
+                        setProductPriceFilter({ type: "range", from: "", to: "", fixed: "" });
+                        setProductUnitFilter("all");
+                        setProductGstFilter("all");
+                      }}
+                      data-testid="button-clear-product-filters"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Bulk Actions */}
+                {selectedProductIds.size > 0 && (
+                  <div className="mb-4 flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleBulkViewProducts}
+                      data-testid="button-bulk-view-products"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Selected ({selectedProductIds.size})
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleBulkDeleteProducts}
+                      data-testid="button-bulk-delete-products"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected ({selectedProductIds.size})
+                    </Button>
+                  </div>
+                )}
+
+                {/* Table Section */}
                 {productsLoading ? (
                   <div data-testid="loading-products">Loading products...</div>
                 ) : (
@@ -1018,30 +1307,65 @@ export default function Dashboard() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-12">
+                            <Checkbox
+                              checked={filteredProducts.length > 0 && filteredProducts.every(p => selectedProductIds.has(p.id))}
+                              onCheckedChange={handleSelectAllProducts}
+                              data-testid="checkbox-select-all-products"
+                            />
+                          </TableHead>
                           <TableHead>Product Name</TableHead>
                           <TableHead>HSN</TableHead>
                           <TableHead>Price</TableHead>
                           <TableHead>Unit</TableHead>
-                          <TableHead>GST Rate</TableHead>
+                          <TableHead>Stock</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {products.length === 0 ? (
+                        {filteredProducts.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center text-gray-500" data-testid="text-no-products">
-                              No products found. Add your first product to get started.
+                            <TableCell colSpan={7} className="text-center text-gray-500" data-testid="text-no-products">
+                              {products.length === 0 
+                                ? "No products found. Add your first product to get started."
+                                : "No products match the current filters."}
                             </TableCell>
                           </TableRow>
                         ) : (
-                          products.map((product) => (
-                            <TableRow key={product.id} data-testid={`row-product-${product.id}`}>
-                              <TableCell className="font-medium">{product.name}</TableCell>
+                          filteredProducts.map((product) => (
+                            <TableRow 
+                              key={product.id} 
+                              data-testid={`row-product-${product.id}`}
+                              className={selectedProductIds.has(product.id) ? "bg-blue-50 dark:bg-blue-950" : ""}
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedProductIds.has(product.id)}
+                                  onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
+                                  data-testid={`checkbox-product-${product.id}`}
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                  {product.name}
+                                  <span className="inline-flex items-center rounded-md bg-green-50 dark:bg-green-950 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20">
+                                    {parseFloat(product.gstRate).toFixed(0)}%
+                                  </span>
+                                </div>
+                              </TableCell>
                               <TableCell>{product.hsn}</TableCell>
                               <TableCell>₹{parseFloat(product.defaultPrice).toFixed(2)}</TableCell>
                               <TableCell>{product.unit}</TableCell>
-                              <TableCell>{parseFloat(product.gstRate).toFixed(2)}%</TableCell>
+                              <TableCell>{product.stock ? parseFloat(product.stock).toFixed(2) : "0.00"}</TableCell>
                               <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setViewingProduct(product)}
+                                  data-testid={`button-view-product-${product.id}`}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -1308,6 +1632,109 @@ export default function Dashboard() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* View Single Product Dialog */}
+        <Dialog open={!!viewingProduct} onOpenChange={(open) => !open && setViewingProduct(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Product Details</DialogTitle>
+              <DialogDescription>View complete product information</DialogDescription>
+            </DialogHeader>
+            {viewingProduct && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Product Name</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100 font-medium" data-testid="view-product-name">{viewingProduct.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">HSN Code</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-hsn">{viewingProduct.hsn}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Price</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-price">₹{parseFloat(viewingProduct.defaultPrice).toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Unit</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-unit">{viewingProduct.unit}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">GST Rate</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-gst">{parseFloat(viewingProduct.gstRate).toFixed(2)}%</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Stock</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-stock">{viewingProduct.stock ? parseFloat(viewingProduct.stock).toFixed(2) : "0.00"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-sm font-medium text-gray-500">Description</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-description">{viewingProduct.description || "-"}</p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => setViewingProduct(null)} data-testid="button-close-product-view">Close</Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* View Multiple Products Dialog */}
+        <Dialog open={viewingMultipleProducts.length > 0} onOpenChange={(open) => !open && setViewingMultipleProducts([])}>
+          <DialogContent className="max-w-4xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Selected Products Details ({viewingMultipleProducts.length})</DialogTitle>
+              <DialogDescription>View all selected product information</DialogDescription>
+            </DialogHeader>
+            <div className="overflow-y-auto max-h-[60vh] space-y-6 pr-2">
+              {viewingMultipleProducts.map((product, index) => (
+                <div 
+                  key={product.id} 
+                  className="border-b pb-4 last:border-b-0"
+                  data-testid={`view-multiple-product-${product.id}`}
+                >
+                  <h3 className="text-lg font-semibold mb-3 text-indigo-600 dark:text-indigo-400">
+                    Product {index + 1}: {product.name}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Product Name</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">HSN Code</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.hsn}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Price</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">₹{parseFloat(product.defaultPrice).toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Unit</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.unit}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">GST Rate</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{parseFloat(product.gstRate).toFixed(2)}%</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Stock</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.stock ? parseFloat(product.stock).toFixed(2) : "0.00"}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-sm font-medium text-gray-500">Description</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.description || "-"}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setViewingMultipleProducts([])} data-testid="button-close-multiple-product-view">Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Delete Product Confirmation */}
         <AlertDialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>

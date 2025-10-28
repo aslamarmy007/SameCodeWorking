@@ -132,6 +132,7 @@ export const products = pgTable("products", {
   defaultPrice: decimal("default_price", { precision: 10, scale: 2 }).notNull(),
   unit: text("unit").notNull(),
   gstRate: decimal("gst_rate", { precision: 5, scale: 2 }).notNull().default("0"),
+  stock: decimal("stock", { precision: 10, scale: 2 }).default("0"),
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
