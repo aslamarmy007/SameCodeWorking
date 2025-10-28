@@ -128,9 +128,9 @@ export class DbStorage implements IStorage {
           unit: "Roll",
           gstRate: "5.00",
         },
-      ];
+      ] as const;
       
-      await db.insert(products).values(defaultProducts);
+      await db.insert(products).values(defaultProducts as any);
     }
 
     // Seed default locations if none exist
@@ -202,7 +202,7 @@ export class DbStorage implements IStorage {
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const result = await db.insert(products).values(insertProduct).returning();
+    const result = await db.insert(products).values(insertProduct as any).returning();
     return result[0];
   }
 
