@@ -201,17 +201,23 @@ function drawCompanyHeader(doc: jsPDF, pageWidth: number, margin: number, yPos: 
   const phoneTextY = centerStartY + 29;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
-  const gstinText = "GSTIN : 33DMEPM1042M1Z5";
+  const gstinLabel = "GSTIN : ";
+  const gstinNumber = "33DMEPM1042M1Z5";
   const billBoxWidth = 30;
   
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
+  const normalTextWidth = doc.getTextWidth(phoneNumbersText);
+  doc.setFont("helvetica", "bold");
+  const gstinLabelWidth = doc.getTextWidth(gstinLabel);
+  doc.setFont("helvetica", "normal");
+  const gstinNumberWidth = doc.getTextWidth(gstinNumber);
   
-  const totalLineWidth = phoneIconSize + 1 + doc.getTextWidth(phoneNumbersText) + 3 + 
+  const totalLineWidth = phoneIconSize + 1 + normalTextWidth + 3 + 
                          doc.getTextWidth("•") + 3 + 
                          phoneIconSize + 1 + doc.getTextWidth(emailText) + 3 + 
                          doc.getTextWidth("•") + 3 + 
-                         doc.getTextWidth(gstinText);
+                         gstinLabelWidth + gstinNumberWidth;
   
   const phoneStartX = (pageWidth - totalLineWidth) / 2;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
@@ -230,9 +236,11 @@ function drawCompanyHeader(doc: jsPDF, pageWidth: number, margin: number, yPos: 
   const separator2X = emailEndX + 3;
   doc.text("•", separator2X, phoneTextY);
   
-  const gstinTextX = separator2X + doc.getTextWidth("•") + 3;
+  const gstinLabelX = separator2X + doc.getTextWidth("•") + 3;
   doc.setFont("helvetica", "bold");
-  doc.text(gstinText, gstinTextX, phoneTextY);
+  doc.text(gstinLabel, gstinLabelX, phoneTextY);
+  doc.setFont("helvetica", "normal");
+  doc.text(gstinNumber, gstinLabelX + gstinLabelWidth, phoneTextY);
 
   const billBoxHeight = 8;
   const billBoxX = pageWidth - margin - billBoxWidth;
@@ -277,17 +285,23 @@ function drawCompanyHeaderWithBillType(doc: jsPDF, pageWidth: number, margin: nu
   const phoneTextY = centerStartY + 29;
   const phoneNumbersText = "89409 30276 | 94443 70934";
   const emailText = "ayeshaacf@gmail.com";
-  const gstinText = "GSTIN : 33DMEPM1042M1Z5";
+  const gstinLabel = "GSTIN : ";
+  const gstinNumber = "33DMEPM1042M1Z5";
   const billBoxWidth = 30;
   
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
+  const normalTextWidth = doc.getTextWidth(phoneNumbersText);
+  doc.setFont("helvetica", "bold");
+  const gstinLabelWidth = doc.getTextWidth(gstinLabel);
+  doc.setFont("helvetica", "normal");
+  const gstinNumberWidth = doc.getTextWidth(gstinNumber);
   
-  const totalLineWidth = phoneIconSize + 1 + doc.getTextWidth(phoneNumbersText) + 3 + 
+  const totalLineWidth = phoneIconSize + 1 + normalTextWidth + 3 + 
                          doc.getTextWidth("•") + 3 + 
                          phoneIconSize + 1 + doc.getTextWidth(emailText) + 3 + 
                          doc.getTextWidth("•") + 3 + 
-                         doc.getTextWidth(gstinText);
+                         gstinLabelWidth + gstinNumberWidth;
   
   const phoneStartX = (pageWidth - totalLineWidth) / 2;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
@@ -306,9 +320,11 @@ function drawCompanyHeaderWithBillType(doc: jsPDF, pageWidth: number, margin: nu
   const separator2X = emailEndX + 3;
   doc.text("•", separator2X, phoneTextY);
   
-  const gstinTextX = separator2X + doc.getTextWidth("•") + 3;
+  const gstinLabelX = separator2X + doc.getTextWidth("•") + 3;
   doc.setFont("helvetica", "bold");
-  doc.text(gstinText, gstinTextX, phoneTextY);
+  doc.text(gstinLabel, gstinLabelX, phoneTextY);
+  doc.setFont("helvetica", "normal");
+  doc.text(gstinNumber, gstinLabelX + gstinLabelWidth, phoneTextY);
 
   const billBoxHeight = 8;
   const billBoxX = pageWidth - margin - billBoxWidth;
