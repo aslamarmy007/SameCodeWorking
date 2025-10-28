@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { StepProgress } from "@/components/step-progress";
 import { BillSummary } from "@/components/bill-summary";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle, Hash, Weight, Pencil } from "lucide-react";
+import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle, Hash, Weight, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
@@ -121,6 +121,7 @@ export default function BillingPage() {
     paidAmount?: number;
     balanceAmount?: number;
   }>({});
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const validateNameCityState = (value: string): string => {
     return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
@@ -145,6 +146,18 @@ export default function BillingPage() {
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
+
+  const productsByCategory = useMemo(() => {
+    const grouped = products.reduce((acc, product) => {
+      const category = product.category || "Uncategorized";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(product);
+      return acc;
+    }, {} as Record<string, Product[]>);
+    return grouped;
+  }, [products]);
 
   const { data: cities = [] } = useQuery<string[]>({
     queryKey: ["/api/locations/city"],
@@ -2229,55 +2242,108 @@ export default function BillingPage() {
                     <span className="ml-3 text-lg">Loading products...</span>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-6">
-                    {products.map((product) => {
-                      const gstRate = parseFloat(product.gstRate || "0");
-                      const hasGST = gstRate > 0;
-                      const isWeightBased = product.unit.toLowerCase() === "kg";
+                  <div className="space-y-6 mb-6">
+                    {Object.entries(productsByCategory).map(([category, categoryProducts]) => {
+                      const isExpanded = expandedCategories.has(category);
+                      const displayProducts = isExpanded ? categoryProducts : categoryProducts.slice(0, 3);
+                      const hasMore = categoryProducts.length > 3;
+
                       return (
-                      <Card
-                        key={product.id}
-                        className="p-3 sm:p-4 rounded-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary border-2 cursor-pointer relative"
-                        onClick={() => handleAddProduct(product)}
-                        data-testid={`card-product-${product.id}`}
-                      >
-                        {hasGST ? (
-                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
-                            <Star className="w-2.5 h-2.5 fill-current" />
-                            <span>{gstRate}%</span>
+                        <div key={category} className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+                              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full">
+                                {category}
+                              </span>
+                              <span className="text-sm text-muted-foreground">
+                                ({categoryProducts.length} {categoryProducts.length === 1 ? 'product' : 'products'})
+                              </span>
+                            </h3>
+                            {hasMore && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setExpandedCategories(prev => {
+                                    const newSet = new Set(prev);
+                                    if (isExpanded) {
+                                      newSet.delete(category);
+                                    } else {
+                                      newSet.add(category);
+                                    }
+                                    return newSet;
+                                  });
+                                }}
+                                className="flex items-center gap-1"
+                                data-testid={`button-toggle-${category}`}
+                              >
+                                {isExpanded ? (
+                                  <>
+                                    <ChevronUp className="w-4 h-4" />
+                                    Show Less
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="w-4 h-4" />
+                                    Show All
+                                  </>
+                                )}
+                              </Button>
+                            )}
                           </div>
-                        ) : (
-                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
-                            <Circle className="w-2.5 h-2.5 fill-current" />
-                            <span>0%</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                            {displayProducts.map((product) => {
+                              const gstRate = parseFloat(product.gstRate || "0");
+                              const hasGST = gstRate > 0;
+                              const isWeightBased = product.unit.toLowerCase() === "kg";
+                              return (
+                                <Card
+                                  key={product.id}
+                                  className="p-3 sm:p-4 rounded-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary border-2 cursor-pointer relative"
+                                  onClick={() => handleAddProduct(product)}
+                                  data-testid={`card-product-${product.id}`}
+                                >
+                                  {hasGST ? (
+                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                                      <Star className="w-2.5 h-2.5 fill-current" />
+                                      <span>{gstRate}%</span>
+                                    </div>
+                                  ) : (
+                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                                      <Circle className="w-2.5 h-2.5 fill-current" />
+                                      <span>0%</span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center gap-1.5 mb-1.5">
+                                    {isWeightBased ? (
+                                      <div className="flex items-center gap-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                                        <Weight className="w-2.5 h-2.5" />
+                                        <span>Kg</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+                                        <Hash className="w-2.5 h-2.5" />
+                                        <span>Qty</span>
+                                      </div>
+                                    )}
+                                    <h3 className="font-bold text-sm sm:text-base pr-12 line-clamp-1">{product.name}</h3>
+                                  </div>
+                                  {product.description && (
+                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                                      {product.description}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                                    <span className="text-muted-foreground">HSN: {product.hsn}</span>
+                                    <span className="font-bold text-primary">
+                                      ₹{parseFloat(product.defaultPrice).toFixed(2)}/{product.unit}
+                                    </span>
+                                  </div>
+                                </Card>
+                              );
+                            })}
                           </div>
-                        )}
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          {isWeightBased ? (
-                            <div className="flex items-center gap-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
-                              <Weight className="w-2.5 h-2.5" />
-                              <span>Kg</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
-                              <Hash className="w-2.5 h-2.5" />
-                              <span>Qty</span>
-                            </div>
-                          )}
-                          <h3 className="font-bold text-sm sm:text-base pr-12 line-clamp-1">{product.name}</h3>
                         </div>
-                        {product.description && (
-                          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                            {product.description}
-                          </p>
-                        )}
-                        <div className="flex items-center justify-between text-xs sm:text-sm">
-                          <span className="text-muted-foreground">HSN: {product.hsn}</span>
-                          <span className="font-bold text-primary">
-                            ₹{parseFloat(product.defaultPrice).toFixed(2)}/{product.unit}
-                          </span>
-                        </div>
-                      </Card>
                       );
                     })}
                   </div>
