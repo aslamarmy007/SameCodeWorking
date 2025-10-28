@@ -213,17 +213,15 @@ export const insertProductSchema = createInsertSchema(products).omit({ id: true 
       message: "Description cannot have consecutive spaces"
     }),
   category: z.string()
-    .max(30, "Category must be maximum 30 characters")
-    .optional()
+    .min(1, "Category is required")
+    .max(15, "Category must be maximum 15 characters")
     .refine((val) => {
-      if (!val) return true;
-      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9\s]+$/;
+      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9\-_\/\\$%&*();:'".,!@#\s]+$/;
       return allowedChars.test(val);
     }, {
-      message: "Category can only contain letters, Tamil letters, numbers and spaces"
+      message: "Category can only contain letters, Tamil letters, numbers and these special characters: - _ / \\ $ % & * ( ) ; : ' \" . , ! @ #"
     })
     .refine((val) => {
-      if (!val) return true;
       return !/\s{2,}/.test(val);
     }, {
       message: "Category cannot have consecutive spaces"

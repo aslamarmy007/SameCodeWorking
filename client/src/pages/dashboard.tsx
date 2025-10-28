@@ -52,6 +52,7 @@ export default function Dashboard() {
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
   
   // Product filters and selection
+  const [productCategorySearch, setProductCategorySearch] = useState("");
   const [productNameSearch, setProductNameSearch] = useState("");
   const [productHsnSearch, setProductHsnSearch] = useState("");
   const [productPriceRange, setProductPriceRange] = useState<[number, number]>([0, 10000]);
@@ -60,6 +61,7 @@ export default function Dashboard() {
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [viewingMultipleProducts, setViewingMultipleProducts] = useState<Product[]>([]);
+  const [productCategoryComboOpen, setProductCategoryComboOpen] = useState(false);
   const [productNameComboOpen, setProductNameComboOpen] = useState(false);
   const [productHsnComboOpen, setProductHsnComboOpen] = useState(false);
 
@@ -591,6 +593,14 @@ export default function Dashboard() {
     let unselectedProducts = products.filter(p => !selectedProductIds.has(p.id));
 
     // Apply filters only to unselected products
+    // Filter by category
+    if (productCategorySearch.trim()) {
+      const searchLower = productCategorySearch.toLowerCase();
+      unselectedProducts = unselectedProducts.filter(product => 
+        (product.category?.toLowerCase() || "").includes(searchLower)
+      );
+    }
+
     // Filter by product name
     if (productNameSearch.trim()) {
       const searchLower = productNameSearch.toLowerCase();
@@ -632,6 +642,7 @@ export default function Dashboard() {
   };
 
   // Get unique values for filter dropdowns and comboboxes
+  const uniqueCategories = Array.from(new Set(products.map(p => p.category).filter((c): c is string => Boolean(c)))).sort();
   const uniqueUnits = Array.from(new Set(products.map(p => p.unit).filter(Boolean))).sort();
   const uniqueGstRates = Array.from(new Set(products.map(p => p.gstRate).filter(Boolean))).sort((a, b) => parseFloat(a) - parseFloat(b));
   const uniqueProductNames = Array.from(new Set(products.map(p => p.name).filter(Boolean))).sort();
@@ -1089,6 +1100,28 @@ export default function Dashboard() {
                           <div className="grid grid-cols-2 gap-4">
                             <FormField
                               control={productForm.control}
+                              name="category"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-sm font-medium">
+                                    Category <span className="text-red-500">*</span>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Input {...field} list="category-suggestions" maxLength={15} placeholder="e.g., Blocks, Fiber, etc." data-testid="input-product-category" />
+                                      <datalist id="category-suggestions">
+                                        {uniqueCategories.map(category => (
+                                          <option key={category} value={category} />
+                                        ))}
+                                      </datalist>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={productForm.control}
                               name="name"
                               render={({ field }) => (
                                 <FormItem>
@@ -1208,19 +1241,6 @@ export default function Dashboard() {
                               </FormItem>
                             )}
                           />
-                          <FormField
-                            control={productForm.control}
-                            name="category"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium">Category (Optional)</FormLabel>
-                                <FormControl>
-                                  <Input {...field} value={field.value || ""} maxLength={30} placeholder="e.g., Blocks, Fiber, etc." data-testid="input-product-category" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                           <DialogFooter>
                             <Button type="submit" data-testid="button-save-product">
                               {editingProduct ? "Update" : "Create"} Product
@@ -1236,6 +1256,59 @@ export default function Dashboard() {
                 {/* Filter Section */}
                 <div className="mb-6 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Category Combobox */}
+                    <div>
+                      <Label>Category</Label>
+                      <Popover open={productCategoryComboOpen} onOpenChange={setProductCategoryComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productCategoryComboOpen}
+                            className="w-full justify-between"
+                            data-testid="button-filter-category"
+                          >
+                            {productCategorySearch || "Search category..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandInput 
+                              placeholder="Search category..." 
+                              value={productCategorySearch}
+                              onValueChange={setProductCategorySearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No category found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueCategories.filter(category => 
+                                  category.toLowerCase().includes(productCategorySearch.toLowerCase())
+                                ).map((category) => (
+                                  <CommandItem
+                                    key={category}
+                                    value={category}
+                                    onSelect={(currentValue) => {
+                                      setProductCategorySearch(currentValue === productCategorySearch ? "" : currentValue);
+                                      setProductCategoryComboOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        productCategorySearch === category ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {category}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
                     {/* Product Name Combobox */}
                     <div>
                       <Label>Product Name</Label>
