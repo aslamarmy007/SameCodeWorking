@@ -53,17 +53,23 @@ export default function Dashboard() {
   
   // Product filters and selection
   const [productCategorySearch, setProductCategorySearch] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [productNameSearch, setProductNameSearch] = useState("");
   const [productHsnSearch, setProductHsnSearch] = useState("");
+  const [selectedHsnCodes, setSelectedHsnCodes] = useState<Set<string>>(new Set());
   const [productPriceRange, setProductPriceRange] = useState<[number, number]>([0, 10000]);
   const [productUnitFilter, setProductUnitFilter] = useState("all");
+  const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
   const [productGstFilter, setProductGstFilter] = useState("all");
+  const [selectedGstRates, setSelectedGstRates] = useState<Set<string>>(new Set());
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [viewingMultipleProducts, setViewingMultipleProducts] = useState<Product[]>([]);
   const [productCategoryComboOpen, setProductCategoryComboOpen] = useState(false);
   const [productNameComboOpen, setProductNameComboOpen] = useState(false);
   const [productHsnComboOpen, setProductHsnComboOpen] = useState(false);
+  const [productUnitComboOpen, setProductUnitComboOpen] = useState(false);
+  const [productGstComboOpen, setProductGstComboOpen] = useState(false);
 
   // Fetch customers
   const { data: customers = [], isLoading: customersLoading } = useQuery<Customer[]>({
@@ -593,11 +599,10 @@ export default function Dashboard() {
     let unselectedProducts = products.filter(p => !selectedProductIds.has(p.id));
 
     // Apply filters only to unselected products
-    // Filter by category
-    if (productCategorySearch.trim()) {
-      const searchLower = productCategorySearch.toLowerCase();
+    // Filter by category (multi-select)
+    if (selectedCategories.size > 0) {
       unselectedProducts = unselectedProducts.filter(product => 
-        (product.category?.toLowerCase() || "").includes(searchLower)
+        product.category && selectedCategories.has(product.category)
       );
     }
 
@@ -609,11 +614,10 @@ export default function Dashboard() {
       );
     }
 
-    // Filter by HSN code
-    if (productHsnSearch.trim()) {
-      const searchLower = productHsnSearch.toLowerCase();
+    // Filter by HSN code (multi-select)
+    if (selectedHsnCodes.size > 0) {
       unselectedProducts = unselectedProducts.filter(product => 
-        (product.hsn?.toLowerCase() || "").includes(searchLower)
+        product.hsn && selectedHsnCodes.has(product.hsn)
       );
     }
 
@@ -623,17 +627,17 @@ export default function Dashboard() {
       return price >= productPriceRange[0] && price <= productPriceRange[1];
     });
 
-    // Filter by unit
-    if (productUnitFilter && productUnitFilter !== "all") {
+    // Filter by unit (multi-select)
+    if (selectedUnits.size > 0) {
       unselectedProducts = unselectedProducts.filter(product => 
-        product.unit === productUnitFilter
+        product.unit && selectedUnits.has(product.unit)
       );
     }
 
-    // Filter by GST rate
-    if (productGstFilter && productGstFilter !== "all") {
+    // Filter by GST rate (multi-select)
+    if (selectedGstRates.size > 0) {
       unselectedProducts = unselectedProducts.filter(product => 
-        product.gstRate === productGstFilter
+        product.gstRate && selectedGstRates.has(product.gstRate)
       );
     }
 
@@ -1108,7 +1112,7 @@ export default function Dashboard() {
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <Input {...field} list="category-suggestions" maxLength={15} placeholder="e.g., Blocks, Fiber, etc." data-testid="input-product-category" />
+                                      <Input {...field} list="category-suggestions" maxLength={30} data-testid="input-product-category" />
                                       <datalist id="category-suggestions">
                                         {uniqueCategories.map(category => (
                                           <option key={category} value={category} />
@@ -1129,7 +1133,7 @@ export default function Dashboard() {
                                     Product Name <span className="text-red-500">*</span>
                                   </FormLabel>
                                   <FormControl>
-                                    <Input {...field} maxLength={15} data-testid="input-product-name" />
+                                    <Input {...field} maxLength={30} data-testid="input-product-name" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -1180,7 +1184,7 @@ export default function Dashboard() {
                                   </FormLabel>
                                   <FormControl>
                                     <div className="relative">
-                                      <Input {...field} list="unit-suggestions" placeholder="e.g., Kg, Piece, Block" data-testid="input-product-unit" />
+                                      <Input {...field} list="unit-suggestions" data-testid="input-product-unit" />
                                       <datalist id="unit-suggestions">
                                         {uniqueUnits.map(unit => (
                                           <option key={unit} value={unit} />
@@ -1256,9 +1260,9 @@ export default function Dashboard() {
                 {/* Filter Section */}
                 <div className="mb-6 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Category Combobox */}
+                    {/* Category Multi-Select */}
                     <div>
-                      <Label>Category</Label>
+                      <Label>Category {selectedCategories.size > 0 && `(${selectedCategories.size})`}</Label>
                       <Popover open={productCategoryComboOpen} onOpenChange={setProductCategoryComboOpen}>
                         <PopoverTrigger asChild>
                           <Button
@@ -1268,7 +1272,7 @@ export default function Dashboard() {
                             className="w-full justify-between"
                             data-testid="button-filter-category"
                           >
-                            {productCategorySearch || "Search category..."}
+                            {selectedCategories.size > 0 ? `${selectedCategories.size} selected` : "Select categories..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
@@ -1288,16 +1292,19 @@ export default function Dashboard() {
                                   <CommandItem
                                     key={category}
                                     value={category}
-                                    onSelect={(currentValue) => {
-                                      setProductCategorySearch(currentValue === productCategorySearch ? "" : currentValue);
-                                      setProductCategoryComboOpen(false);
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedCategories);
+                                      if (newSelected.has(category)) {
+                                        newSelected.delete(category);
+                                      } else {
+                                        newSelected.add(category);
+                                      }
+                                      setSelectedCategories(newSelected);
                                     }}
                                   >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        productCategorySearch === category ? "opacity-100" : "opacity-0"
-                                      )}
+                                    <Checkbox
+                                      checked={selectedCategories.has(category)}
+                                      className="mr-2"
                                     />
                                     {category}
                                   </CommandItem>
@@ -1307,6 +1314,11 @@ export default function Dashboard() {
                           </Command>
                         </PopoverContent>
                       </Popover>
+                      {selectedCategories.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedCategories(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
                     </div>
 
                     {/* Product Name Combobox */}
@@ -1362,9 +1374,9 @@ export default function Dashboard() {
                       </Popover>
                     </div>
 
-                    {/* HSN Code Combobox */}
+                    {/* HSN Code Multi-Select */}
                     <div>
-                      <Label>HSN Code</Label>
+                      <Label>HSN Code {selectedHsnCodes.size > 0 && `(${selectedHsnCodes.size})`}</Label>
                       <Popover open={productHsnComboOpen} onOpenChange={setProductHsnComboOpen}>
                         <PopoverTrigger asChild>
                           <Button
@@ -1374,7 +1386,7 @@ export default function Dashboard() {
                             className="w-full justify-between"
                             data-testid="button-filter-hsn"
                           >
-                            {productHsnSearch || "Search HSN code..."}
+                            {selectedHsnCodes.size > 0 ? `${selectedHsnCodes.size} selected` : "Select HSN codes..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
@@ -1394,16 +1406,19 @@ export default function Dashboard() {
                                   <CommandItem
                                     key={hsn}
                                     value={hsn}
-                                    onSelect={(currentValue) => {
-                                      setProductHsnSearch(currentValue === productHsnSearch ? "" : currentValue);
-                                      setProductHsnComboOpen(false);
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedHsnCodes);
+                                      if (newSelected.has(hsn)) {
+                                        newSelected.delete(hsn);
+                                      } else {
+                                        newSelected.add(hsn);
+                                      }
+                                      setSelectedHsnCodes(newSelected);
                                     }}
                                   >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        productHsnSearch === hsn ? "opacity-100" : "opacity-0"
-                                      )}
+                                    <Checkbox
+                                      checked={selectedHsnCodes.has(hsn)}
+                                      className="mr-2"
                                     />
                                     {hsn}
                                   </CommandItem>
@@ -1413,38 +1428,119 @@ export default function Dashboard() {
                           </Command>
                         </PopoverContent>
                       </Popover>
+                      {selectedHsnCodes.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedHsnCodes(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
                     </div>
 
-                    {/* Unit Filter */}
+                    {/* Unit Type Multi-Select */}
                     <div>
-                      <Label htmlFor="productUnitFilter">Unit Type</Label>
-                      <Select value={productUnitFilter} onValueChange={setProductUnitFilter}>
-                        <SelectTrigger id="productUnitFilter" data-testid="select-filter-unit">
-                          <SelectValue placeholder="Select unit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Units</SelectItem>
-                          {uniqueUnits.map(unit => (
-                            <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Unit Type {selectedUnits.size > 0 && `(${selectedUnits.size})`}</Label>
+                      <Popover open={productUnitComboOpen} onOpenChange={setProductUnitComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productUnitComboOpen}
+                            className="w-full justify-between"
+                            data-testid="select-filter-unit"
+                          >
+                            {selectedUnits.size > 0 ? `${selectedUnits.size} selected` : "Select units..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandList>
+                              <CommandEmpty>No unit found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueUnits.map((unit) => (
+                                  <CommandItem
+                                    key={unit}
+                                    value={unit}
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedUnits);
+                                      if (newSelected.has(unit)) {
+                                        newSelected.delete(unit);
+                                      } else {
+                                        newSelected.add(unit);
+                                      }
+                                      setSelectedUnits(newSelected);
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedUnits.has(unit)}
+                                      className="mr-2"
+                                    />
+                                    {unit}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {selectedUnits.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedUnits(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
                     </div>
 
-                    {/* GST Rate Filter */}
+                    {/* GST Rate Multi-Select */}
                     <div>
-                      <Label htmlFor="productGstFilter">GST Rate</Label>
-                      <Select value={productGstFilter} onValueChange={setProductGstFilter}>
-                        <SelectTrigger id="productGstFilter" data-testid="select-filter-gst">
-                          <SelectValue placeholder="Select GST rate" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All GST Rates</SelectItem>
-                          {uniqueGstRates.map(rate => (
-                            <SelectItem key={rate} value={rate}>{parseFloat(rate).toFixed(2)}%</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>GST Rate {selectedGstRates.size > 0 && `(${selectedGstRates.size})`}</Label>
+                      <Popover open={productGstComboOpen} onOpenChange={setProductGstComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productGstComboOpen}
+                            className="w-full justify-between"
+                            data-testid="select-filter-gst"
+                          >
+                            {selectedGstRates.size > 0 ? `${selectedGstRates.size} selected` : "Select GST rates..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandList>
+                              <CommandEmpty>No GST rate found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueGstRates.map((rate) => (
+                                  <CommandItem
+                                    key={rate}
+                                    value={rate}
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedGstRates);
+                                      if (newSelected.has(rate)) {
+                                        newSelected.delete(rate);
+                                      } else {
+                                        newSelected.add(rate);
+                                      }
+                                      setSelectedGstRates(newSelected);
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedGstRates.has(rate)}
+                                      className="mr-2"
+                                    />
+                                    {parseFloat(rate).toFixed(2)}%
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {selectedGstRates.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedGstRates(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
                     </div>
                   </div>
 

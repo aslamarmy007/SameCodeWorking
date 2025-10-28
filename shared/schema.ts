@@ -140,7 +140,7 @@ export const products = pgTable("products", {
 export const insertProductSchema = createInsertSchema(products).omit({ id: true }).extend({
   name: z.string()
     .min(1, "Product name is required")
-    .max(15, "Product name must be maximum 15 characters")
+    .max(30, "Product name must be maximum 30 characters")
     .refine((val) => {
       const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9X\/+\-\\%&*#@.,;:"'\]\[\(\)_=$!|\s]+$/;
       return allowedChars.test(val);
@@ -214,7 +214,7 @@ export const insertProductSchema = createInsertSchema(products).omit({ id: true 
     }),
   category: z.string()
     .min(1, "Category is required")
-    .max(15, "Category must be maximum 15 characters")
+    .max(30, "Category must be maximum 30 characters")
     .refine((val) => {
       const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9\-_\/\\$%&*();:'".,!@#\s]+$/;
       return allowedChars.test(val);
