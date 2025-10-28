@@ -75,6 +75,15 @@ export default function Dashboard() {
     },
   });
 
+  // Fetch cities and states
+  const { data: citiesData = [] } = useQuery<string[]>({
+    queryKey: ["/api/locations/city"],
+  });
+
+  const { data: statesData = [] } = useQuery<string[]>({
+    queryKey: ["/api/locations/state"],
+  });
+
   // Customer form
   const customerForm = useForm<z.infer<typeof customerFormSchema>>({
     resolver: zodResolver(customerFormSchema),
@@ -275,114 +284,32 @@ export default function Dashboard() {
     },
   });
 
-  const handleCustomerSubmit = (data: z.infer<typeof customerFormSchema>) => {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    const shopNameRegex = /^[a-zA-Z0-9\s]+$/;
-    const phoneRegex = /^\d{10}$/;
-    const gstinRegex = /^[a-zA-Z0-9]+$/;
-    
-    // Validate shop name (required)
-    if (!data.shopName?.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Shop name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!shopNameRegex.test(data.shopName.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Shop name can only contain letters and numbers",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate customer name (optional)
-    if (data.name?.trim() && !nameRegex.test(data.name.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Customer name must contain only letters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate phone
-    if (data.phone?.trim() && !phoneRegex.test(data.phone.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "Phone number must be exactly 10 digits",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate GSTIN
-    if (data.gstin?.trim()) {
-      if (!gstinRegex.test(data.gstin.trim())) {
-        toast({
-          title: "Validation Error",
-          description: "GSTIN can only contain letters and numbers",
-          variant: "destructive",
-        });
-        return;
+  const handleCustomerSubmit = async (data: z.infer<typeof customerFormSchema>) => {
+    try {
+      // Save city if it's new
+      if (data.city && !citiesData.includes(data.city)) {
+        await apiRequest("POST", "/api/locations", { type: "city", value: data.city });
+        queryClient.invalidateQueries({ queryKey: ["/api/locations/city"] });
       }
-      if (data.gstin.trim().length > 15) {
-        toast({
-          title: "Validation Error",
-          description: "GSTIN must be maximum 15 characters",
-          variant: "destructive",
-        });
-        return;
+      
+      // Save state if it's new
+      if (data.state && !statesData.includes(data.state)) {
+        await apiRequest("POST", "/api/locations", { type: "state", value: data.state });
+        queryClient.invalidateQueries({ queryKey: ["/api/locations/state"] });
       }
-    }
-    
-    // Validate city (required)
-    if (!data.city?.trim()) {
+      
+      // Submit customer data
+      if (editingCustomer) {
+        updateCustomerMutation.mutate({ id: editingCustomer.id, data });
+      } else {
+        createCustomerMutation.mutate(data);
+      }
+    } catch (error) {
       toast({
-        title: "Validation Error",
-        description: "City is required",
+        title: "Error",
+        description: "Failed to save location data",
         variant: "destructive",
       });
-      return;
-    }
-    
-    if (!nameRegex.test(data.city.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "City must contain only letters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate state (required)
-    if (!data.state?.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "State is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!nameRegex.test(data.state.trim())) {
-      toast({
-        title: "Validation Error",
-        description: "State must contain only letters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // All validations passed, submit the form
-    if (editingCustomer) {
-      updateCustomerMutation.mutate({ id: editingCustomer.id, data });
-    } else {
-      createCustomerMutation.mutate(data);
     }
   };
 
@@ -645,7 +572,7 @@ export default function Dashboard() {
                               name="shopName"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Shop Name *</FormLabel>
+                                    <FormLabel>Shop Name <span className="text-red-500">*</span></FormLabel>
                                   <FormControl>
                                     <Input {...field} data-testid="input-customer-shopname" />
                                   </FormControl>
@@ -671,7 +598,7 @@ export default function Dashboard() {
                               name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Phone</FormLabel>
+                                  <FormLabel>Phone <span className="text-red-500">*</span></FormLabel>
                                   <FormControl>
                                     <Input {...field} data-testid="input-customer-phone" />
                                   </FormControl>
@@ -710,10 +637,22 @@ export default function Dashboard() {
                               name="city"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>City *</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} data-testid="input-customer-city" />
-                                  </FormControl>
+                                  <FormLabel>City <span className="text-red-500">*</span></FormLabel>
+                                  <div className="flex gap-2">
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        list="city-datalist"
+                                        data-testid="input-customer-city"
+                                        placeholder="Type or select city"
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <datalist id="city-datalist">
+                                    {citiesData.map((city) => (
+                                      <option key={city} value={city} />
+                                    ))}
+                                  </datalist>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -723,10 +662,22 @@ export default function Dashboard() {
                               name="state"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>State *</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} data-testid="input-customer-state" />
-                                  </FormControl>
+                                  <FormLabel>State <span className="text-red-500">*</span></FormLabel>
+                                  <div className="flex gap-2">
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        list="state-datalist"
+                                        data-testid="input-customer-state"
+                                        placeholder="Type or select state"
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <datalist id="state-datalist">
+                                    {statesData.map((state) => (
+                                      <option key={state} value={state} />
+                                    ))}
+                                  </datalist>
                                   <FormMessage />
                                 </FormItem>
                               )}

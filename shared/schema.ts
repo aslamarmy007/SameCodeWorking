@@ -23,16 +23,38 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
   createdAt: true 
 }).extend({
   name: z.string()
+    .max(50, "Contact name must be maximum 50 characters")
     .optional()
-    .refine((val) => !val || val.length <= 50, {
-      message: "Customer name must be maximum 50 characters"
+    .refine((val) => {
+      if (!val) return true;
+      const onlyLettersAndSpaces = /^[a-zA-Z\u0B80-\u0BFF\s]+$/;
+      return onlyLettersAndSpaces.test(val);
+    }, {
+      message: "Contact name can only contain letters and spaces"
+    })
+    .refine((val) => {
+      if (!val) return true;
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "Contact name cannot have consecutive spaces"
     }),
   shopName: z.string()
     .min(1, "Shop name is required")
-    .max(50, "Shop name must be maximum 50 characters"),
+    .max(50, "Shop name must be maximum 50 characters")
+    .refine((val) => {
+      const lettersNumbersSpaces = /^[a-zA-Z\u0B80-\u0BFF0-9\s]+$/;
+      return lettersNumbersSpaces.test(val);
+    }, {
+      message: "Shop name can only contain letters, numbers and spaces"
+    })
+    .refine((val) => {
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "Shop name cannot have consecutive spaces"
+    }),
   phone: z.string()
-    .optional()
-    .refine((val) => !val || /^\d{10}$/.test(val), {
+    .min(1, "Phone number is required")
+    .refine((val) => /^\d{10}$/.test(val), {
       message: "Phone number must be exactly 10 digits"
     }),
   email: z.string()
@@ -43,22 +65,55 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
   gstin: z.string()
     .optional()
     .refine((val) => !val || /^[a-zA-Z0-9]+$/.test(val), {
-      message: "GSTIN can only contain letters and numbers"
+      message: "GSTIN can only contain letters and numbers (no Tamil characters)"
     })
     .refine((val) => !val || val.length <= 15, {
       message: "GSTIN must be maximum 15 characters"
     }),
   address: z.string()
+    .max(200, "Address must be maximum 200 characters")
     .optional()
-    .refine((val) => !val || val.length <= 200, {
-      message: "Address must be maximum 200 characters"
+    .refine((val) => {
+      if (!val) return true;
+      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF\s()[\]\\/;:\-"'&,.]+$/;
+      return allowedChars.test(val);
+    }, {
+      message: "Address can only contain letters, spaces and these characters: ( ) [ ] \\ / : ; - \" ' & , ."
+    })
+    .refine((val) => {
+      if (!val) return true;
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "Address cannot have consecutive spaces"
     }),
   city: z.string()
     .min(1, "City is required")
-    .max(40, "City must be maximum 40 characters"),
+    .max(40, "City must be maximum 40 characters")
+    .refine((val) => {
+      const lettersAndSpaces = /^[a-zA-Z\u0B80-\u0BFF\s]+$/;
+      return lettersAndSpaces.test(val);
+    }, {
+      message: "City can only contain letters and spaces (no numbers or special characters)"
+    })
+    .refine((val) => {
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "City cannot have consecutive spaces"
+    }),
   state: z.string()
     .min(1, "State is required")
-    .max(40, "State must be maximum 40 characters"),
+    .max(40, "State must be maximum 40 characters")
+    .refine((val) => {
+      const lettersAndSpaces = /^[a-zA-Z\u0B80-\u0BFF\s]+$/;
+      return lettersAndSpaces.test(val);
+    }, {
+      message: "State can only contain letters and spaces (no numbers or special characters)"
+    })
+    .refine((val) => {
+      return !/\s{2,}/.test(val);
+    }, {
+      message: "State cannot have consecutive spaces"
+    }),
   postalCode: z.string()
     .optional()
     .refine((val) => !val || val.length <= 15, {
