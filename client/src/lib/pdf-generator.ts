@@ -207,7 +207,13 @@ function drawCompanyHeader(doc: jsPDF, pageWidth: number, margin: number, yPos: 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   
-  const phoneStartX = margin + logoWidth + 5;
+  const totalLineWidth = phoneIconSize + 1 + doc.getTextWidth(phoneNumbersText) + 3 + 
+                         doc.getTextWidth("•") + 3 + 
+                         phoneIconSize + 1 + doc.getTextWidth(emailText) + 3 + 
+                         doc.getTextWidth("•") + 3 + 
+                         doc.getTextWidth(gstinText);
+  
+  const phoneStartX = (pageWidth - totalLineWidth) / 2;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
@@ -276,7 +282,13 @@ function drawCompanyHeaderWithBillType(doc: jsPDF, pageWidth: number, margin: nu
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   
-  const phoneStartX = margin + logoWidth + 5;
+  const totalLineWidth = phoneIconSize + 1 + doc.getTextWidth(phoneNumbersText) + 3 + 
+                         doc.getTextWidth("•") + 3 + 
+                         phoneIconSize + 1 + doc.getTextWidth(emailText) + 3 + 
+                         doc.getTextWidth("•") + 3 + 
+                         doc.getTextWidth(gstinText);
+  
+  const phoneStartX = (pageWidth - totalLineWidth) / 2;
   doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
   doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
   
