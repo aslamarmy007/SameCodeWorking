@@ -56,17 +56,12 @@ interface InvoiceData {
   billType?: string;
 }
 
-let tamilFontLoaded = false;
-
 function setupTamilFont(doc: jsPDF) {
-  if (!tamilFontLoaded) {
-    try {
-      doc.addFileToVFS("NotoSansTamil-Regular.ttf", tamilFontBase64);
-      doc.addFont("NotoSansTamil-Regular.ttf", "NotoSansTamil", "normal");
-      tamilFontLoaded = true;
-    } catch (error) {
-      console.error("Failed to load Tamil font:", error);
-    }
+  try {
+    doc.addFileToVFS("NotoSansTamil-Regular.ttf", tamilFontBase64);
+    doc.addFont("NotoSansTamil-Regular.ttf", "NotoSansTamil", "normal");
+  } catch (error) {
+    console.error("Failed to load Tamil font:", error);
   }
 }
 
