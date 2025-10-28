@@ -147,7 +147,9 @@ async function addTamilText(
     finalX = x - imgWidthMM;
   }
   
-  doc.addImage(imageData, 'PNG', finalX, y - imgHeightMM + (fontSize * 0.3), imgWidthMM, imgHeightMM);
+  const adjustedY = y - imgHeightMM + (fontSize * 0.35);
+  
+  doc.addImage(imageData, 'PNG', finalX, adjustedY, imgWidthMM, imgHeightMM);
   
   return { width: imgWidthMM, height: imgHeightMM };
 }
