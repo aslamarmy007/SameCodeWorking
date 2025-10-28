@@ -710,7 +710,7 @@ export default function Dashboard() {
                               name="name"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Contact Name</FormLabel>
+                                  <FormLabel>Contact Name (optional)</FormLabel>
                                   <FormControl>
                                     <Input {...field} data-testid="input-customer-name" />
                                   </FormControl>
@@ -1428,11 +1428,10 @@ export default function Dashboard() {
                               data-testid="checkbox-select-all-products"
                             />
                           </TableHead>
-                          <TableHead>Product Name</TableHead>
+                          <TableHead>Product Name & GST %</TableHead>
                           <TableHead>HSN Code</TableHead>
                           <TableHead>Price</TableHead>
                           <TableHead>Unit</TableHead>
-                          <TableHead>GST Rate (%)</TableHead>
                           <TableHead>Stock</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -1440,7 +1439,7 @@ export default function Dashboard() {
                       <TableBody>
                         {filteredProducts.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={8} className="text-center text-gray-500" data-testid="text-no-products">
+                            <TableCell colSpan={7} className="text-center text-gray-500" data-testid="text-no-products">
                               {products.length === 0 
                                 ? "No products found. Add your first product to get started."
                                 : "No products match the current filters."}
@@ -1460,11 +1459,17 @@ export default function Dashboard() {
                                   data-testid={`checkbox-product-${product.id}`}
                                 />
                               </TableCell>
-                              <TableCell className="font-medium">{product.name}</TableCell>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                  <span>{product.name}</span>
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    {parseFloat(product.gstRate).toFixed(2)}%
+                                  </span>
+                                </div>
+                              </TableCell>
                               <TableCell>{product.hsn}</TableCell>
                               <TableCell>₹{parseFloat(product.defaultPrice).toFixed(2)}</TableCell>
                               <TableCell>{product.unit}</TableCell>
-                              <TableCell>{parseFloat(product.gstRate).toFixed(2)}%</TableCell>
                               <TableCell>{product.stock ? parseFloat(product.stock).toFixed(2) : "0.00"}</TableCell>
                               <TableCell className="text-right">
                                 <Button
@@ -1473,7 +1478,7 @@ export default function Dashboard() {
                                   onClick={() => setViewingProduct(product)}
                                   data-testid={`button-view-product-${product.id}`}
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-4 w-4 text-blue-500" />
                                 </Button>
                                 <Button
                                   variant="ghost"
