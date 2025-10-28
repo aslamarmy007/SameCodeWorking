@@ -394,7 +394,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.addImage(phoneIconSmall, 'PNG', leftBoxX + 3, billToY - 2, phoneIconSmallSize, phoneIconSmallSize);
     doc.setFont("helvetica", "normal");
     doc.text(customer.phone, leftBoxX + 3 + phoneIconSmallSize + 1, billToY);
-    billToY += 4;
+    billToY += 4.5;
   }
   
   if (customer.email) {
@@ -404,7 +404,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.addImage(envelopeIcon, 'PNG', leftBoxX + 3, billToY - 2, envelopeIconSize, envelopeIconSize);
     doc.setFont("helvetica", "normal");
     doc.text(customer.email, leftBoxX + 3 + envelopeIconSize + 1, billToY);
-    billToY += 4;
+    billToY += 4.5;
   }
   
   if (customer.gstin) {
@@ -479,7 +479,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.addImage(phoneIconSmall, 'PNG', rightBoxX + 3, shipToY - 2, phoneIconSmallSize, phoneIconSmallSize);
     doc.setFont("helvetica", "normal");
     doc.text(shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
-    shipToY += 4;
+    shipToY += 4.5;
   }
   
   if (shipping.email) {
@@ -489,7 +489,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.addImage(envelopeIcon, 'PNG', rightBoxX + 3, shipToY - 2, envelopeIconSize, envelopeIconSize);
     doc.setFont("helvetica", "normal");
     doc.text(shipping.email, rightBoxX + 3 + envelopeIconSize + 1, shipToY);
-    shipToY += 4;
+    shipToY += 4.5;
   }
   
   if (shipping.gstin) {
