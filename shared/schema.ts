@@ -247,6 +247,12 @@ export const invoices = pgTable("invoices", {
   gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }).default("0"),
   grandTotal: decimal("grand_total", { precision: 10, scale: 2 }).notNull(),
   lorryNumber: text("lorry_number"),
+  isDraft: boolean("is_draft").notNull().default(false),
+  paymentStatus: text("payment_status"),
+  paymentMethod: text("payment_method"),
+  paymentDate: text("payment_date"),
+  paidAmount: decimal("paid_amount", { precision: 10, scale: 2 }).default("0"),
+  balanceAmount: decimal("balance_amount", { precision: 10, scale: 2 }).default("0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
