@@ -22,6 +22,7 @@ import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, 
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
+import { PaymentDialog } from "@/components/payment-dialog";
 import logoImage from "@assets/cocologo_1761383042737.png";
 import aslamSignature from "@assets/pngegg_1761410687109.png";
 import zupearSignature from "@assets/signature_1761410697487.png";
@@ -112,6 +113,14 @@ export default function BillingPage() {
     other: 0,
     lorryNumber: "",
   });
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentData, setPaymentData] = useState<{
+    paymentStatus?: string;
+    paymentMethod?: string;
+    paymentDate?: string;
+    paidAmount?: number;
+    balanceAmount?: number;
+  }>({});
 
   const validateNameCityState = (value: string): string => {
     return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
@@ -253,7 +262,7 @@ export default function BillingPage() {
   });
 
   const createInvoiceMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (isDraft: boolean = false) => {
       const finalShippingData = sameAsbilling ? customerData : shippingData;
       const invoiceData = {
         billDate: billConfig.billDate,
@@ -284,6 +293,12 @@ export default function BillingPage() {
         gstAmount: gstAmount.toString(),
         grandTotal: grandTotal.toString(),
         lorryNumber: additionalCharges.lorryNumber,
+        isDraft,
+        paymentStatus: paymentData.paymentStatus,
+        paymentMethod: paymentData.paymentMethod,
+        paymentDate: paymentData.paymentDate,
+        paidAmount: paymentData.paidAmount?.toString(),
+        balanceAmount: paymentData.balanceAmount?.toString(),
         items: billItems.map((item) => ({
           productId: item.productId,
           productName: item.productName,
@@ -297,12 +312,13 @@ export default function BillingPage() {
       };
       return await apiRequest<{ invoice: any; items: any[] }>("POST", "/api/invoices", invoiceData);
     },
-    onSuccess: async (response: { invoice: any; items: any[] }) => {
+    onSuccess: async (response: { invoice: any; items: any[] }, isDraft: boolean = false) => {
       const { invoice } = response;
       const finalShippingData = sameAsbilling ? customerData : shippingData;
       
-      // Generate PDF
-      await generateInvoicePDF({
+      // Only generate PDF if not a draft
+      if (!isDraft) {
+        await generateInvoicePDF({
         invoiceNumber: invoice.invoiceNumber,
         billDate: billConfig.billDate,
         customer: {
@@ -338,12 +354,18 @@ export default function BillingPage() {
         eSignatureEnabled: billConfig.eSignatureEnabled,
         signedBy: billConfig.signedBy,
         billType: billConfig.billType,
-      });
+        });
 
-      toast({
-        title: "Invoice Created",
-        description: `Invoice ${invoice.invoiceNumber} generated successfully`,
-      });
+        toast({
+          title: "Invoice Created",
+          description: `Invoice ${invoice.invoiceNumber} generated successfully`,
+        });
+      } else {
+        toast({
+          title: "Draft Saved",
+          description: `Invoice ${invoice.invoiceNumber} saved as draft`,
+        });
+      }
 
       // Reset form
       setCurrentStep(1);
@@ -763,18 +785,16 @@ export default function BillingPage() {
     }
   };
 
-  const handleGeneratePDF = async () => {
-    // Validate all items have quantity >= 0.1
+  const handleSaveDraft = async () => {
     if (!allItemsHaveValidQuantity) {
       toast({
         title: "Invalid Quantity",
-        description: "All items must have a quantity of at least 0.1 to generate the PDF",
+        description: "All items must have a quantity of at least 0.1 to save draft",
         variant: "destructive",
       });
       return;
     }
 
-    // Ensure customer is saved before creating invoice
     if (!customerData.id && customerData.shopName.trim()) {
       try {
         const savedCustomer = await apiRequest<Customer>("POST", "/api/customers", {
@@ -788,9 +808,70 @@ export default function BillingPage() {
           postalCode: customerData.postalCode,
         });
         setCustomerData({ ...customerData, id: savedCustomer.id });
-        // Wait a bit to ensure state is updated
         setTimeout(() => {
-          createInvoiceMutation.mutate();
+          createInvoiceMutation.mutate(true);
+        }, 100);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save customer before creating draft",
+          variant: "destructive",
+        });
+      }
+    } else {
+      createInvoiceMutation.mutate(true);
+    }
+  };
+
+  const handleGeneratePDF = () => {
+    if (!allItemsHaveValidQuantity) {
+      toast({
+        title: "Invalid Quantity",
+        description: "All items must have a quantity of at least 0.1 to generate the PDF",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowPaymentDialog(true);
+  };
+
+  const handlePaymentConfirm = async (data: {
+    paymentStatus: string;
+    paymentMethod?: string;
+    paymentDate: string;
+    paidAmount?: number;
+  }) => {
+    const balanceAmount = data.paidAmount 
+      ? grandTotal - data.paidAmount 
+      : data.paymentStatus === "full_credit" 
+      ? grandTotal 
+      : 0;
+
+    setPaymentData({
+      paymentStatus: data.paymentStatus,
+      paymentMethod: data.paymentMethod,
+      paymentDate: data.paymentDate,
+      paidAmount: data.paidAmount,
+      balanceAmount,
+    });
+
+    setShowPaymentDialog(false);
+
+    if (!customerData.id && customerData.shopName.trim()) {
+      try {
+        const savedCustomer = await apiRequest<Customer>("POST", "/api/customers", {
+          name: customerData.name,
+          shopName: customerData.shopName,
+          phone: customerData.phone,
+          gstin: customerData.gstin,
+          address: customerData.address,
+          city: customerData.city,
+          state: customerData.state,
+          postalCode: customerData.postalCode,
+        });
+        setCustomerData({ ...customerData, id: savedCustomer.id });
+        setTimeout(() => {
+          createInvoiceMutation.mutate(false);
         }, 100);
       } catch (error) {
         toast({
@@ -800,7 +881,7 @@ export default function BillingPage() {
         });
       }
     } else {
-      createInvoiceMutation.mutate();
+      createInvoiceMutation.mutate(false);
     }
   };
 
@@ -2314,10 +2395,21 @@ export default function BillingPage() {
                     <Button
                       variant="secondary"
                       onClick={() => setCurrentStep(3)}
-                      className="w-full sm:flex-[2] text-sm sm:text-base py-4 sm:py-6"
+                      className="w-full sm:flex-[1] text-sm sm:text-base py-4 sm:py-6"
                       data-testid="button-back-products"
                     >
                       ← Back
+                    </Button>
+                    <Button
+                      onClick={handleSaveDraft}
+                      disabled={createInvoiceMutation.isPending || !canGeneratePDF}
+                      variant="outline"
+                      className="w-full sm:flex-[2] text-sm sm:text-base py-4 sm:py-6"
+                      data-testid="button-save-draft"
+                    >
+                      <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Save as Draft</span>
+                      <span className="sm:hidden">Save Draft</span>
                     </Button>
                     <Button
                       onClick={handleGeneratePDF}
@@ -2362,6 +2454,14 @@ export default function BillingPage() {
           </div>
         </div>
       </div>
+
+      <PaymentDialog
+        open={showPaymentDialog}
+        onClose={() => setShowPaymentDialog(false)}
+        onConfirm={handlePaymentConfirm}
+        grandTotal={grandTotal}
+        billDate={billConfig.billDate}
+      />
     </div>
   );
 }

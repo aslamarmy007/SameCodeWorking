@@ -156,6 +156,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/invoices/drafts/all", async (_req, res) => {
+    try {
+      const drafts = await storage.getDraftInvoices();
+      res.json(drafts);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch draft invoices" });
+    }
+  });
+
+  app.get("/api/invoices/pending/all", async (_req, res) => {
+    try {
+      const pending = await storage.getPendingPaymentInvoices();
+      res.json(pending);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch pending payment invoices" });
+    }
+  });
+
   app.get("/api/invoices/:id", async (req, res) => {
     try {
       const invoice = await storage.getInvoice(req.params.id);

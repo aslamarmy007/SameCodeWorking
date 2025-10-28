@@ -37,6 +37,8 @@ export interface IStorage {
 
   // Invoice operations
   getAllInvoices(): Promise<Invoice[]>;
+  getDraftInvoices(): Promise<Invoice[]>;
+  getPendingPaymentInvoices(): Promise<Invoice[]>;
   getInvoice(id: string): Promise<Invoice | undefined>;
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
   updateInvoice(id: string, invoice: Partial<InsertInvoice>): Promise<Invoice | undefined>;
@@ -225,7 +227,20 @@ export class DbStorage implements IStorage {
 
   // Invoice operations
   async getAllInvoices(): Promise<Invoice[]> {
-    return await db.select().from(invoices);
+    return await db.select().from(invoices).where(eq(invoices.isDraft, false));
+  }
+
+  async getDraftInvoices(): Promise<Invoice[]> {
+    return await db.select().from(invoices).where(eq(invoices.isDraft, true));
+  }
+
+  async getPendingPaymentInvoices(): Promise<Invoice[]> {
+    return await db.select().from(invoices).where(
+      and(
+        eq(invoices.isDraft, false),
+        sql`${invoices.paymentStatus} IN ('full_credit', 'partial_paid')`
+      )
+    );
   }
 
   async getInvoice(id: string): Promise<Invoice | undefined> {
