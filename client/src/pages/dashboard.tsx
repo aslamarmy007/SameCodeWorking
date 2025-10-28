@@ -812,7 +812,7 @@ export default function Dashboard() {
                               name="postalCode"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Postal Code</FormLabel>
+                                  <FormLabel>Postal Code (optional)</FormLabel>
                                   <FormControl>
                                     <Input {...field} data-testid="input-customer-postalcode" />
                                   </FormControl>
@@ -826,7 +826,7 @@ export default function Dashboard() {
                             name="address"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Address</FormLabel>
+                                <FormLabel>Address (optional)</FormLabel>
                                 <FormControl>
                                   <Textarea {...field} value={field.value || ""} rows={3} data-testid="input-customer-address" />
                                 </FormControl>
