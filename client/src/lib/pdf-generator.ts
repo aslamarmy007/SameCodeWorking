@@ -14,6 +14,8 @@ import { tamilFontBase64 } from "./tamil-font";
 interface InvoiceData {
   invoiceNumber: string;
   billDate: string;
+  billType?: "sale" | "purchase";
+  shippingToMyself?: boolean;
   customer: {
     name: string;
     shopName: string;
@@ -54,7 +56,6 @@ interface InvoiceData {
   lorryNumber: string;
   eSignatureEnabled?: boolean;
   signedBy?: string;
-  billType?: string;
 }
 
 function setupTamilFont(doc: jsPDF) {
@@ -378,8 +379,9 @@ function drawInvoiceDetails(doc: jsPDF, pageWidth: number, margin: number, yPos:
   return yPos;
 }
 
-async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any): Promise<number> {
-  const boxWidth = (pageWidth - (2 * margin) - 4) / 2;
+async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any, billType?: "sale" | "purchase", shippingToMyself?: boolean): Promise<number> {
+  const showShipping = !shippingToMyself;
+  const boxWidth = showShipping ? (pageWidth - (2 * margin) - 4) / 2 : (pageWidth - (2 * margin));
   const leftBoxX = margin;
   const rightBoxX = margin + boxWidth + 4;
   const boxStartY = yPos;
@@ -470,94 +472,100 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     billToY += (gstinLines.length * 4);
   }
   
-  const shipToStartY = yPos + 13;
-  let shipToY = shipToStartY;
+  let shipToY = 0;
+  let shipToContentHeight = 0;
   
-  if (shipping.shopName) {
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    if (hasTamilCharacters(shipping.shopName)) {
-      const result = await addTamilText(doc, shipping.shopName, rightBoxX + 3, shipToY, 10, "bold", "#000000");
-      shipToY += result.height;
-    } else {
-      doc.setFont("helvetica", "bold");
-      doc.text(shipping.shopName, rightBoxX + 3, shipToY);
-      shipToY += 4.5;
-    }
-  }
-  
-  if (shipping.name) {
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    if (hasTamilCharacters(shipping.name)) {
-      const result = await addTamilText(doc, shipping.name, rightBoxX + 3, shipToY, 8, "bold", "#000000");
-      shipToY += result.height;
-    } else {
-      doc.setFont("helvetica", "bold");
-      doc.text(shipping.name, rightBoxX + 3, shipToY);
-      shipToY += 4.5;
-    }
-  }
-  
-  if (shipping.address || shipping.city || shipping.state) {
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    const addressParts = [shipping.address, shipping.city, shipping.state].filter(Boolean);
-    let addressText = addressParts.join(", ");
-    const indiaText = getIndiaText(shipping.city, shipping.state);
-    if (shipping.postalCode) {
-      addressText += ", " + indiaText + " - " + shipping.postalCode + ".";
-    } else {
-      addressText += ", " + indiaText + ".";
+  if (showShipping) {
+    const shipToStartY = yPos + 13;
+    shipToY = shipToStartY;
+    
+    if (shipping.shopName) {
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      if (hasTamilCharacters(shipping.shopName)) {
+        const result = await addTamilText(doc, shipping.shopName, rightBoxX + 3, shipToY, 10, "bold", "#000000");
+        shipToY += result.height;
+      } else {
+        doc.setFont("helvetica", "bold");
+        doc.text(shipping.shopName, rightBoxX + 3, shipToY);
+        shipToY += 4.5;
+      }
     }
     
-    if (hasTamilCharacters(addressText)) {
-      const result = await addTamilText(doc, addressText, rightBoxX + 3, shipToY, 8, "normal", "#000000", "left", (boxWidth - 6) * 3.78);
-      shipToY += result.height + 2;
-    } else {
-      doc.setFont("helvetica", "normal");
-      const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
-      doc.text(splitAddress, rightBoxX + 3, shipToY);
-      shipToY += (splitAddress.length * 4) + 1;
+    if (shipping.name) {
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      if (hasTamilCharacters(shipping.name)) {
+        const result = await addTamilText(doc, shipping.name, rightBoxX + 3, shipToY, 8, "bold", "#000000");
+        shipToY += result.height;
+      } else {
+        doc.setFont("helvetica", "bold");
+        doc.text(shipping.name, rightBoxX + 3, shipToY);
+        shipToY += 4.5;
+      }
     }
-  }
-  
-  if (shipping.phone) {
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    const phoneIconSmallSize = 2.5;
-    doc.addImage(phoneIconSmall, 'PNG', rightBoxX + 3, shipToY - 2, phoneIconSmallSize, phoneIconSmallSize);
-    doc.setFont("helvetica", "normal");
-    doc.text(shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
-    shipToY += 4.5;
-  }
-  
-  if (shipping.email) {
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    const envelopeIconSize = 2.5;
-    doc.addImage(envelopeIcon, 'PNG', rightBoxX + 3, shipToY - 2, envelopeIconSize, envelopeIconSize);
-    doc.setFont("helvetica", "normal");
-    doc.text(shipping.email, rightBoxX + 3 + envelopeIconSize + 1, shipToY);
-    shipToY += 4.5;
-  }
-  
-  if (shipping.gstin) {
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    const gstinLabelWidth = doc.getTextWidth("GSTIN: ");
-    doc.text("GSTIN: ", rightBoxX + 3, shipToY);
-    doc.setFont("helvetica", "normal");
-    const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
-    const gstinLines = doc.splitTextToSize(shipping.gstin, gstinTextWidth);
-    doc.text(gstinLines, rightBoxX + 3 + gstinLabelWidth, shipToY);
-    shipToY += (gstinLines.length * 4);
+    
+    if (shipping.address || shipping.city || shipping.state) {
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      const addressParts = [shipping.address, shipping.city, shipping.state].filter(Boolean);
+      let addressText = addressParts.join(", ");
+      const indiaText = getIndiaText(shipping.city, shipping.state);
+      if (shipping.postalCode) {
+        addressText += ", " + indiaText + " - " + shipping.postalCode + ".";
+      } else {
+        addressText += ", " + indiaText + ".";
+      }
+      
+      if (hasTamilCharacters(addressText)) {
+        const result = await addTamilText(doc, addressText, rightBoxX + 3, shipToY, 8, "normal", "#000000", "left", (boxWidth - 6) * 3.78);
+        shipToY += result.height + 2;
+      } else {
+        doc.setFont("helvetica", "normal");
+        const splitAddress = doc.splitTextToSize(addressText, boxWidth - 6);
+        doc.text(splitAddress, rightBoxX + 3, shipToY);
+        shipToY += (splitAddress.length * 4) + 1;
+      }
+    }
+    
+    if (shipping.phone) {
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      const phoneIconSmallSize = 2.5;
+      doc.addImage(phoneIconSmall, 'PNG', rightBoxX + 3, shipToY - 2, phoneIconSmallSize, phoneIconSmallSize);
+      doc.setFont("helvetica", "normal");
+      doc.text(shipping.phone, rightBoxX + 3 + phoneIconSmallSize + 1, shipToY);
+      shipToY += 4.5;
+    }
+    
+    if (shipping.email) {
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      const envelopeIconSize = 2.5;
+      doc.addImage(envelopeIcon, 'PNG', rightBoxX + 3, shipToY - 2, envelopeIconSize, envelopeIconSize);
+      doc.setFont("helvetica", "normal");
+      doc.text(shipping.email, rightBoxX + 3 + envelopeIconSize + 1, shipToY);
+      shipToY += 4.5;
+    }
+    
+    if (shipping.gstin) {
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      const gstinLabelWidth = doc.getTextWidth("GSTIN: ");
+      doc.text("GSTIN: ", rightBoxX + 3, shipToY);
+      doc.setFont("helvetica", "normal");
+      const gstinTextWidth = boxWidth - 6 - gstinLabelWidth;
+      const gstinLines = doc.splitTextToSize(shipping.gstin, gstinTextWidth);
+      doc.text(gstinLines, rightBoxX + 3 + gstinLabelWidth, shipToY);
+      shipToY += (gstinLines.length * 4);
+    }
+    
+    shipToContentHeight = shipToY - shipToStartY;
   }
   
   const billToContentHeight = billToY - billToStartY;
-  const shipToContentHeight = shipToY - shipToStartY;
-  const maxContentHeight = Math.max(billToContentHeight, shipToContentHeight);
+  const maxContentHeight = showShipping ? Math.max(billToContentHeight, shipToContentHeight) : billToContentHeight;
   const headerToContentGap = billToStartY - (boxStartY + 7);
   const boxHeight = 7 + headerToContentGap + maxContentHeight + bottomPadding;
   
@@ -571,19 +579,23 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(52, 73, 94);
-  doc.text("BILL TO:", leftBoxX + 3, boxStartY + 5);
+  const billToLabel = billType === "purchase" ? (showShipping ? "From:" : "From:") : "BILL TO:";
+  doc.text(billToLabel, leftBoxX + 3, boxStartY + 5);
   
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.3);
-  doc.rect(rightBoxX, boxStartY, boxWidth, boxHeight);
-  
-  doc.setFillColor(240, 240, 240);
-  doc.rect(rightBoxX, boxStartY, boxWidth, 7, "F");
-  
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(52, 73, 94);
-  doc.text("SHIP TO:", rightBoxX + 3, boxStartY + 5);
+  if (showShipping) {
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.rect(rightBoxX, boxStartY, boxWidth, boxHeight);
+    
+    doc.setFillColor(240, 240, 240);
+    doc.rect(rightBoxX, boxStartY, boxWidth, 7, "F");
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(52, 73, 94);
+    const shipToLabel = billType === "purchase" ? "To:" : "SHIP TO:";
+    doc.text(shipToLabel, rightBoxX + 3, boxStartY + 5);
+  }
   
   return boxStartY + boxHeight + 4;
 }
@@ -591,9 +603,9 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
 async function drawCompletePageHeader(doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, data: InvoiceData, startY: number): Promise<number> {
   drawPageBorder(doc, pageWidth, pageHeight);
   let yPos = startY;
-  yPos = drawCompanyHeaderWithBillType(doc, pageWidth, margin, yPos, data.billType || "cash-credit");
+  yPos = drawCompanyHeaderWithBillType(doc, pageWidth, margin, yPos, data.billType || "sale");
   yPos = drawInvoiceDetails(doc, pageWidth, margin, yPos, data.invoiceNumber, data.billDate);
-  yPos = await drawCustomerDetails(doc, pageWidth, margin, yPos, data.customer, data.shipping);
+  yPos = await drawCustomerDetails(doc, pageWidth, margin, yPos, data.customer, data.shipping, data.billType, data.shippingToMyself);
   return yPos;
 }
 

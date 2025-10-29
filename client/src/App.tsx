@@ -6,8 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import BillingPage from "@/pages/billing";
 import Dashboard from "@/pages/dashboard";
+import PurchasePage from "@/pages/purchase";
 import NotFound from "@/pages/not-found";
-import { FileText, LayoutDashboard } from "lucide-react";
+import { FileText, LayoutDashboard, ShoppingBag } from "lucide-react";
 
 function Navigation() {
   const [location] = useLocation();
@@ -35,6 +36,16 @@ function Navigation() {
             Dashboard
           </Button>
         </Link>
+        <Link href="/purchase">
+          <Button 
+            variant={location === "/purchase" ? "default" : "ghost"} 
+            className="flex items-center gap-2"
+            data-testid="nav-purchase"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Purchase Bills
+          </Button>
+        </Link>
       </div>
     </nav>
   );
@@ -47,6 +58,7 @@ function Router() {
       <Switch>
         <Route path="/" component={BillingPage} />
         <Route path="/dashboard" component={Dashboard} />
+        <Route path="/purchase" component={PurchasePage} />
         <Route component={NotFound} />
       </Switch>
     </>

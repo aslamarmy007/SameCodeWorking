@@ -48,7 +48,7 @@ type BillConfig = {
   gstEnabled: boolean;
   eSignatureEnabled: boolean;
   signedBy: string;
-  billType: string;
+  billType: "sale" | "purchase";
 };
 
 type CustomerData = {
@@ -79,7 +79,7 @@ export default function BillingPage() {
     gstEnabled: true,
     eSignatureEnabled: false,
     signedBy: "",
-    billType: "cash-credit",
+    billType: "sale",
   });
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: "",
@@ -416,6 +416,7 @@ export default function BillingPage() {
       const finalShippingData = sameAsbilling ? customerData : shippingData;
       const invoiceData = {
         billDate: billConfig.billDate,
+        billType: billConfig.billType,
         customerId: customerData.id || "",
         customerName: customerData.name,
         shopName: customerData.shopName,
@@ -426,6 +427,7 @@ export default function BillingPage() {
         city: customerData.city,
         state: customerData.state,
         postalCode: customerData.postalCode,
+        shippingToMyself: sameAsbilling,
         shippingName: finalShippingData.name,
         shippingShopName: finalShippingData.shopName,
         shippingPhone: finalShippingData.phone,
@@ -471,6 +473,8 @@ export default function BillingPage() {
         await generateInvoicePDF({
         invoiceNumber: invoice.invoiceNumber,
         billDate: billConfig.billDate,
+        billType: billConfig.billType,
+        shippingToMyself: sameAsbilling,
         customer: {
           name: customerData.name,
           shopName: customerData.shopName,
@@ -503,7 +507,6 @@ export default function BillingPage() {
         lorryNumber: additionalCharges.lorryNumber,
         eSignatureEnabled: billConfig.eSignatureEnabled,
         signedBy: billConfig.signedBy,
-        billType: billConfig.billType,
         });
 
         toast({
@@ -529,7 +532,7 @@ export default function BillingPage() {
         gstEnabled: true,
         eSignatureEnabled: false,
         signedBy: "",
-        billType: "cash-credit",
+        billType: "sale",
       });
       setCustomerData({
         name: "",
@@ -1146,7 +1149,7 @@ export default function BillingPage() {
                       </Label>
                       <Select
                         value={billConfig.billType}
-                        onValueChange={(value) =>
+                        onValueChange={(value: "sale" | "purchase") =>
                           setBillConfig({ ...billConfig, billType: value })
                         }
                       >
@@ -1154,7 +1157,7 @@ export default function BillingPage() {
                           <SelectValue placeholder="Select bill type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="cash-credit">Cash/Credit Bill</SelectItem>
+                          <SelectItem value="sale">Sale Bill</SelectItem>
                           <SelectItem value="purchase">Purchase Bill</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1166,7 +1169,7 @@ export default function BillingPage() {
                     className="w-full text-base py-6"
                     data-testid="button-next-customer"
                   >
-                    Next: Customer Information →
+                    Next: {billConfig.billType === "purchase" ? "Buyer" : "Customer"} Information →
                   </Button>
                 </div>
               </Card>
@@ -1176,12 +1179,14 @@ export default function BillingPage() {
               <Card className="p-4 sm:p-6 md:p-8 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-customer">
                 <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                   <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Customer Information</h2>
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                    {billConfig.billType === "purchase" ? "Buyer Information" : "Customer Information"}
+                  </h2>
                 </div>
                 <div className="space-y-6">
                   <div>
                     <Label className="text-base font-semibold mb-2 block">
-                      Customer Type
+                      {billConfig.billType === "purchase" ? "Buyer Type" : "Customer Type"}
                     </Label>
                     <Select 
                       value={isNewCustomer === null ? "" : (isNewCustomer ? "new" : "existing")} 
@@ -1217,17 +1222,17 @@ export default function BillingPage() {
                       }}
                     >
                       <SelectTrigger className="text-base" data-testid="select-customer-type">
-                        <SelectValue placeholder="Select new customer or Existing customer" />
+                        <SelectValue placeholder={billConfig.billType === "purchase" ? "Select new buyer or Existing buyer" : "Select new customer or Existing customer"} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="existing">Existing Customer</SelectItem>
-                        <SelectItem value="new">New Customer</SelectItem>
+                        <SelectItem value="existing">{billConfig.billType === "purchase" ? "Existing Buyer" : "Existing Customer"}</SelectItem>
+                        <SelectItem value="new">{billConfig.billType === "purchase" ? "New Buyer" : "New Customer"}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="border-t-2 pt-6">
-                    <h3 className="text-xl font-bold mb-4">Billing To</h3>
+                    <h3 className="text-xl font-bold mb-4">{billConfig.billType === "purchase" ? "Biller" : "Billing To"}</h3>
                     
                     {isNewCustomer === false && (
                       <div>
