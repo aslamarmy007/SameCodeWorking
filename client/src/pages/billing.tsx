@@ -286,7 +286,38 @@ export default function BillingPage() {
     },
     onSuccess: (savedCustomer: Customer) => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      setCustomerData({ ...customerData, id: savedCustomer.id });
+      
+      const savedData = {
+        id: savedCustomer.id,
+        name: savedCustomer.name || "",
+        shopName: savedCustomer.shopName || "",
+        phone: savedCustomer.phone || "",
+        email: savedCustomer.email || "",
+        gstin: savedCustomer.gstin || "",
+        address: savedCustomer.address || "",
+        city: savedCustomer.city || "",
+        state: savedCustomer.state || "",
+        postalCode: savedCustomer.postalCode || "",
+      };
+      
+      // Check if this was a billing customer save
+      if (isNewCustomer) {
+        setCustomerData(savedData);
+        setSelectedBillingCustomerId(savedCustomer.id);
+        setIsNewCustomer(false);
+        
+        // If "same as billing" is checked, sync shipping data with billing data
+        if (sameAsbilling) {
+          setShippingData(savedData);
+        }
+      }
+      // Check if this was a shipping customer save
+      else if (isNewShippingCustomer) {
+        setShippingData(savedData);
+        setSelectedShippingCustomerId(savedCustomer.id);
+        setIsNewShippingCustomer(false);
+      }
+      
       toast({
         title: "Customer Saved",
         description: "Customer has been saved successfully",
@@ -341,20 +372,22 @@ export default function BillingPage() {
       // Update billing data if this customer is the billing customer
       if (customerData.id === updatedCustomer.id) {
         setCustomerData(updatedData);
+        setSelectedBillingCustomerId(updatedCustomer.id);
+        setIsEditingCustomer(false);
+        
+        // If "same as billing" is checked and billing was updated, sync to shipping
+        if (sameAsbilling) {
+          setShippingData(updatedData);
+        }
       }
       
       // Update shipping data if this customer is the shipping customer
       if (shippingData.id === updatedCustomer.id) {
         setShippingData(updatedData);
+        setSelectedShippingCustomerId(updatedCustomer.id);
+        setIsEditingShippingCustomer(false);
       }
       
-      // If "same as billing" is checked and billing was updated, sync to shipping
-      if (sameAsbilling && customerData.id === updatedCustomer.id) {
-        setShippingData(updatedData);
-      }
-      
-      setIsEditingCustomer(false);
-      setIsEditingShippingCustomer(false);
       toast({
         title: "Customer Updated",
         description: "Customer has been updated successfully",
