@@ -45,3 +45,15 @@ Key architectural decisions include:
 - **Zod:** For schema validation.
 - **jsPDF:** For PDF generation (planned).
 - **NotoSansTamil font:** For rendering Tamil characters in PDFs.
+
+## Recent Changes
+- [2025-10-29] Implemented searchable comboboxes for customer selection in billing workflow:
+  - Replaced simple Select dropdowns with searchable Popover/Command/CommandItem components
+  - Added searchable customer selection for both "Billing To" and "Shipping To" sections
+  - Customers can now be searched by shop name, customer name, or phone number
+  - Implemented controlled state management for proper popover open/close behavior
+  - Added aria-expanded attribute for accessibility compliance
+  - Search functionality concatenates all customer fields for comprehensive matching
+  - Popover automatically closes after customer selection
+  - Display shows selected customer's shop name with checkmark indicator
+  - Both comboboxes follow shadcn/ui best practices with proper UX patterns
