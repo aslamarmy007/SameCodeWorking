@@ -2776,13 +2776,11 @@ export default function BillingPage() {
                     </div>
                   </div>
 
-                  {/* Product Count Display */}
-                  <div className="text-sm text-gray-600 dark:text-gray-400" data-testid="text-product-count">
-                    Showing {filteredProducts.length} of {products.length} products
-                  </div>
-
-                  {/* Clear Filters Button */}
-                  <div className="flex justify-end">
+                  {/* Product Count and Clear Filters */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600 dark:text-gray-400" data-testid="text-product-count">
+                      Showing {filteredProducts.length} of {products.length} products
+                    </div>
                     <Button
                       variant="outline"
                       onClick={() => {
