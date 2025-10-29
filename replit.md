@@ -1,220 +1,47 @@
 # Ayesha Coco Pith - Professional Billing System
 
 ## Overview
-A professional billing system for Ayesha Coco Pith, featuring customer management, product catalog, GST calculations, and PDF invoice generation with a beautiful purple gradient theme.
+A professional billing system for Ayesha Coco Pith, designed to streamline billing operations. It features comprehensive customer and product management, real-time GST calculations, and the ability to generate professional PDF invoices. The system boasts a modern, responsive user interface with a distinctive purple gradient theme, aiming to enhance efficiency and provide a polished user experience for businesses.
 
-## Project Architecture
+## User Preferences
+- All UI/UX decisions should adhere to the established purple gradient theme (#667eea to #764ba2), including rounded cards, shadows, and smooth transitions.
+- The system requires a multi-step billing workflow (Configuration, Customer Information, Product Selection, Review & Additional Charges).
+- Customer management needs robust input validation, duplicate detection (by shop name), and auto-fill capabilities.
+- Shipping information must allow separate addresses with an option to use the billing address.
+- The product catalog should be interactive, category-wise, with initial limited display and an expand/collapse feature.
+- A comprehensive filter system for products (category, name, HSN, unit type, GST rate, price range) is required, identical to the product management dashboard.
+- Invoice generation must include real-time calculations for subtotals, GST, and additional charges, with PDF export capability.
+- The design must be fully responsive, optimized for all devices (laptops, tablets, mobiles), featuring a single-column vertical layout for consistency, with the current bill section always visible.
+- Mobile accessibility standards (44px touch targets) should be met for all interactive elements.
+- The system requires comprehensive Tamil language support, including font rendering in PDFs, conditional translations, and support for Tamil characters in input fields like shop names and categories.
+- Location history with combobox UI for city/state fields and deduplication is essential.
+- Product categories must be mandatory, support Tamil/English, and have an autocomplete feature.
+- Multi-select filters for category, HSN, unit type, and GST rate are needed in both product management and billing.
+- The system should maintain a clean, professional PDF invoice layout with company branding.
 
-### Frontend
-- **React** with TypeScript for type-safe UI components
-- **Tailwind CSS** with custom purple gradient theme (#667eea to #764ba2)
-- **Shadcn/ui** components for consistent, accessible UI
-- **TanStack Query** for efficient data fetching and caching
-- **Wouter** for lightweight routing
+## System Architecture
+The application is built with a client-server architecture. The frontend is developed using **React** with **TypeScript**, styled with **Tailwind CSS** and **Shadcn/ui** components, leveraging **TanStack Query** for data fetching and **Wouter** for routing. The backend is an **Express.js** REST API, utilizing **Drizzle ORM** for database interaction (with in-memory storage for development) and **Zod** for runtime validation.
 
-### Backend
-- **Express.js** REST API
-- **In-memory storage** (MemStorage) for development
-- **Drizzle ORM** for type-safe database schemas
-- **Zod** for runtime validation
+Key architectural decisions include:
+- **UI/UX:** A distinct purple gradient theme (#667eea to #764ba2) is applied across all components, featuring rounded cards, shadows, and smooth animations. The design is fully responsive, adapting to laptops, tablets, and mobiles with a consistent single-column vertical layout where the current bill summary remains visible at the bottom. Mobile-specific optimizations include increased touch target sizes (44px) and adaptive button text.
+- **Multi-step Billing Workflow:** Structured into four distinct steps for configuration, customer selection, product selection, and review.
+- **Customer Management:** Includes robust client and server-side validation with specific character limits and type constraints (e.g., shop name alphanumeric, phone numeric). Duplicate customer detection is implemented based on the shop name.
+- **Product Catalog:** Products are organized by categories, with an initial display of 3 products per category and an expandable "Show All" feature. A comprehensive filtering system (category, name, HSN, unit type, GST rate, price range) is integrated, mirroring the functionality in the product management dashboard.
+- **Invoice Generation:** Real-time calculation of subtotals, GST (18% toggle), and additional charges (transport, packaging). PDF export functionality is planned, with professional formatting, proper pagination, and consistent headers across all pages.
+- **Data Models:** Core entities include `Customer`, `Product`, `Invoice`, and `InvoiceItem`, with defined fields for comprehensive data management.
+- **Internationalization (i18n):** Explicit support for Tamil language, including font rendering in PDFs, conditional translation for "India," and allowing Tamil characters in relevant input fields. Location history is managed with a dedicated schema and combobox UI for city/state fields.
+- **Management Dashboard:** A three-tab interface (Customers, Products, Bills) for full CRUD operations, featuring server-side filtering, sorting, and efficient cache invalidation.
+- **Type-safe Data Flow:** Achieved by sharing TypeScript types between the frontend and backend, ensuring data integrity.
 
-### Key Features
-1. **Multi-step Billing Workflow**
-   - Step 1: Configuration (Bill date, GST toggle)
-   - Step 2: Customer Information (Select existing or add new)
-   - Step 3: Product Selection (Interactive catalog)
-   - Step 4: Review & Additional Charges
-
-2. **Customer Management**
-   - Save customer details (name, shop, phone, GSTIN, address)
-   - Quick selection from existing customers
-   - Auto-fill customer information
-   - Input validation rules with character limits:
-     - Shop name: max 50 chars, letters and numbers only (REQUIRED - only mandatory field)
-     - Name: max 50 chars, letters only (optional, auto-filtered)
-     - Phone: max 10 chars, numbers only (optional, auto-filtered)
-     - GSTIN: max 15 chars, alphanumeric, no spaces (optional, auto-filtered)
-     - Address: max 200 chars, textarea (optional)
-     - City: max 40 chars, letters only (optional, auto-filtered)
-     - State: max 40 chars, letters only (optional, auto-filtered)
-     - Postal Code: max 15 chars (optional)
-   - Duplicate customer detection (prevents saving customers with same shop name)
-   - Comprehensive error messages for validation failures
-
-3. **Shipping Information**
-   - Separate billing and shipping addresses
-   - Option to use billing address as shipping address
-   - Support for selecting existing customers for shipping
-
-4. **Product Catalog**
-   - Pre-defined products with HSN codes
-   - Default pricing
-   - Interactive product cards with hover effects
-   - Category-wise product organization with expand/collapse functionality
-   - Each category displays 3 products initially
-   - "Show All" button to expand and view all products in a category
-   - Category headers with product count badges
-   - Supports Tamil and English text in category names
-
-5. **Invoice Generation**
-   - Real-time calculation of subtotals
-   - GST (18%) toggle and calculation
-   - Additional charges (transport, packaging, other)
-   - Lorry/vehicle number tracking
-   - PDF export functionality (planned)
-
-6. **Beautiful UI/UX**
-   - Purple gradient background (#667eea to #764ba2)
-   - Rounded cards with shadows
-   - Smooth transitions and hover effects
-   - Progress indicators for multi-step process
-   - Full-width Current Bill section below main content
-   - Fully responsive design optimized for laptops, tablets, and mobiles
-   - Single-column vertical layout for consistent experience across all devices
-
-## Data Models
-
-### Customer
-- id, name, shopName, phone, gstin, address, city, state, postalCode, createdAt
-
-### Product
-- id, name, description, category, hsn, defaultPrice, unit, gstRate, stock, createdAt
-
-### Invoice
-- id, invoiceNumber, billDate, customer details, items, charges, totals
-
-### InvoiceItem
-- id, invoiceId, productId, productName, hsn, quantity, price, total
-
-## Recent Changes
-- [2025-01-24] Initial project setup with schema and frontend components
-- [2025-01-24] Implemented multi-step billing workflow
-- [2025-01-24] Created beautiful purple gradient theme
-- [2025-01-24] Added customer and product management
-- [2025-01-24] Implemented complete backend with in-memory storage
-- [2025-01-24] Added customer saving and invoice creation
-- [2025-01-24] Integrated jsPDF for invoice generation
-- [2025-01-24] Fixed customer auto-save and removed emoji usage
-- [2025-01-24] MVP completed and architect-approved
-- [2025-10-24] Added comprehensive input validation for customer fields
-- [2025-10-24] Implemented duplicate customer detection based on shop name only
-- [2025-10-24] Enhanced error handling with user-friendly validation messages
-- [2025-10-24] Updated shop name validation to allow letters and numbers
-- [2025-10-24] Added GSTIN validation (alphanumeric only, max 15 characters)
-- [2025-10-25] Changed validation: Shop name is now the only required field in customer information
-- [2025-10-25] Made customer name, phone, GSTIN, address, city, and state all optional fields
-- [2025-10-25] Updated both billing and shipping customer forms to require only shop name
-- [2025-10-25] Updated phone input fields to accept only numeric characters (auto-filters non-digits)
-- [2025-10-25] Updated GSTIN input fields to max 15 characters and auto-remove spaces
-- [2025-10-25] Added comprehensive field constraints:
-  - Shop name: max 50 characters
-  - Customer name: max 50 characters, letters only (auto-filtered)
-  - Phone: max 10 characters, numbers only (auto-filtered)
-  - GSTIN: max 15 characters, no spaces (auto-removed)
-  - Address: textarea with max 200 characters
-  - City: max 40 characters, letters only (auto-filtered)
-  - State: max 40 characters, letters only (auto-filtered)
-  - Added Postal Code field: max 15 characters
-- [2025-10-25] All constraints apply to both billing and shipping sections
-- [2025-10-25] Implemented fully responsive layout for laptops, tablets, and mobiles
-- [2025-10-25] Restructured layout from grid to vertical flex for single-column design
-- [2025-10-25] Moved Current Bill section from right sidebar to full-width section below main content
-- [2025-10-25] All devices now use a consistent vertical layout with the bill summary always visible at the bottom
-- [2025-10-25] Optimized mobile touch targets to meet 44px accessibility standard:
-  - All interactive buttons (quantity +/-, delete, navigation) now h-11 (44px) on mobile
-  - All input fields increased to h-11 on mobile for better usability
-  - Navigation buttons stack vertically on mobile with responsive text sizing
-  - PDF button text adapts: "Download PDF" on mobile, "Generate & Download PDF" on larger screens
-  - Improved spacing and padding for mobile devices
-- [2025-10-25] Implemented comprehensive Management Dashboard:
-  - Three-tab interface: Customers, Products, and Bills
-  - Full CRUD operations for all entities (Create, Read, Update, Delete)
-  - Server-side date range filtering for bills
-  - Dialog-based forms using shared schemas from @shared/schema.ts
-  - Proper cache invalidation for filtered queries
-  - Navigation between Billing and Dashboard pages
-  - Removed "State" column from customer table display
-- [2025-10-25] Added customer filtering and sorting in dashboard:
-  - Search by shop name or contact name (combined search field)
-  - Search by phone number
-  - Filter by city (dropdown with unique cities from customer data)
-  - Sort options: A to Z, Z to A, New to Old, Old to New
-  - Real-time filtering and sorting with results counter
-  - Added createdAt timestamp to customer schema for chronological sorting
-  - Clear buttons on search fields for better UX
-- [2025-10-26] Fixed critical PDF generation pagination issues:
-  - Refactored PDF generator with reusable header functions (drawPageBorder, drawCompanyHeader, drawInvoiceDetails, drawCustomerDetails)
-  - Fixed missing headers on overflow pages: All pages now include complete borders, company logo/name, invoice details, and bill-to/ship-to information
-  - Optimized space utilization: Changed pagination threshold from pageHeight-80 to pageHeight-25, allowing 18-20 products per page (previously 7-8)
-  - Eliminated wasted space at bottom of pages - products now fill available space efficiently
-  - Unified page header logic across all pagination scenarios for consistency
-  - All PDF pages now maintain professional formatting with complete information
-- [2025-10-27] Implemented comprehensive Tamil language support:
-  - Added NotoSansTamil font to PDF generator for proper Tamil character rendering (Unicode U+0B80-U+0BFF)
-  - Fixed Tamil text rendering by calling setFontForText before each text draw operation
-  - Implemented conditional "India" translation: displays "இந்தியா" when city/state contain Tamil characters
-  - Shop name validation now allows Tamil letters, English letters, numbers, and spaces
-  - Created location history system with Combobox UI components for city and state fields
-  - Replaced all 8 city/state Input fields with Combobox components that show previously entered values
-  - Added locations table schema to store unique city and state values with deduplication
-  - Seeded default values: "TAMIL NADU" and "தமிழ்நாடு" for state options
-  - Extended MemStorage and API routes (GET /api/locations/:type, POST /api/locations)
-  - Fixed React Query cache invalidation to properly refresh location history after adding new values
-  - All city/state dropdowns now support both typing new values and selecting from history
-- [2025-10-28] Implemented category-wise product display in billing system:
-  - Added category field to products schema with validation (max 30 chars, Tamil/English support)
-  - Updated product form in dashboard to include category input field
-  - Implemented category-wise grouping in billing page using useMemo for efficient rendering
-  - Products are organized by category with visual category headers
-  - Each category shows product count badge (e.g., "Grow Bags (3 products)")
-  - Initially displays 3 products per category for better UX
-  - "Show All" / "Show Less" expand/collapse buttons for categories with more than 3 products
-  - Expand/collapse state managed via Set for efficient re-rendering
-  - Products without category are grouped under "Uncategorized"
-  - All existing product card features (GST badges, hover effects, click-to-add) preserved
-  - Fully responsive design with proper spacing and layout
-  - Added ChevronDown and ChevronUp icons for expand/collapse UI
-- [2025-10-28] Enhanced product category management in dashboard:
-  - Made category field MANDATORY in product creation/edit forms
-  - Moved category field to FIRST position (before product name) in form
-  - Implemented category autocomplete using datalist with previously entered values
-  - Updated validation: max 30 characters (increased from 15), supports Tamil/English letters, numbers, and special characters: - _ / \ $ % & * ( ) ; : ' " . , ! @ #
-  - Product name also increased to max 30 characters (from 15)
-  - No consecutive spaces allowed in category names
-  - Added category filter combo box BEFORE product name filter in product management
-  - Category filter supports search and autocomplete from existing categories
-  - Filtering logic updated to include category-based filtering
-  - uniqueCategories computed from all products for autocomplete suggestions
-  - Removed placeholders from category and unit input fields for cleaner UI
-- [2025-10-28] Implemented multi-select filters in product management dashboard:
-  - Converted category filter to multi-select with checkbox interface
-  - Converted HSN code filter to multi-select with checkbox interface
-  - Converted unit type filter from dropdown to multi-select with checkbox interface
-  - Converted GST rate filter from dropdown to multi-select with checkbox interface
-  - All multi-select filters use Set data structure for efficient filtering
-  - Each filter shows count of selected items in label (e.g., "Category (2)")
-  - Filter buttons display "X selected" when items are chosen
-  - Individual "Clear" buttons below each filter for easy reset
-  - Filters support search functionality (category and HSN code)
-  - Multi-select allows filtering by multiple values simultaneously (e.g., show products from "Grow Bags" AND "Coir Pith" categories)
-  - Updated filtering logic to handle Set-based selections instead of single values
-
-## Development Status
-- ✅ Schema and data models defined
-- ✅ Frontend components built with beautiful UI
-- ✅ Backend API implementation completed
-- ✅ Integration and PDF generation completed
-- ✅ Customer auto-save on invoice creation
-- ✅ All emojis replaced with Lucide icons
-- ✅ MVP fully functional and tested
-
-## Technical Highlights
-- **Type-safe data flow** - Shared TypeScript types between frontend and backend
-- **Real-time calculations** - GST, charges, and totals update instantly
-- **Auto-save customer** - Ensures data integrity before invoice creation
-- **Professional PDF** - Clean invoice layout with company branding
-- **Purple gradient theme** - Beautiful, modern UI with smooth animations
-- **Responsive design** - Works perfectly on all screen sizes
-- **8 pre-seeded products** - Ready-to-use product catalog
-- **Input validation** - Both client and server-side validation for data integrity
-- **Duplicate prevention** - Smart duplicate detection to avoid data redundancy
+## External Dependencies
+- **React:** Frontend library.
+- **TypeScript:** For type-safe development.
+- **Tailwind CSS:** For styling and theming.
+- **Shadcn/ui:** UI component library.
+- **TanStack Query:** For data fetching and caching.
+- **Wouter:** For client-side routing.
+- **Express.js:** Backend web framework.
+- **Drizzle ORM:** For database interaction.
+- **Zod:** For schema validation.
+- **jsPDF:** For PDF generation (planned).
+- **NotoSansTamil font:** For rendering Tamil characters in PDFs.
