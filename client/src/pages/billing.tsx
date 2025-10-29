@@ -143,6 +143,10 @@ export default function BillingPage() {
   const [productHsnSearch, setProductHsnSearch] = useState("");
   const [productUnitComboOpen, setProductUnitComboOpen] = useState(false);
   const [productGstComboOpen, setProductGstComboOpen] = useState(false);
+  
+  // Customer combobox state
+  const [billingCustomerComboOpen, setBillingCustomerComboOpen] = useState(false);
+  const [shippingCustomerComboOpen, setShippingCustomerComboOpen] = useState(false);
 
   const validateNameCityState = (value: string): string => {
     return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
@@ -1197,18 +1201,62 @@ export default function BillingPage() {
                         <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
                           Select Customer
                         </Label>
-                        <Select value={selectedBillingCustomerId} onValueChange={handleCustomerSelect}>
-                          <SelectTrigger className="text-base" data-testid="select-customer">
-                            <SelectValue placeholder="Select a customer..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {customers.map((customer) => (
-                              <SelectItem key={customer.id} value={customer.id}>
-                                {customer.shopName || customer.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover open={billingCustomerComboOpen} onOpenChange={setBillingCustomerComboOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={billingCustomerComboOpen}
+                              className="w-full justify-between text-base"
+                              data-testid="combobox-select-customer"
+                            >
+                              <span className={cn("truncate", !selectedBillingCustomerId && "text-muted-foreground")}>
+                                {selectedBillingCustomerId
+                                  ? customers.find((c) => c.id === selectedBillingCustomerId)?.shopName || 
+                                    customers.find((c) => c.id === selectedBillingCustomerId)?.name || 
+                                    "Unnamed Customer"
+                                  : "Search customer by shop name..."}
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search customers..." />
+                              <CommandList>
+                                <CommandEmpty>No customer found.</CommandEmpty>
+                                <CommandGroup>
+                                  {customers.map((customer) => {
+                                    const searchValue = [
+                                      customer.shopName || "",
+                                      customer.name || "",
+                                      customer.phone || ""
+                                    ].filter(Boolean).join(" ");
+                                    
+                                    return (
+                                      <CommandItem
+                                        key={customer.id}
+                                        value={searchValue}
+                                        onSelect={() => {
+                                          handleCustomerSelect(customer.id);
+                                          setBillingCustomerComboOpen(false);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            selectedBillingCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {customer.shopName || customer.name || "Unnamed Customer"}
+                                      </CommandItem>
+                                    );
+                                  })}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
 
                     {customerData.shopName && !isEditingCustomer && (
                       <div className="mt-4 p-4 bg-muted rounded-lg space-y-2" data-testid="display-billing-info">
@@ -1766,35 +1814,77 @@ export default function BillingPage() {
                             <Label htmlFor="shippingCustomerSelect" className="text-base font-semibold mb-2 block">
                               Select Customer
                             </Label>
-                            <Select value={selectedShippingCustomerId} onValueChange={(customerId) => {
-                              const customer = customers.find((c) => c.id === customerId);
-                              if (customer) {
-                                setSelectedShippingCustomerId(customerId);
-                                setShippingData({
-                                  id: customer.id,
-                                  name: customer.name || "",
-                                  shopName: customer.shopName || "",
-                                  phone: customer.phone || "",
-        email: customer.email || "",
-                                  gstin: customer.gstin || "",
-                                  address: customer.address || "",
-                                  city: customer.city || "",
-                                  state: customer.state || "",
-                                  postalCode: customer.postalCode || "",
-                                });
-                              }
-                            }}>
-                              <SelectTrigger className="text-base" data-testid="select-shipping-customer">
-                                <SelectValue placeholder="Select shipping customer..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {customers.map((customer) => (
-                                  <SelectItem key={customer.id} value={customer.id}>
-                                    {customer.shopName || customer.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <Popover open={shippingCustomerComboOpen} onOpenChange={setShippingCustomerComboOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={shippingCustomerComboOpen}
+                                  className="w-full justify-between text-base"
+                                  data-testid="combobox-select-shipping-customer"
+                                >
+                                  <span className={cn("truncate", !selectedShippingCustomerId && "text-muted-foreground")}>
+                                    {selectedShippingCustomerId
+                                      ? customers.find((c) => c.id === selectedShippingCustomerId)?.shopName || 
+                                        customers.find((c) => c.id === selectedShippingCustomerId)?.name || 
+                                        "Unnamed Customer"
+                                      : "Search customer by shop name..."}
+                                  </span>
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder="Search customers..." />
+                                  <CommandList>
+                                    <CommandEmpty>No customer found.</CommandEmpty>
+                                    <CommandGroup>
+                                      {customers.map((customer) => {
+                                        const searchValue = [
+                                          customer.shopName || "",
+                                          customer.name || "",
+                                          customer.phone || ""
+                                        ].filter(Boolean).join(" ");
+                                        
+                                        return (
+                                          <CommandItem
+                                            key={customer.id}
+                                            value={searchValue}
+                                            onSelect={() => {
+                                              const selectedCustomer = customers.find((c) => c.id === customer.id);
+                                              if (selectedCustomer) {
+                                                setSelectedShippingCustomerId(customer.id);
+                                                setShippingData({
+                                                  id: selectedCustomer.id,
+                                                  name: selectedCustomer.name || "",
+                                                  shopName: selectedCustomer.shopName || "",
+                                                  phone: selectedCustomer.phone || "",
+                                                  email: selectedCustomer.email || "",
+                                                  gstin: selectedCustomer.gstin || "",
+                                                  address: selectedCustomer.address || "",
+                                                  city: selectedCustomer.city || "",
+                                                  state: selectedCustomer.state || "",
+                                                  postalCode: selectedCustomer.postalCode || "",
+                                                });
+                                              }
+                                              setShippingCustomerComboOpen(false);
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                selectedShippingCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                                              )}
+                                            />
+                                            {customer.shopName || customer.name || "Unnamed Customer"}
+                                          </CommandItem>
+                                        );
+                                      })}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                           </div>
                         )}
 
