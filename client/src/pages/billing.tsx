@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,13 +14,17 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Slider } from "@/components/ui/slider";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { StepProgress } from "@/components/step-progress";
 import { BillSummary } from "@/components/bill-summary";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle, Hash, Weight, Pencil, ChevronDown, ChevronUp } from "lucide-react";
+import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, Sprout, Star, Circle, Hash, Weight, Pencil, ChevronDown, ChevronUp, ChevronsUpDown, Check, X } from "lucide-react";
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
 import { PaymentDialog } from "@/components/payment-dialog";
 import logoImage from "@assets/cocologo_1761383042737.png";
@@ -123,6 +127,23 @@ export default function BillingPage() {
   }>({});
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
+  // Product filter states
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [productNameSearch, setProductNameSearch] = useState("");
+  const [selectedHsnCodes, setSelectedHsnCodes] = useState<Set<string>>(new Set());
+  const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
+  const [selectedGstRates, setSelectedGstRates] = useState<Set<string>>(new Set());
+  const [productPriceRange, setProductPriceRange] = useState<[number, number]>([0, 10000]);
+  
+  // Filter UI state
+  const [productCategoryComboOpen, setProductCategoryComboOpen] = useState(false);
+  const [productCategorySearch, setProductCategorySearch] = useState("");
+  const [productNameComboOpen, setProductNameComboOpen] = useState(false);
+  const [productHsnComboOpen, setProductHsnComboOpen] = useState(false);
+  const [productHsnSearch, setProductHsnSearch] = useState("");
+  const [productUnitComboOpen, setProductUnitComboOpen] = useState(false);
+  const [productGstComboOpen, setProductGstComboOpen] = useState(false);
+
   const validateNameCityState = (value: string): string => {
     return value.replace(/[^a-zA-Z\u0B80-\u0BFF\s]/g, '');
   };
@@ -147,8 +168,87 @@ export default function BillingPage() {
     queryKey: ["/api/products"],
   });
 
+  // Compute unique filter values
+  const uniqueCategories = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.category || "Uncategorized"))).sort();
+  }, [products]);
+
+  const uniqueProductNames = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.name))).sort();
+  }, [products]);
+
+  const uniqueHsnCodes = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.hsn))).filter(Boolean).sort();
+  }, [products]);
+
+  const uniqueUnits = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.unit))).filter(Boolean).sort();
+  }, [products]);
+
+  const uniqueGstRates = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.gstRate))).sort((a, b) => 
+      parseFloat(a) - parseFloat(b)
+    );
+  }, [products]);
+
+  const minPrice = useMemo(() => {
+    if (products.length === 0) return 0;
+    return Math.floor(Math.min(...products.map(p => parseFloat(p.defaultPrice))));
+  }, [products]);
+
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 10000;
+    return Math.ceil(Math.max(...products.map(p => parseFloat(p.defaultPrice))));
+  }, [products]);
+
+  // Update price range when products change
+  useEffect(() => {
+    if (products.length > 0 && (productPriceRange[0] === 0 && productPriceRange[1] === 10000)) {
+      setProductPriceRange([minPrice, maxPrice]);
+    }
+  }, [minPrice, maxPrice, products.length]);
+
+  // Filter products based on selected filters
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      // Category filter
+      if (selectedCategories.size > 0) {
+        const category = product.category || "Uncategorized";
+        if (!selectedCategories.has(category)) return false;
+      }
+
+      // Product name filter
+      if (productNameSearch && product.name !== productNameSearch) {
+        return false;
+      }
+
+      // HSN code filter
+      if (selectedHsnCodes.size > 0 && !selectedHsnCodes.has(product.hsn)) {
+        return false;
+      }
+
+      // Unit filter
+      if (selectedUnits.size > 0 && !selectedUnits.has(product.unit)) {
+        return false;
+      }
+
+      // GST rate filter
+      if (selectedGstRates.size > 0 && !selectedGstRates.has(product.gstRate)) {
+        return false;
+      }
+
+      // Price range filter
+      const price = parseFloat(product.defaultPrice);
+      if (price < productPriceRange[0] || price > productPriceRange[1]) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [products, selectedCategories, productNameSearch, selectedHsnCodes, selectedUnits, selectedGstRates, productPriceRange]);
+
   const productsByCategory = useMemo(() => {
-    const grouped = products.reduce((acc, product) => {
+    const grouped = filteredProducts.reduce((acc, product) => {
       const category = product.category || "Uncategorized";
       if (!acc[category]) {
         acc[category] = [];
@@ -157,7 +257,7 @@ export default function BillingPage() {
       return acc;
     }, {} as Record<string, Product[]>);
     return grouped;
-  }, [products]);
+  }, [filteredProducts]);
 
   const { data: cities = [] } = useQuery<string[]>({
     queryKey: ["/api/locations/city"],
@@ -2236,6 +2336,348 @@ export default function BillingPage() {
                   <Package className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Add Products</h2>
                 </div>
+
+                {/* Filter Section */}
+                <div className="mb-6 space-y-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Category Multi-Select */}
+                    <div>
+                      <Label>Category {selectedCategories.size > 0 && `(${selectedCategories.size})`}</Label>
+                      <Popover open={productCategoryComboOpen} onOpenChange={setProductCategoryComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productCategoryComboOpen}
+                            className="w-full justify-between"
+                            data-testid="button-filter-category"
+                          >
+                            {selectedCategories.size > 0 ? `${selectedCategories.size} selected` : "Select categories..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandInput 
+                              placeholder="Search category..." 
+                              value={productCategorySearch}
+                              onValueChange={setProductCategorySearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No category found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueCategories.filter(category => 
+                                  category.toLowerCase().includes(productCategorySearch.toLowerCase())
+                                ).map((category) => (
+                                  <CommandItem
+                                    key={category}
+                                    value={category}
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedCategories);
+                                      if (newSelected.has(category)) {
+                                        newSelected.delete(category);
+                                      } else {
+                                        newSelected.add(category);
+                                      }
+                                      setSelectedCategories(newSelected);
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedCategories.has(category)}
+                                      className="mr-2"
+                                    />
+                                    {category}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {selectedCategories.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedCategories(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Product Name Combobox */}
+                    <div>
+                      <Label>Product Name</Label>
+                      <Popover open={productNameComboOpen} onOpenChange={setProductNameComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productNameComboOpen}
+                            className="w-full justify-between"
+                            data-testid="button-filter-product-name"
+                          >
+                            {productNameSearch || "Search product name..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandInput 
+                              placeholder="Search product name..." 
+                              value={productNameSearch}
+                              onValueChange={setProductNameSearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No product found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueProductNames.filter(name => 
+                                  name.toLowerCase().includes(productNameSearch.toLowerCase())
+                                ).map((name) => (
+                                  <CommandItem
+                                    key={name}
+                                    value={name}
+                                    onSelect={(currentValue) => {
+                                      setProductNameSearch(currentValue === productNameSearch ? "" : currentValue);
+                                      setProductNameComboOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        productNameSearch === name ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    {/* HSN Code Multi-Select */}
+                    <div>
+                      <Label>HSN Code {selectedHsnCodes.size > 0 && `(${selectedHsnCodes.size})`}</Label>
+                      <Popover open={productHsnComboOpen} onOpenChange={setProductHsnComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productHsnComboOpen}
+                            className="w-full justify-between"
+                            data-testid="button-filter-hsn"
+                          >
+                            {selectedHsnCodes.size > 0 ? `${selectedHsnCodes.size} selected` : "Select HSN codes..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandInput 
+                              placeholder="Search HSN code..." 
+                              value={productHsnSearch}
+                              onValueChange={setProductHsnSearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No HSN code found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueHsnCodes.filter(hsn => 
+                                  hsn.toLowerCase().includes(productHsnSearch.toLowerCase())
+                                ).map((hsn) => (
+                                  <CommandItem
+                                    key={hsn}
+                                    value={hsn}
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedHsnCodes);
+                                      if (newSelected.has(hsn)) {
+                                        newSelected.delete(hsn);
+                                      } else {
+                                        newSelected.add(hsn);
+                                      }
+                                      setSelectedHsnCodes(newSelected);
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedHsnCodes.has(hsn)}
+                                      className="mr-2"
+                                    />
+                                    {hsn}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {selectedHsnCodes.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedHsnCodes(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Unit Type Multi-Select */}
+                    <div>
+                      <Label>Unit Type {selectedUnits.size > 0 && `(${selectedUnits.size})`}</Label>
+                      <Popover open={productUnitComboOpen} onOpenChange={setProductUnitComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productUnitComboOpen}
+                            className="w-full justify-between"
+                            data-testid="select-filter-unit"
+                          >
+                            {selectedUnits.size > 0 ? `${selectedUnits.size} selected` : "Select units..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandList>
+                              <CommandEmpty>No unit found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueUnits.map((unit) => (
+                                  <CommandItem
+                                    key={unit}
+                                    value={unit}
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedUnits);
+                                      if (newSelected.has(unit)) {
+                                        newSelected.delete(unit);
+                                      } else {
+                                        newSelected.add(unit);
+                                      }
+                                      setSelectedUnits(newSelected);
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedUnits.has(unit)}
+                                      className="mr-2"
+                                    />
+                                    {unit}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {selectedUnits.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedUnits(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* GST Rate Multi-Select */}
+                    <div>
+                      <Label>GST Rate {selectedGstRates.size > 0 && `(${selectedGstRates.size})`}</Label>
+                      <Popover open={productGstComboOpen} onOpenChange={setProductGstComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productGstComboOpen}
+                            className="w-full justify-between"
+                            data-testid="select-filter-gst"
+                          >
+                            {selectedGstRates.size > 0 ? `${selectedGstRates.size} selected` : "Select GST rates..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandList>
+                              <CommandEmpty>No GST rate found.</CommandEmpty>
+                              <CommandGroup>
+                                {uniqueGstRates.map((rate) => (
+                                  <CommandItem
+                                    key={rate}
+                                    value={rate}
+                                    onSelect={() => {
+                                      const newSelected = new Set(selectedGstRates);
+                                      if (newSelected.has(rate)) {
+                                        newSelected.delete(rate);
+                                      } else {
+                                        newSelected.add(rate);
+                                      }
+                                      setSelectedGstRates(newSelected);
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedGstRates.has(rate)}
+                                      className="mr-2"
+                                    />
+                                    {parseFloat(rate).toFixed(2)}%
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {selectedGstRates.size > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedGstRates(new Set())} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Price Range Slider */}
+                  <div className="space-y-4">
+                    <Label>Price Range</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+                        <div className="text-xs text-gray-500 mb-1">Min</div>
+                        <div className="text-lg font-semibold">₹{productPriceRange[0]}</div>
+                      </div>
+                      <span className="text-gray-400">—</span>
+                      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+                        <div className="text-xs text-gray-500 mb-1">Max</div>
+                        <div className="text-lg font-semibold">₹{productPriceRange[1]}</div>
+                      </div>
+                    </div>
+                    <Slider
+                      min={minPrice}
+                      max={maxPrice}
+                      step={1}
+                      value={productPriceRange}
+                      onValueChange={(value) => setProductPriceRange(value as [number, number])}
+                      className="mt-2"
+                      data-testid="slider-price-range"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>₹{minPrice}</span>
+                      <span>₹{maxPrice}</span>
+                    </div>
+                  </div>
+
+                  {/* Product Count Display */}
+                  <div className="text-sm text-gray-600 dark:text-gray-400" data-testid="text-product-count">
+                    Showing {filteredProducts.length} of {products.length} products
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCategories(new Set());
+                        setProductNameSearch("");
+                        setSelectedHsnCodes(new Set());
+                        setProductPriceRange([minPrice, maxPrice]);
+                        setSelectedUnits(new Set());
+                        setSelectedGstRates(new Set());
+                      }}
+                      data-testid="button-clear-product-filters"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  </div>
+                </div>
+
                 {productsLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
