@@ -47,6 +47,17 @@ Key architectural decisions include:
 - **NotoSansTamil font:** For rendering Tamil characters in PDFs.
 
 ## Recent Changes
+- [2025-10-29] Implemented purchase bill functionality:
+  - Added billType field to invoice schema to differentiate between "sale" and "purchase" bills
+  - Added shippingToMyself field to conditionally hide shipping section in PDFs
+  - Implemented bill type selector in Step 1 (Config) with "Sale Bill" and "Purchase Bill" options
+  - Created conditional UI rendering: "Customer" labels for sale bills, "Buyer" labels for purchase bills
+  - Updated PDF generator to show "From: Buyer Details" for purchase bills
+  - Implemented conditional shipping section in PDFs - hidden when "shipping to myself" is checked
+  - Created dedicated Purchase Bills page with filtering by date range
+  - Added navigation link for Purchase Bills in main navigation
+  - Implemented predicate-based cache invalidation to properly refresh filtered queries after mutations
+  
 - [2025-10-29] Implemented searchable comboboxes for customer selection in billing workflow:
   - Replaced simple Select dropdowns with searchable Popover/Command/CommandItem components
   - Added searchable customer selection for both "Billing To" and "Shipping To" sections
