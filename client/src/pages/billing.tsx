@@ -2992,7 +2992,7 @@ export default function BillingPage() {
                   </div>
                 </div>
 
-                {additionalCharges.transportType === "lorry_service" && (
+                {(additionalCharges.transportType === "lorry_service" || additionalCharges.transportType === "takeaway_off_lorry_off") && (
                   <div className="grid md:grid-cols-2 gap-4 mb-6 pt-4 border-t">
                     <div>
                       <Label htmlFor="lorryServiceName" className="text-base font-semibold mb-2 block">
