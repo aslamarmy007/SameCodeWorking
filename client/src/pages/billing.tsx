@@ -1161,117 +1161,99 @@ export default function BillingPage() {
                   </h2>
                 </div>
                 <div className="space-y-6">
-                  <div>
-                    <Label className="text-base font-semibold mb-2 block">
-                      Customer Type
-                    </Label>
-                    <Select 
-                      value={isNewCustomer === null ? "" : (isNewCustomer ? "new" : "existing")} 
-                      onValueChange={(value) => {
-                        setIsNewCustomer(value === "new");
-                        if (value === "new") {
-                          setSelectedBillingCustomerId("");
-                          setCustomerData({
-                            name: "",
-                            shopName: "",
-                            phone: "",
-                            email: "",
-                            gstin: "",
-                            address: "",
-                            city: "",
-                            state: "",
-                            postalCode: "",
-                          });
-                        } else {
-                          setSelectedBillingCustomerId("");
-                          setCustomerData({
-                            name: "",
-                            shopName: "",
-                            phone: "",
-                            email: "",
-                            gstin: "",
-                            address: "",
-                            city: "",
-                            state: "",
-                            postalCode: "",
-                          });
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="text-base" data-testid="select-customer-type">
-                        <SelectValue placeholder="Select new customer or Existing customer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="existing">Existing Customer</SelectItem>
-                        <SelectItem value="new">New Customer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   <div className="border-t-2 pt-6">
                     <h3 className="text-xl font-bold mb-4">Billing To</h3>
                     
-                    {isNewCustomer === false && (
-                      <div>
-                        <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
-                          Select Customer
-                        </Label>
-                        <Popover open={billingCustomerComboOpen} onOpenChange={setBillingCustomerComboOpen}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={billingCustomerComboOpen}
-                              className="w-full justify-between text-base"
-                              data-testid="combobox-select-customer"
-                            >
-                              <span className={cn("truncate", !selectedBillingCustomerId && "text-muted-foreground")}>
-                                {selectedBillingCustomerId
-                                  ? customers.find((c) => c.id === selectedBillingCustomerId)?.shopName || 
-                                    customers.find((c) => c.id === selectedBillingCustomerId)?.name || 
-                                    "Unnamed Customer"
-                                  : "Search customer by shop name..."}
-                              </span>
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-full p-0" align="start">
-                            <Command>
-                              <CommandInput placeholder="Search customers..." />
-                              <CommandList>
-                                <CommandEmpty>No customer found.</CommandEmpty>
-                                <CommandGroup>
-                                  {customers.map((customer) => {
-                                    const searchValue = [
-                                      customer.shopName || "",
-                                      customer.name || "",
-                                      customer.phone || ""
-                                    ].filter(Boolean).join(" ");
-                                    
-                                    return (
-                                      <CommandItem
-                                        key={customer.id}
-                                        value={searchValue}
-                                        onSelect={() => {
-                                          handleCustomerSelect(customer.id);
-                                          setBillingCustomerComboOpen(false);
-                                        }}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            selectedBillingCustomerId === customer.id ? "opacity-100" : "opacity-0"
-                                          )}
-                                        />
-                                        {customer.shopName || customer.name || "Unnamed Customer"}
-                                      </CommandItem>
-                                    );
-                                  })}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
+                    <div>
+                      <Label htmlFor="customerSelect" className="text-base font-semibold mb-2 block">
+                        Select Customer
+                      </Label>
+                      <Popover open={billingCustomerComboOpen} onOpenChange={setBillingCustomerComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={billingCustomerComboOpen}
+                            className="w-full justify-between text-base"
+                            data-testid="combobox-select-customer"
+                          >
+                            <span className={cn("truncate", !selectedBillingCustomerId && !isNewCustomer && "text-muted-foreground")}>
+                              {isNewCustomer
+                                ? "Add New Customer"
+                                : selectedBillingCustomerId
+                                ? customers.find((c) => c.id === selectedBillingCustomerId)?.shopName || 
+                                  customers.find((c) => c.id === selectedBillingCustomerId)?.name || 
+                                  "Unnamed Customer"
+                                : "Select from existing customer or add new customer"}
+                            </span>
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Search customers..." />
+                            <CommandList>
+                              <CommandEmpty>No customer found.</CommandEmpty>
+                              <CommandGroup>
+                                <CommandItem
+                                  value="add-new-customer"
+                                  onSelect={() => {
+                                    setIsNewCustomer(true);
+                                    setSelectedBillingCustomerId("");
+                                    setCustomerData({
+                                      name: "",
+                                      shopName: "",
+                                      phone: "",
+                                      email: "",
+                                      gstin: "",
+                                      address: "",
+                                      city: "",
+                                      state: "",
+                                      postalCode: "",
+                                    });
+                                    setBillingCustomerComboOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      isNewCustomer === true ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  Add New Customer
+                                </CommandItem>
+                                {customers.map((customer) => {
+                                  const searchValue = [
+                                    customer.shopName || "",
+                                    customer.name || "",
+                                    customer.phone || ""
+                                  ].filter(Boolean).join(" ");
+                                  
+                                  return (
+                                    <CommandItem
+                                      key={customer.id}
+                                      value={searchValue}
+                                      onSelect={() => {
+                                        setIsNewCustomer(false);
+                                        handleCustomerSelect(customer.id);
+                                        setBillingCustomerComboOpen(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          selectedBillingCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {customer.shopName || customer.name || "Unnamed Customer"}
+                                    </CommandItem>
+                                  );
+                                })}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
 
                     {customerData.shopName && !isEditingCustomer && (
                       <div className="mt-4 p-4 bg-muted rounded-lg space-y-2" data-testid="display-billing-info">
@@ -1541,7 +1523,6 @@ export default function BillingPage() {
                       </div>
                     )}
                       </div>
-                    )}
 
                   {isNewCustomer === true && (
                   <div>
