@@ -56,9 +56,12 @@ export function PaymentDialog({
       });
     } else if (paymentOption === "full_paid") {
       if (paymentMethod === "partial") {
-        const cash = parseFloat(cashAmount);
-        const online = parseFloat(onlineAmount);
-        if (isNaN(cash) || isNaN(online) || cash + online !== grandTotal) {
+        const cash = parseFloat(cashAmount || "0");
+        const online = parseFloat(onlineAmount || "0");
+        if (isNaN(cash) || isNaN(online)) {
+          return;
+        }
+        if (cash + online !== grandTotal) {
           return;
         }
         onConfirm({
@@ -78,10 +81,13 @@ export function PaymentDialog({
     } else {
       // Partial paid (partial_paid with balance credit)
       if (paymentMethod === "partial") {
-        const cash = parseFloat(cashAmount);
-        const online = parseFloat(onlineAmount);
+        const cash = parseFloat(cashAmount || "0");
+        const online = parseFloat(onlineAmount || "0");
+        if (isNaN(cash) || isNaN(online)) {
+          return;
+        }
         const totalPaid = cash + online;
-        if (isNaN(cash) || isNaN(online) || totalPaid <= 0 || totalPaid >= grandTotal) {
+        if (totalPaid <= 0 || totalPaid >= grandTotal) {
           return;
         }
         onConfirm({
