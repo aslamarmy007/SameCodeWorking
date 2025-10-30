@@ -893,28 +893,28 @@ export async function generateInvoicePDF(data: InvoiceData) {
     const statusRowHeight = 7;
     
     if (isFullyPaid) {
-      doc.setFillColor(220, 255, 220);
+      doc.setFillColor(200, 255, 200);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, statusRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, statusRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(0, 128, 0);
+      doc.setTextColor(0, 150, 0);
       doc.text("PAID FULLY", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
     } else if (data.paymentStatus === "full_credit") {
-      doc.setFillColor(255, 220, 220);
+      doc.setFillColor(255, 200, 200);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, statusRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, statusRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(200, 0, 0);
+      doc.setTextColor(220, 0, 0);
       doc.text("NOT PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
     } else {
-      doc.setFillColor(255, 245, 220);
+      doc.setFillColor(255, 255, 200);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, statusRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, statusRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(200, 100, 0);
+      doc.setTextColor(180, 140, 0);
       doc.text("PARTIAL PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
     }
     currentPaymentY += statusRowHeight;
