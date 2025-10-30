@@ -508,12 +508,13 @@ export default function Dashboard() {
     let unselectedCustomers = customers.filter(c => !selectedCustomerIds.has(c.id));
 
     // Apply filters only to unselected customers
-    // Filter by name (shop name or contact name)
+    // Filter by name (shop name, contact name, or phone number)
     if (customerNameSearch.trim()) {
       const searchLower = customerNameSearch.toLowerCase();
       unselectedCustomers = unselectedCustomers.filter(customer => 
         (customer.shopName?.toLowerCase() || "").includes(searchLower) ||
-        (customer.name?.toLowerCase() || "").includes(searchLower)
+        (customer.name?.toLowerCase() || "").includes(searchLower) ||
+        (customer.phone?.toLowerCase() || "").includes(searchLower)
       );
     }
 
@@ -889,7 +890,7 @@ export default function Dashboard() {
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                           <Input
-                            placeholder="Search by shop or contact name"
+                            placeholder="Search by shop, contact name, or phone"
                             value={customerNameSearch}
                             onChange={(e) => setCustomerNameSearch(e.target.value)}
                             className="pl-10 pr-10"
@@ -1064,6 +1065,7 @@ export default function Dashboard() {
                           </TableHead>
                           <TableHead>Shop Name</TableHead>
                           <TableHead>Contact Name</TableHead>
+                          <TableHead>Phone Number</TableHead>
                           <TableHead>City</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -1071,7 +1073,7 @@ export default function Dashboard() {
                       <TableBody>
                         {filteredCustomers.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center text-gray-500" data-testid="text-no-customers">
+                            <TableCell colSpan={6} className="text-center text-gray-500" data-testid="text-no-customers">
                               {customers.length === 0 
                                 ? "No customers found. Add your first customer to get started."
                                 : "No customers match your search criteria."}
@@ -1093,6 +1095,7 @@ export default function Dashboard() {
                               </TableCell>
                               <TableCell className="font-medium">{customer.shopName}</TableCell>
                               <TableCell>{customer.name}</TableCell>
+                              <TableCell>{customer.phone || "-"}</TableCell>
                               <TableCell>{customer.city}</TableCell>
                               <TableCell className="text-right">
                                 <Button
