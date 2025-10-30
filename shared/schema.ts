@@ -327,3 +327,21 @@ export const insertLocationSchema = createInsertSchema(locations).omit({
 export type InsertLocation = z.infer<typeof insertLocationSchema>;
 export type Location = typeof locations.$inferSelect;
 
+// Lorry Services table
+export const lorryServices = pgTable("lorry_services", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertLorryServiceSchema = createInsertSchema(lorryServices).omit({ 
+  id: true,
+  createdAt: true 
+}).extend({
+  name: z.string().min(1, "Lorry service name is required").max(100),
+  phone: z.string().max(15).optional(),
+});
+export type InsertLorryService = z.infer<typeof insertLorryServiceSchema>;
+export type LorryService = typeof lorryServices.$inferSelect;
+
