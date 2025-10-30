@@ -1524,7 +1524,7 @@ export default function BillingPage() {
                     )}
 
                   {isNewCustomer === true && (
-                  <div>
+                  <div className="mt-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="shopName" className="text-base font-semibold mb-2 block">
