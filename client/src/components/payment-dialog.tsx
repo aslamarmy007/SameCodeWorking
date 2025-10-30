@@ -45,6 +45,25 @@ export function PaymentDialog({
   const [paidAmount, setPaidAmount] = useState<string>("");
   const [cashAmount, setCashAmount] = useState<string>("");
   const [onlineAmount, setOnlineAmount] = useState<string>("");
+  const [manualOnlineEdit, setManualOnlineEdit] = useState(false);
+
+  const handleCashAmountChange = (value: string) => {
+    setCashAmount(value);
+    setManualOnlineEdit(false);
+    if (value && !isNaN(parseFloat(value))) {
+      const cash = parseFloat(value);
+      const totalRequired = paymentOption === "full_paid" ? grandTotal : grandTotal;
+      const remainingOnline = Math.max(0, totalRequired - cash);
+      setOnlineAmount(remainingOnline.toFixed(2));
+    } else {
+      setOnlineAmount("");
+    }
+  };
+
+  const handleOnlineAmountChange = (value: string) => {
+    setOnlineAmount(value);
+    setManualOnlineEdit(true);
+  };
 
   const handleConfirm = () => {
     const finalPaymentDate = useBillDate ? billDate : paymentDate;
@@ -215,31 +234,37 @@ export function PaymentDialog({
           {paymentOption !== "full_credit" && paymentMethod === "partial" && (
             <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
               <Label className="text-sm font-semibold">Split Payment Details</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="cash_amount" className="text-xs">Cash Amount</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cash_amount" className="text-sm font-medium">Cash Amount</Label>
                   <Input
                     id="cash_amount"
                     type="number"
                     step="0.01"
                     min="0"
                     value={cashAmount}
-                    onChange={(e) => setCashAmount(e.target.value)}
-                    placeholder="0.00"
+                    onChange={(e) => handleCashAmountChange(e.target.value)}
+                    placeholder="Enter cash amount"
                     data-testid="input-cash-amount"
+                    className="text-base"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="online_amount" className="text-xs">Online Amount</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="online_amount" className="text-sm font-medium">
+                    Online Amount {!manualOnlineEdit && cashAmount && (
+                      <span className="text-xs text-muted-foreground font-normal">(Auto-calculated)</span>
+                    )}
+                  </Label>
                   <Input
                     id="online_amount"
                     type="number"
                     step="0.01"
                     min="0"
                     value={onlineAmount}
-                    onChange={(e) => setOnlineAmount(e.target.value)}
-                    placeholder="0.00"
+                    onChange={(e) => handleOnlineAmountChange(e.target.value)}
+                    placeholder="Auto-fills from cash"
                     data-testid="input-online-amount"
+                    className="text-base"
                   />
                 </div>
               </div>
