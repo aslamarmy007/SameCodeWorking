@@ -53,6 +53,9 @@ interface InvoiceData {
   gstAmount: number;
   grandTotal: number;
   lorryNumber: string;
+  transportType?: string;
+  lorryServiceName?: string;
+  lorryServicePhone?: string;
   eSignatureEnabled?: boolean;
   signedBy?: string;
 }
@@ -774,14 +777,40 @@ export async function generateInvoicePDF(data: InvoiceData) {
   doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
   yPos += 8;
 
-  if (data.lorryNumber) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text("Vehicle/Lorry No: " + data.lorryNumber, margin, yPos);
-    yPos += 10;
-  } else {
-    yPos += 5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  
+  if (data.transportType === "takeaway") {
+    doc.text("Transport: The customer takeaway all products himself", margin, yPos);
+    yPos += 6;
+  } else if (data.transportType === "takeaway_off_lorry_off") {
+    doc.text("Transport: The customer takeaway some products and we sending some products by lorry service", margin, yPos);
+    yPos += 6;
+    if (data.lorryServiceName) {
+      let lorryText = "Lorry Service: " + data.lorryServiceName;
+      if (data.lorryServicePhone) {
+        lorryText += " - " + data.lorryServicePhone;
+      }
+      doc.text(lorryText, margin, yPos);
+      yPos += 6;
+    }
+  } else if (data.transportType === "lorry_service") {
+    if (data.lorryServiceName) {
+      let lorryText = "Delivery by Lorry Service: " + data.lorryServiceName;
+      if (data.lorryServicePhone) {
+        lorryText += " - " + data.lorryServicePhone;
+      }
+      doc.text(lorryText, margin, yPos);
+      yPos += 6;
+    }
   }
+  
+  if (data.lorryNumber) {
+    doc.text("Vehicle/Lorry No: " + data.lorryNumber, margin, yPos);
+    yPos += 6;
+  }
+  
+  yPos += 4;
 
   const minFooterY = yPos + 5;
   const fixedFooterY = pageHeight - 42;
