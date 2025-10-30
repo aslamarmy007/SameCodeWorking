@@ -515,6 +515,9 @@ export default function BillingPage() {
         gstAmount,
         grandTotal,
         lorryNumber: additionalCharges.lorryNumber,
+        transportType: additionalCharges.transportType,
+        lorryServiceName: additionalCharges.lorryServiceName,
+        lorryServicePhone: additionalCharges.lorryServicePhone,
         eSignatureEnabled: billConfig.eSignatureEnabled,
         signedBy: billConfig.signedBy,
         });
