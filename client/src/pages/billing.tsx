@@ -275,15 +275,25 @@ export default function BillingPage() {
     queryKey: ["/api/locations/state"],
   });
 
-  const { data: lorryServices = [] } = useQuery<string[]>({
-    queryKey: ["/api/locations/lorry_service"],
+  const { data: lorryServicesData = [] } = useQuery<Array<{ id: string; name: string; phone: string | null }>>({
+    queryKey: ["/api/lorry-services"],
   });
+
+  const lorryServices = useMemo(() => lorryServicesData.map(ls => ls.name), [lorryServicesData]);
 
   const saveLocationMutation = useMutation({
     mutationFn: async (data: { type: "city" | "state" | "lorry_service"; value: string }) =>
       apiRequest("POST", "/api/locations", data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [`/api/locations/${variables.type}`] });
+    },
+  });
+
+  const saveLorryServiceMutation = useMutation({
+    mutationFn: async (data: { name: string; phone?: string }) =>
+      apiRequest("POST", "/api/lorry-services", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/lorry-services"] });
     },
   });
 
@@ -3004,9 +3014,21 @@ export default function BillingPage() {
                       <Combobox
                         value={additionalCharges.lorryServiceName}
                         onValueChange={(value) => {
-                          setAdditionalCharges({ ...additionalCharges, lorryServiceName: value });
-                          if (value && !lorryServices.includes(value)) {
-                            saveLocationMutation.mutate({ type: "lorry_service", value: value });
+                          const existingService = lorryServicesData.find(ls => ls.name === value);
+                          if (existingService) {
+                            setAdditionalCharges({ 
+                              ...additionalCharges, 
+                              lorryServiceName: value,
+                              lorryServicePhone: existingService.phone || ""
+                            });
+                          } else {
+                            setAdditionalCharges({ ...additionalCharges, lorryServiceName: value });
+                            if (value && !lorryServices.includes(value)) {
+                              saveLorryServiceMutation.mutate({
+                                name: value,
+                                phone: additionalCharges.lorryServicePhone || undefined
+                              });
+                            }
                           }
                         }}
                         options={lorryServices}
@@ -3027,6 +3049,14 @@ export default function BillingPage() {
                         onChange={(e) => {
                           const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                           setAdditionalCharges({ ...additionalCharges, lorryServicePhone: value });
+                        }}
+                        onBlur={() => {
+                          if (additionalCharges.lorryServiceName) {
+                            saveLorryServiceMutation.mutate({
+                              name: additionalCharges.lorryServiceName,
+                              phone: additionalCharges.lorryServicePhone || undefined
+                            });
+                          }
                         }}
                         placeholder="Enter phone number (optional)"
                         className="text-base"
