@@ -1103,9 +1103,21 @@ export async function generateInvoicePDF(data: InvoiceData) {
   
   yPos += 4;
 
-  const minFooterY = yPos + 5;
-  const fixedFooterY = pageHeight - 42;
-  const footerY = Math.max(minFooterY, fixedFooterY);
+  const footerContentHeight = data.eSignatureEnabled && data.signedBy ? 35 : 25;
+  const requiredSpace = yPos + footerContentHeight;
+  
+  let footerY = yPos;
+  
+  if (requiredSpace > pageHeight - margin - 5) {
+    doc.addPage();
+    yPos = 18;
+    yPos = await drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
+    footerY = yPos + 5;
+  } else {
+    const minFooterY = yPos + 5;
+    const fixedFooterY = pageHeight - 42;
+    footerY = Math.max(minFooterY, fixedFooterY);
+  }
   
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
