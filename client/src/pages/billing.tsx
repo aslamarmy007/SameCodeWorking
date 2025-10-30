@@ -67,6 +67,9 @@ type AdditionalCharges = {
   transport: number;
   packaging: number;
   other: number;
+  transportType: string;
+  lorryServiceName: string;
+  lorryServicePhone: string;
   lorryNumber: string;
 };
 
@@ -113,6 +116,9 @@ export default function BillingPage() {
     transport: 0,
     packaging: 0,
     other: 0,
+    transportType: "",
+    lorryServiceName: "",
+    lorryServicePhone: "",
     lorryNumber: "",
   });
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -269,8 +275,12 @@ export default function BillingPage() {
     queryKey: ["/api/locations/state"],
   });
 
+  const { data: lorryServices = [] } = useQuery<string[]>({
+    queryKey: ["/api/locations/lorry_service"],
+  });
+
   const saveLocationMutation = useMutation({
-    mutationFn: async (data: { type: "city" | "state"; value: string }) =>
+    mutationFn: async (data: { type: "city" | "state" | "lorry_service"; value: string }) =>
       apiRequest("POST", "/api/locations", data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [`/api/locations/${variables.type}`] });
@@ -442,6 +452,9 @@ export default function BillingPage() {
         gstEnabled: billConfig.gstEnabled,
         gstAmount: gstAmount.toString(),
         grandTotal: grandTotal.toString(),
+        transportType: additionalCharges.transportType,
+        lorryServiceName: additionalCharges.lorryServiceName,
+        lorryServicePhone: additionalCharges.lorryServicePhone,
         lorryNumber: additionalCharges.lorryNumber,
         isDraft,
         paymentStatus: paymentData.paymentStatus,
@@ -559,6 +572,9 @@ export default function BillingPage() {
         transport: 0,
         packaging: 0,
         other: 0,
+        transportType: "",
+        lorryServiceName: "",
+        lorryServicePhone: "",
         lorryNumber: "",
       });
     },
@@ -2880,136 +2896,184 @@ export default function BillingPage() {
               <Card className="p-4 sm:p-6 md:p-8 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-review">
                 <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                   <FileCheck className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Additional Charges & Review</h2>
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Additional Charges</h2>
                 </div>
-                <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="transport" className="text-base font-semibold mb-2 block">
-                        Transport (₹)
-                      </Label>
-                      <Input
-                        id="transport"
-                        type="text"
-                        value={additionalCharges.transport || ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                            setAdditionalCharges({
-                              ...additionalCharges,
-                              transport: value === "" ? 0 : parseFloat(value) || 0,
-                            });
-                          }
-                        }}
-                        placeholder="0"
-                        className="text-base"
-                        data-testid="input-transport"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="packaging" className="text-base font-semibold mb-2 block">
-                        Packaging (₹)
-                      </Label>
-                      <Input
-                        id="packaging"
-                        type="text"
-                        value={additionalCharges.packaging || ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                            setAdditionalCharges({
-                              ...additionalCharges,
-                              packaging: value === "" ? 0 : parseFloat(value) || 0,
-                            });
-                          }
-                        }}
-                        placeholder="0"
-                        className="text-base"
-                        data-testid="input-packaging"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="other" className="text-base font-semibold mb-2 block">
-                        Other Charges (₹)
-                      </Label>
-                      <Input
-                        id="other"
-                        type="text"
-                        value={additionalCharges.other || ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                            setAdditionalCharges({
-                              ...additionalCharges,
-                              other: value === "" ? 0 : parseFloat(value) || 0,
-                            });
-                          }
-                        }}
-                        placeholder="0"
-                        className="text-base"
-                        data-testid="input-other"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="lorryNo" className="text-base font-semibold mb-2 block">
-                        Lorry / Vehicle No.
-                      </Label>
-                      <Input
-                        id="lorryNo"
-                        value={additionalCharges.lorryNumber}
-                        onChange={(e) =>
+                
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <Label htmlFor="transport" className="text-base font-semibold mb-2 block">
+                      Transport (₹)
+                    </Label>
+                    <Input
+                      id="transport"
+                      type="text"
+                      value={additionalCharges.transport || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d*\.?\d*$/.test(value)) {
                           setAdditionalCharges({
                             ...additionalCharges,
-                            lorryNumber: e.target.value,
-                          })
+                            transport: value === "" ? 0 : parseFloat(value) || 0,
+                          });
                         }
-                        placeholder="e.g. TN 01 AB 1234"
+                      }}
+                      placeholder="0"
+                      className="text-base"
+                      data-testid="input-transport"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="packaging" className="text-base font-semibold mb-2 block">
+                      Packaging (₹)
+                    </Label>
+                    <Input
+                      id="packaging"
+                      type="text"
+                      value={additionalCharges.packaging || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                          setAdditionalCharges({
+                            ...additionalCharges,
+                            packaging: value === "" ? 0 : parseFloat(value) || 0,
+                          });
+                        }
+                      }}
+                      placeholder="0"
+                      className="text-base"
+                      data-testid="input-packaging"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="other" className="text-base font-semibold mb-2 block">
+                      Other Charges (₹)
+                    </Label>
+                    <Input
+                      id="other"
+                      type="text"
+                      value={additionalCharges.other || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                          setAdditionalCharges({
+                            ...additionalCharges,
+                            other: value === "" ? 0 : parseFloat(value) || 0,
+                          });
+                        }
+                      }}
+                      placeholder="0"
+                      className="text-base"
+                      data-testid="input-other"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="transportType" className="text-base font-semibold mb-2 block">
+                      Transport Type
+                    </Label>
+                    <Select
+                      value={additionalCharges.transportType}
+                      onValueChange={(value) =>
+                        setAdditionalCharges({
+                          ...additionalCharges,
+                          transportType: value,
+                        })
+                      }
+                    >
+                      <SelectTrigger id="transportType" className="text-base" data-testid="select-transport-type">
+                        <SelectValue placeholder="Select transport type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="takeaway">Takeaway</SelectItem>
+                        <SelectItem value="takeaway_off_lorry_off">Takeaway off and lorry service off</SelectItem>
+                        <SelectItem value="lorry_service">Lorry service delivery</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {additionalCharges.transportType === "lorry_service" && (
+                  <div className="grid md:grid-cols-2 gap-4 mb-6 pt-4 border-t">
+                    <div>
+                      <Label htmlFor="lorryServiceName" className="text-base font-semibold mb-2 block">
+                        Lorry Service Name <span className="text-destructive">*</span>
+                      </Label>
+                      <Combobox
+                        value={additionalCharges.lorryServiceName}
+                        onValueChange={(value) => {
+                          setAdditionalCharges({ ...additionalCharges, lorryServiceName: value });
+                          if (value && !lorryServices.includes(value)) {
+                            saveLocationMutation.mutate({ type: "lorry_service", value: value });
+                          }
+                        }}
+                        options={lorryServices}
+                        placeholder="Select or enter lorry service"
+                        emptyMessage="No lorry service found. Type to add new."
                         className="text-base"
-                        data-testid="input-lorry"
+                        testId="input-lorry-service-name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lorryServicePhone" className="text-base font-semibold mb-2 block">
+                        Phone Number
+                      </Label>
+                      <Input
+                        id="lorryServicePhone"
+                        type="tel"
+                        value={additionalCharges.lorryServicePhone}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          setAdditionalCharges({ ...additionalCharges, lorryServicePhone: value });
+                        }}
+                        placeholder="Enter phone number (optional)"
+                        className="text-base"
+                        maxLength={10}
+                        data-testid="input-lorry-service-phone"
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setCurrentStep(3)}
-                      className="w-full sm:flex-[1] text-sm sm:text-base py-4 sm:py-6"
-                      data-testid="button-back-products"
-                    >
-                      ← Back
-                    </Button>
-                    <Button
-                      onClick={handleSaveDraft}
-                      disabled={createInvoiceMutation.isPending || !canGeneratePDF}
-                      variant="outline"
-                      className="w-full sm:flex-[2] text-sm sm:text-base py-4 sm:py-6"
-                      data-testid="button-save-draft"
-                    >
-                      <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Save as Draft</span>
-                      <span className="sm:hidden">Save Draft</span>
-                    </Button>
-                    <Button
-                      onClick={handleGeneratePDF}
-                      disabled={createInvoiceMutation.isPending || !canGeneratePDF}
-                      className="w-full sm:flex-[3] text-sm sm:text-base py-4 sm:py-6 bg-success hover:bg-success/90 text-success-foreground"
-                      data-testid="button-generate-pdf"
-                    >
-                      {createInvoiceMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
-                          <span className="hidden sm:inline">Generating...</span>
-                          <span className="sm:hidden">Generating PDF...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          <span className="hidden sm:inline">Generate & Download PDF</span>
-                          <span className="sm:hidden">Download PDF</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setCurrentStep(3)}
+                    className="w-full sm:flex-[1] text-sm sm:text-base py-4 sm:py-6"
+                    data-testid="button-back-products"
+                  >
+                    ← Back
+                  </Button>
+                  <Button
+                    onClick={handleSaveDraft}
+                    disabled={createInvoiceMutation.isPending || !canGeneratePDF}
+                    variant="outline"
+                    className="w-full sm:flex-[2] text-sm sm:text-base py-4 sm:py-6"
+                    data-testid="button-save-draft"
+                  >
+                    <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Save as Draft</span>
+                    <span className="sm:hidden">Save Draft</span>
+                  </Button>
+                  <Button
+                    onClick={handleGeneratePDF}
+                    disabled={createInvoiceMutation.isPending || !canGeneratePDF}
+                    className="w-full sm:flex-[3] text-sm sm:text-base py-4 sm:py-6 bg-success hover:bg-success/90 text-success-foreground"
+                    data-testid="button-generate-pdf"
+                  >
+                    {createInvoiceMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                        <span className="hidden sm:inline">Generating...</span>
+                        <span className="sm:hidden">Generating PDF...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Generate & Download PDF</span>
+                        <span className="sm:hidden">Download PDF</span>
+                      </>
+                    )}
+                  </Button>
                 </div>
               </Card>
             )}

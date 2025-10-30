@@ -52,7 +52,7 @@ export interface IStorage {
   deleteInvoiceItems(invoiceId: string): Promise<void>;
 
   // Location operations
-  getLocations(type: "city" | "state"): Promise<string[]>;
+  getLocations(type: "city" | "state" | "lorry_service"): Promise<string[]>;
   addLocation(location: InsertLocation): Promise<Location>;
 }
 
@@ -327,7 +327,7 @@ export class DbStorage implements IStorage {
   }
 
   // Location operations
-  async getLocations(type: "city" | "state"): Promise<string[]> {
+  async getLocations(type: "city" | "state" | "lorry_service"): Promise<string[]> {
     const result = await db
       .select({ value: locations.value })
       .from(locations)

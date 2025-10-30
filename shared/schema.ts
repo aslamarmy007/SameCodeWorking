@@ -263,6 +263,9 @@ export const invoices = pgTable("invoices", {
   gstEnabled: boolean("gst_enabled").notNull().default(true),
   gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }).default("0"),
   grandTotal: decimal("grand_total", { precision: 10, scale: 2 }).notNull(),
+  transportType: text("transport_type"),
+  lorryServiceName: text("lorry_service_name"),
+  lorryServicePhone: text("lorry_service_phone"),
   lorryNumber: text("lorry_number"),
   isDraft: boolean("is_draft").notNull().default(false),
   paymentStatus: text("payment_status"),
@@ -318,7 +321,7 @@ export const insertLocationSchema = createInsertSchema(locations).omit({
   id: true,
   createdAt: true 
 }).extend({
-  type: z.enum(["city", "state"]),
+  type: z.enum(["city", "state", "lorry_service"]),
   value: z.string().min(1).max(40),
 });
 export type InsertLocation = z.infer<typeof insertLocationSchema>;

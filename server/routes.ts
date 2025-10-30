@@ -300,8 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/locations/:type", async (req, res) => {
     try {
       const type = req.params.type;
-      if (type !== "city" && type !== "state") {
-        return res.status(400).json({ error: "Type must be 'city' or 'state'" });
+      if (type !== "city" && type !== "state" && type !== "lorry_service") {
+        return res.status(400).json({ error: "Type must be 'city', 'state', or 'lorry_service'" });
       }
       const locations = await storage.getLocations(type);
       res.json(locations);
