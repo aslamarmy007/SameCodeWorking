@@ -79,10 +79,10 @@ Key architectural decisions include:
   - **Payment Information in Current Bill**: Displays payment method, cash/online split amounts, and balance credit directly in the bill summary
   - **Schema Enhancements**: Added cashAmount, onlineAmount, and roundOff fields to invoices table for comprehensive payment tracking
 
-- [2025-10-30] Added product sorting functionality in billing page:
-  - **Sort Filter Component**: New "Sort By" combobox filter added after GST Rate filter in the product selection step
-  - **Alphabetical Sorting**: Options to sort products "A to Z" or "Z to A" by product name using locale-aware comparison
-  - **Date-based Sorting**: Options to sort products "New to Old" or "Old to New" based on creation date
-  - **Integration**: Sort filter seamlessly integrates with existing filter system, maintaining consistency with other filters
-  - **Clear Filters**: Updated "Clear Filters" button to include clearing the sort option
-  - **UI Consistency**: Follows established Popover/Command combobox pattern with proper state management and accessibility attributes
+- [2025-10-30] Implemented multi-level product sorting with independent name and date filters:
+  - **Dual Sort Filters**: Two independent sort comboboxes - "Sort by Name" and "Sort by Date" after GST Rate filter
+  - **Independent Selection**: Users can select from both name (A to Z / Z to A) and date (New to Old / Old to New) options simultaneously
+  - **Multi-level Sorting Logic**: Date sorting applied first as primary sort, name sorting as secondary sort when dates match or if only name sort is selected
+  - **State Management**: Separate state variables for name and date sorting (productNameSortOption, productDateSortOption) with individual combo open states
+  - **Clear Filters Integration**: Updated "Clear Filters" button clears both sort options along with other filters
+  - **UI Consistency**: Both filters follow established Popover/Command combobox pattern with proper accessibility attributes
