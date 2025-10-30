@@ -642,8 +642,101 @@ export async function generateInvoicePDF(data: InvoiceData) {
 
   yPos += 6;
 
-  const estimatedSpaceNeeded = 100;
-  if (yPos + estimatedSpaceNeeded > pageHeight - 10) {
+  let summarySpaceNeeded = 0;
+  
+  summarySpaceNeeded += 7;
+  summarySpaceNeeded += (data.transport > 0 ? 7 : 0);
+  summarySpaceNeeded += (data.packaging > 0 ? 7 : 0);
+  summarySpaceNeeded += (data.other > 0 ? 7 : 0);
+  
+  const gstRatesForCalc = Array.from(new Set(data.items.map(item => item.gstRate)));
+  if (gstRatesForCalc.length > 0) {
+    const sortedRatesCalc = gstRatesForCalc.sort((a, b) => a - b);
+    const nonZeroRatesCalc = sortedRatesCalc.filter(rate => rate > 0);
+    const ratesToShowCalc = nonZeroRatesCalc.length > 0 ? nonZeroRatesCalc : sortedRatesCalc;
+    if (ratesToShowCalc.length > 0) {
+      summarySpaceNeeded += 14;
+    }
+  }
+  
+  summarySpaceNeeded += 7;
+  summarySpaceNeeded += 9;
+  summarySpaceNeeded += 5;
+  
+  if (data.paymentStatus && (data.paymentDate || data.paymentHistory)) {
+    const paymentHistoryCalc = data.paymentHistory || [];
+    const totalPaidFromHistoryCalc = paymentHistoryCalc.reduce((sum, entry) => sum + entry.amount, 0);
+    const roundedTotalCalc = Math.round(data.grandTotal);
+    const totalPaidCalc = paymentHistoryCalc.length > 0 ? totalPaidFromHistoryCalc : (data.paidAmount || 0);
+    const isFullyPaidCalc = totalPaidCalc >= roundedTotalCalc;
+    
+    summarySpaceNeeded += 7;
+    
+    if (paymentHistoryCalc.length > 0) {
+      for (let i = 0; i < paymentHistoryCalc.length; i++) {
+        const entry = paymentHistoryCalc[i];
+        summarySpaceNeeded += 7;
+        summarySpaceNeeded += 7;
+        if (entry.cashAmount !== undefined && entry.onlineAmount !== undefined) {
+          summarySpaceNeeded += 10;
+        } else {
+          summarySpaceNeeded += 7;
+        }
+        if (i < paymentHistoryCalc.length - 1) {
+          summarySpaceNeeded += 2;
+        }
+      }
+    } else if (data.paymentStatus !== "full_credit") {
+      const isSameDateCalc = data.paymentDate === data.billDate;
+      if (isSameDateCalc && data.paymentDate) {
+        summarySpaceNeeded += 7;
+      }
+      summarySpaceNeeded += 7;
+      if (data.paymentMethod === "partial" && (data.cashAmount || data.onlineAmount)) {
+        summarySpaceNeeded += 10;
+      } else {
+        summarySpaceNeeded += 7;
+      }
+    } else {
+      const isSameDateCalc = data.paymentDate === data.billDate;
+      if (isSameDateCalc && data.paymentDate) {
+        summarySpaceNeeded += 7;
+      }
+      summarySpaceNeeded += 7;
+    }
+    
+    if (!isFullyPaidCalc) {
+      summarySpaceNeeded += 7;
+    }
+    
+    summarySpaceNeeded += 5;
+  }
+  
+  summarySpaceNeeded += 8;
+  
+  if (data.transportType === "takeaway") {
+    summarySpaceNeeded += 6;
+  } else if (data.transportType === "takeaway_off_lorry_off") {
+    summarySpaceNeeded += 6;
+    if (data.lorryServiceName) {
+      summarySpaceNeeded += 6;
+    }
+  } else if (data.transportType === "lorry_service") {
+    if (data.lorryServiceName) {
+      summarySpaceNeeded += 6;
+    }
+  }
+  
+  if (data.lorryNumber) {
+    summarySpaceNeeded += 6;
+  }
+  
+  summarySpaceNeeded += 4;
+  
+  const footerHeightCalc = data.eSignatureEnabled && data.signedBy ? 35 : 25;
+  summarySpaceNeeded += footerHeightCalc;
+  
+  if (yPos + summarySpaceNeeded > pageHeight - margin - 5) {
     doc.addPage();
     yPos = 18;
     yPos = await drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
@@ -1103,21 +1196,9 @@ export async function generateInvoicePDF(data: InvoiceData) {
   
   yPos += 4;
 
-  const footerContentHeight = data.eSignatureEnabled && data.signedBy ? 35 : 25;
-  const requiredSpace = yPos + footerContentHeight;
-  
-  let footerY = yPos;
-  
-  if (requiredSpace > pageHeight - margin - 5) {
-    doc.addPage();
-    yPos = 18;
-    yPos = await drawCompletePageHeader(doc, pageWidth, pageHeight, margin, data, yPos);
-    footerY = yPos + 5;
-  } else {
-    const minFooterY = yPos + 5;
-    const fixedFooterY = pageHeight - 42;
-    footerY = Math.max(minFooterY, fixedFooterY);
-  }
+  const minFooterY = yPos + 5;
+  const fixedFooterY = pageHeight - 42;
+  const footerY = Math.max(minFooterY, fixedFooterY);
   
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
