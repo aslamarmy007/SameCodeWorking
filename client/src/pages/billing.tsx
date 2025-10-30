@@ -140,6 +140,7 @@ export default function BillingPage() {
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
   const [selectedGstRates, setSelectedGstRates] = useState<Set<string>>(new Set());
   const [productPriceRange, setProductPriceRange] = useState<[number, number]>([0, 10000]);
+  const [productSortOption, setProductSortOption] = useState<string>("");
   
   // Filter UI state
   const [productCategoryComboOpen, setProductCategoryComboOpen] = useState(false);
@@ -149,6 +150,7 @@ export default function BillingPage() {
   const [productHsnSearch, setProductHsnSearch] = useState("");
   const [productUnitComboOpen, setProductUnitComboOpen] = useState(false);
   const [productGstComboOpen, setProductGstComboOpen] = useState(false);
+  const [productSortComboOpen, setProductSortComboOpen] = useState(false);
   
   // Customer combobox state
   const [billingCustomerComboOpen, setBillingCustomerComboOpen] = useState(false);
@@ -220,7 +222,7 @@ export default function BillingPage() {
 
   // Filter products based on selected filters
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
+    let filtered = products.filter(product => {
       // Category filter
       if (selectedCategories.size > 0) {
         const category = product.category || "Uncategorized";
@@ -255,7 +257,27 @@ export default function BillingPage() {
 
       return true;
     });
-  }, [products, selectedCategories, productNameSearch, selectedHsnCodes, selectedUnits, selectedGstRates, productPriceRange]);
+
+    // Apply sorting
+    if (productSortOption) {
+      filtered = [...filtered].sort((a, b) => {
+        switch (productSortOption) {
+          case "A to Z":
+            return a.name.localeCompare(b.name);
+          case "Z to A":
+            return b.name.localeCompare(a.name);
+          case "New to Old":
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          case "Old to New":
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [products, selectedCategories, productNameSearch, selectedHsnCodes, selectedUnits, selectedGstRates, productPriceRange, productSortOption]);
 
   const productsByCategory = useMemo(() => {
     const grouped = filteredProducts.reduce((acc, product) => {
@@ -2737,6 +2759,57 @@ export default function BillingPage() {
                         </Button>
                       )}
                     </div>
+
+                    {/* Sort Options */}
+                    <div>
+                      <Label>Sort By</Label>
+                      <Popover open={productSortComboOpen} onOpenChange={setProductSortComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productSortComboOpen}
+                            className="w-full justify-between"
+                            data-testid="select-sort"
+                          >
+                            {productSortOption || "Select sort option..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandList>
+                              <CommandEmpty>No sort option found.</CommandEmpty>
+                              <CommandGroup>
+                                {["A to Z", "Z to A", "New to Old", "Old to New"].map((option) => (
+                                  <CommandItem
+                                    key={option}
+                                    value={option}
+                                    onSelect={(currentValue) => {
+                                      setProductSortOption(currentValue === productSortOption ? "" : currentValue);
+                                      setProductSortComboOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        productSortOption === option ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {option}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {productSortOption && (
+                        <Button variant="ghost" size="sm" onClick={() => setProductSortOption("")} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Price Range Slider */}
@@ -2782,6 +2855,7 @@ export default function BillingPage() {
                         setProductPriceRange([minPrice, maxPrice]);
                         setSelectedUnits(new Set());
                         setSelectedGstRates(new Set());
+                        setProductSortOption("");
                       }}
                       data-testid="button-clear-product-filters"
                     >
