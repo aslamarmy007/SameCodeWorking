@@ -58,6 +58,12 @@ interface InvoiceData {
   lorryServicePhone?: string;
   eSignatureEnabled?: boolean;
   signedBy?: string;
+  paymentStatus?: "full_paid" | "full_credit" | "partial_paid";
+  paymentMethod?: "cash" | "online" | "partial";
+  paymentDate?: string;
+  paidAmount?: number;
+  cashAmount?: number;
+  onlineAmount?: number;
 }
 
 function setupTamilFont(doc: jsPDF) {
@@ -769,6 +775,200 @@ export async function generateInvoicePDF(data: InvoiceData) {
   doc.addImage(rupeeIcon, 'PNG', totalsBoxX + totalsBoxWidth - 3 - grandTotalTextWidth - grandTotalIconSize - 1, yPos + 3, grandTotalIconSize, grandTotalIconSize);
   doc.text(grandTotalAmount, totalsBoxX + totalsBoxWidth - 3, yPos + 6, { align: "right" });
   yPos += grandTotalRowHeight + 5;
+
+  if (data.paymentStatus && data.paymentDate) {
+    const paymentBoxX = totalsBoxX;
+    const paymentBoxWidth = totalsBoxWidth;
+    let currentPaymentY = yPos;
+
+    const formattedPaymentDate = new Date(data.paymentDate).toLocaleDateString('en-IN', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    const isSameDate = data.paymentDate === data.billDate;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+
+    if (data.paymentStatus === "full_paid") {
+      const fullPaidRowHeight = 7;
+      
+      doc.setFillColor(220, 255, 220);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, fullPaidRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, fullPaidRowHeight, "S");
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 128, 0);
+      doc.text("FULL PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+      currentPaymentY += fullPaidRowHeight;
+      
+      if (isSameDate) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text("Paid Date:", paymentBoxX + 3, currentPaymentY + 5);
+        doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+        currentPaymentY += rowHeight;
+      }
+      
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Paid:", paymentBoxX + 3, currentPaymentY + 5);
+      const paidAmountText = roundedTotal.toFixed(2);
+      const paidAmountTextWidth = doc.getTextWidth(paidAmountText);
+      doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - paidAmountTextWidth - rupeeIconSize - iconSpacing, currentPaymentY + 2.5, rupeeIconSize, rupeeIconSize);
+      doc.text(paidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += rowHeight;
+      
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Paid Type:", paymentBoxX + 3, currentPaymentY + 5);
+      let paymentTypeText = "";
+      if (data.paymentMethod === "cash") {
+        paymentTypeText = "Cash";
+      } else if (data.paymentMethod === "online") {
+        paymentTypeText = "Online Payment";
+      } else if (data.paymentMethod === "partial") {
+        paymentTypeText = `Cash: ₹${data.cashAmount?.toFixed(2) || "0.00"}, Online: ₹${data.onlineAmount?.toFixed(2) || "0.00"}`;
+      }
+      doc.text(paymentTypeText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += rowHeight;
+      
+    } else if (data.paymentStatus === "full_credit") {
+      const fullCreditRowHeight = 7;
+      
+      doc.setFillColor(255, 220, 220);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, fullCreditRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, fullCreditRowHeight, "S");
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(200, 0, 0);
+      doc.text("NOT PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+      currentPaymentY += fullCreditRowHeight;
+      
+      if (isSameDate) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text("Credit Date:", paymentBoxX + 3, currentPaymentY + 5);
+        doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+        currentPaymentY += rowHeight;
+      }
+      
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Paid:", paymentBoxX + 3, currentPaymentY + 5);
+      doc.text("0.00", paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += rowHeight;
+      
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Balance:", paymentBoxX + 3, currentPaymentY + 5);
+      const balanceAmountText = roundedTotal.toFixed(2);
+      const balanceAmountTextWidth = doc.getTextWidth(balanceAmountText);
+      doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - balanceAmountTextWidth - rupeeIconSize - iconSpacing, currentPaymentY + 2.5, rupeeIconSize, rupeeIconSize);
+      doc.text(balanceAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += rowHeight;
+      
+    } else if (data.paymentStatus === "partial_paid") {
+      const partialPaidRowHeight = 7;
+      
+      doc.setFillColor(255, 245, 220);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, partialPaidRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, partialPaidRowHeight, "S");
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(200, 100, 0);
+      doc.text("PARTIAL PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+      currentPaymentY += partialPaidRowHeight;
+      
+      if (isSameDate) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text("Partial Date:", paymentBoxX + 3, currentPaymentY + 5);
+        doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+        currentPaymentY += rowHeight;
+      }
+      
+      const actualPaidAmount = data.paidAmount || 0;
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Paid:", paymentBoxX + 3, currentPaymentY + 5);
+      const partialPaidAmountText = actualPaidAmount.toFixed(2);
+      const partialPaidAmountTextWidth = doc.getTextWidth(partialPaidAmountText);
+      doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - partialPaidAmountTextWidth - rupeeIconSize - iconSpacing, currentPaymentY + 2.5, rupeeIconSize, rupeeIconSize);
+      doc.text(partialPaidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += rowHeight;
+      
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Paid Type:", paymentBoxX + 3, currentPaymentY + 5);
+      let partialPaymentTypeText = "";
+      if (data.paymentMethod === "cash") {
+        partialPaymentTypeText = "Cash";
+      } else if (data.paymentMethod === "online") {
+        partialPaymentTypeText = "Online Payment";
+      } else if (data.paymentMethod === "partial") {
+        partialPaymentTypeText = `Cash: ₹${data.cashAmount?.toFixed(2) || "0.00"}, Online: ₹${data.onlineAmount?.toFixed(2) || "0.00"}`;
+      }
+      doc.text(partialPaymentTypeText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += rowHeight;
+      
+      const partialBalanceAmount = roundedTotal - actualPaidAmount;
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Balance:", paymentBoxX + 3, currentPaymentY + 5);
+      const partialBalanceAmountText = partialBalanceAmount.toFixed(2);
+      const partialBalanceAmountTextWidth = doc.getTextWidth(partialBalanceAmountText);
+      doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - partialBalanceAmountTextWidth - rupeeIconSize - iconSpacing, currentPaymentY + 2.5, rupeeIconSize, rupeeIconSize);
+      doc.text(partialBalanceAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += rowHeight;
+    }
+
+    yPos = currentPaymentY + 5;
+  }
 
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(8);

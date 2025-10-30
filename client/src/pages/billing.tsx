@@ -535,6 +535,12 @@ export default function BillingPage() {
         lorryServicePhone: additionalCharges.lorryServicePhone,
         eSignatureEnabled: billConfig.eSignatureEnabled,
         signedBy: billConfig.signedBy,
+        paymentStatus: paymentData.paymentStatus as "full_paid" | "full_credit" | "partial_paid" | undefined,
+        paymentMethod: paymentData.paymentMethod as "cash" | "online" | "partial" | undefined,
+        paymentDate: paymentData.paymentDate,
+        paidAmount: paymentData.paidAmount,
+        cashAmount: paymentData.cashAmount,
+        onlineAmount: paymentData.onlineAmount,
         });
 
         toast({
