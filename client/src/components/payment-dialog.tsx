@@ -115,7 +115,7 @@ export function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md" data-testid="dialog-payment">
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col" data-testid="dialog-payment">
         <DialogHeader>
           <DialogTitle>Payment Details</DialogTitle>
           <DialogDescription>
@@ -123,7 +123,7 @@ export function PaymentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-y-auto flex-1">
           <div className="space-y-4">
             <Label>Payment Option</Label>
             <RadioGroup
