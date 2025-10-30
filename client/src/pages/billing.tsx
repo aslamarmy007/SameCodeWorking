@@ -140,7 +140,8 @@ export default function BillingPage() {
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
   const [selectedGstRates, setSelectedGstRates] = useState<Set<string>>(new Set());
   const [productPriceRange, setProductPriceRange] = useState<[number, number]>([0, 10000]);
-  const [productSortOption, setProductSortOption] = useState<string>("");
+  const [productNameSortOption, setProductNameSortOption] = useState<string>("");
+  const [productDateSortOption, setProductDateSortOption] = useState<string>("");
   
   // Filter UI state
   const [productCategoryComboOpen, setProductCategoryComboOpen] = useState(false);
@@ -150,7 +151,8 @@ export default function BillingPage() {
   const [productHsnSearch, setProductHsnSearch] = useState("");
   const [productUnitComboOpen, setProductUnitComboOpen] = useState(false);
   const [productGstComboOpen, setProductGstComboOpen] = useState(false);
-  const [productSortComboOpen, setProductSortComboOpen] = useState(false);
+  const [productNameSortComboOpen, setProductNameSortComboOpen] = useState(false);
+  const [productDateSortComboOpen, setProductDateSortComboOpen] = useState(false);
   
   // Customer combobox state
   const [billingCustomerComboOpen, setBillingCustomerComboOpen] = useState(false);
@@ -258,26 +260,38 @@ export default function BillingPage() {
       return true;
     });
 
-    // Apply sorting
-    if (productSortOption) {
+    // Apply multi-level sorting
+    if (productNameSortOption || productDateSortOption) {
       filtered = [...filtered].sort((a, b) => {
-        switch (productSortOption) {
-          case "A to Z":
-            return a.name.localeCompare(b.name);
-          case "Z to A":
-            return b.name.localeCompare(a.name);
-          case "New to Old":
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          case "Old to New":
-            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          default:
-            return 0;
+        let result = 0;
+
+        // Primary sort: Date (if selected)
+        if (productDateSortOption) {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          
+          if (productDateSortOption === "New to Old") {
+            result = dateB - dateA;
+          } else if (productDateSortOption === "Old to New") {
+            result = dateA - dateB;
+          }
         }
+
+        // Secondary sort: Name (if selected and dates are equal, or no date sort)
+        if (result === 0 && productNameSortOption) {
+          if (productNameSortOption === "A to Z") {
+            result = a.name.localeCompare(b.name);
+          } else if (productNameSortOption === "Z to A") {
+            result = b.name.localeCompare(a.name);
+          }
+        }
+
+        return result;
       });
     }
 
     return filtered;
-  }, [products, selectedCategories, productNameSearch, selectedHsnCodes, selectedUnits, selectedGstRates, productPriceRange, productSortOption]);
+  }, [products, selectedCategories, productNameSearch, selectedHsnCodes, selectedUnits, selectedGstRates, productPriceRange, productNameSortOption, productDateSortOption]);
 
   const productsByCategory = useMemo(() => {
     const grouped = filteredProducts.reduce((acc, product) => {
@@ -2760,19 +2774,19 @@ export default function BillingPage() {
                       )}
                     </div>
 
-                    {/* Sort Options */}
+                    {/* Sort by Name */}
                     <div>
-                      <Label>Sort By</Label>
-                      <Popover open={productSortComboOpen} onOpenChange={setProductSortComboOpen}>
+                      <Label>Sort by Name</Label>
+                      <Popover open={productNameSortComboOpen} onOpenChange={setProductNameSortComboOpen}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             role="combobox"
-                            aria-expanded={productSortComboOpen}
+                            aria-expanded={productNameSortComboOpen}
                             className="w-full justify-between"
-                            data-testid="select-sort"
+                            data-testid="select-sort-name"
                           >
-                            {productSortOption || "Select sort option..."}
+                            {productNameSortOption || "Select name sort..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
@@ -2781,19 +2795,19 @@ export default function BillingPage() {
                             <CommandList>
                               <CommandEmpty>No sort option found.</CommandEmpty>
                               <CommandGroup>
-                                {["A to Z", "Z to A", "New to Old", "Old to New"].map((option) => (
+                                {["A to Z", "Z to A"].map((option) => (
                                   <CommandItem
                                     key={option}
                                     value={option}
                                     onSelect={(currentValue) => {
-                                      setProductSortOption(currentValue === productSortOption ? "" : currentValue);
-                                      setProductSortComboOpen(false);
+                                      setProductNameSortOption(currentValue === productNameSortOption ? "" : currentValue);
+                                      setProductNameSortComboOpen(false);
                                     }}
                                   >
                                     <Check
                                       className={cn(
                                         "mr-2 h-4 w-4",
-                                        productSortOption === option ? "opacity-100" : "opacity-0"
+                                        productNameSortOption === option ? "opacity-100" : "opacity-0"
                                       )}
                                     />
                                     {option}
@@ -2804,8 +2818,59 @@ export default function BillingPage() {
                           </Command>
                         </PopoverContent>
                       </Popover>
-                      {productSortOption && (
-                        <Button variant="ghost" size="sm" onClick={() => setProductSortOption("")} className="mt-1 h-7">
+                      {productNameSortOption && (
+                        <Button variant="ghost" size="sm" onClick={() => setProductNameSortOption("")} className="mt-1 h-7">
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Sort by Date */}
+                    <div>
+                      <Label>Sort by Date</Label>
+                      <Popover open={productDateSortComboOpen} onOpenChange={setProductDateSortComboOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={productDateSortComboOpen}
+                            className="w-full justify-between"
+                            data-testid="select-sort-date"
+                          >
+                            {productDateSortOption || "Select date sort..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandList>
+                              <CommandEmpty>No sort option found.</CommandEmpty>
+                              <CommandGroup>
+                                {["New to Old", "Old to New"].map((option) => (
+                                  <CommandItem
+                                    key={option}
+                                    value={option}
+                                    onSelect={(currentValue) => {
+                                      setProductDateSortOption(currentValue === productDateSortOption ? "" : currentValue);
+                                      setProductDateSortComboOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        productDateSortOption === option ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {option}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {productDateSortOption && (
+                        <Button variant="ghost" size="sm" onClick={() => setProductDateSortOption("")} className="mt-1 h-7">
                           Clear
                         </Button>
                       )}
@@ -2855,7 +2920,8 @@ export default function BillingPage() {
                         setProductPriceRange([minPrice, maxPrice]);
                         setSelectedUnits(new Set());
                         setSelectedGstRates(new Set());
-                        setProductSortOption("");
+                        setProductNameSortOption("");
+                        setProductDateSortOption("");
                       }}
                       data-testid="button-clear-product-filters"
                     >
