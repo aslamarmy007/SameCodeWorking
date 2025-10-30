@@ -68,3 +68,13 @@ Key architectural decisions include:
   - Popover automatically closes after customer selection
   - Display shows selected customer's shop name with checkmark indicator
   - Both comboboxes follow shadcn/ui best practices with proper UX patterns
+
+- [2025-10-30] Enhanced payment and billing features:
+  - **Transport Type Made Mandatory**: Added validation requiring transport type selection before PDF generation, with visual red asterisk indicator
+  - **Enhanced Current Bill Display**: Shows individual charge names (Packing Charge, Transport Charge, Other Charges) instead of aggregate "Charges"
+  - **Round-Off Functionality**: Automatic round-off to nearest whole number with color-coded display (green for positive, red for negative)
+  - **Advanced Payment Methods**: Three payment options - Cash, Online Payment, and Partial Payment (Cash + Online split)
+  - **Partial Payment Split**: When Partial Payment method is selected, shows dedicated inputs for cash and online amounts with real-time validation
+  - **Balance Credit Display**: Prominently shows balance credit amount in both payment dialog and current bill summary when applicable
+  - **Payment Information in Current Bill**: Displays payment method, cash/online split amounts, and balance credit directly in the bill summary
+  - **Schema Enhancements**: Added cashAmount, onlineAmount, and roundOff fields to invoices table for comprehensive payment tracking
