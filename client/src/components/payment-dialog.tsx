@@ -151,7 +151,7 @@ export function PaymentDialog({
             </RadioGroup>
           </div>
 
-          {paymentOption === "partial_paid" && (
+          {paymentOption === "partial_paid" && paymentMethod !== "partial" && (
             <div className="space-y-2">
               <Label htmlFor="paid_amount">Paid Amount</Label>
               <Input
@@ -239,19 +239,36 @@ export function PaymentDialog({
               </div>
               <div className="text-sm space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total to Pay:</span>
-                  <span className="font-semibold">₹{grandTotal.toFixed(2)}</span>
+                  <span className="text-muted-foreground">
+                    {paymentOption === "full_paid" ? "Total to Pay:" : "Total Paying Now:"}
+                  </span>
+                  <span className="font-semibold">
+                    {paymentOption === "full_paid" ? `₹${grandTotal.toFixed(2)}` : `(From ₹${grandTotal.toFixed(2)})`}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Entered Total:</span>
                   <span className={`font-semibold ${
-                    (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) === grandTotal
-                      ? "text-green-600"
-                      : "text-destructive"
+                    paymentOption === "full_paid"
+                      ? (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) === grandTotal
+                        ? "text-green-600"
+                        : "text-destructive"
+                      : (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) > 0 &&
+                        (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) < grandTotal
+                        ? "text-green-600"
+                        : "text-destructive"
                   }`}>
                     ₹{(parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")).toFixed(2)}
                   </span>
                 </div>
+                {paymentOption === "partial_paid" && balanceAmount > 0 && (
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="text-muted-foreground font-semibold">Balance Credit:</span>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">
+                      ₹{balanceAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -278,18 +295,18 @@ export function PaymentDialog({
               />
             )}
           </div>
-        </div>
 
-        {paymentOption === "partial_paid" && paymentMethod === "partial" && balanceAmount > 0 && (
-          <div className="p-3 border rounded-lg bg-orange-50 dark:bg-orange-950/20">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-orange-700 dark:text-orange-400">Balance Credit:</span>
-              <span className="font-bold text-lg text-orange-700 dark:text-orange-400">
-                ₹{balanceAmount.toFixed(2)}
-              </span>
+          {paymentOption === "partial_paid" && paymentMethod !== "partial" && balanceAmount > 0 && (
+            <div className="p-3 border rounded-lg bg-orange-50 dark:bg-orange-950/20">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-orange-700 dark:text-orange-400">Balance Credit:</span>
+                <span className="font-bold text-lg text-orange-700 dark:text-orange-400">
+                  ₹{balanceAmount.toFixed(2)}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="flex gap-3">
           <Button
@@ -310,7 +327,8 @@ export function PaymentDialog({
               (paymentMethod === "partial" && paymentOption === "full_paid" &&
                 (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) !== grandTotal) ||
               (paymentMethod === "partial" && paymentOption === "partial_paid" &&
-                (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) >= grandTotal)
+                ((parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) <= 0 ||
+                 (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) >= grandTotal))
             }
           >
             Confirm & Download PDF

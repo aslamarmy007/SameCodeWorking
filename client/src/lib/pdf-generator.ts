@@ -867,15 +867,46 @@ export async function generateInvoicePDF(data: InvoiceData) {
         doc.text(entryAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
         currentPaymentY += rowHeight;
 
-        doc.setFillColor(250, 250, 250);
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(0, 0, 0);
-        doc.text("Payment Type:", paymentBoxX + 3, currentPaymentY + 5);
-        doc.text(entry.paymentType, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
-        currentPaymentY += rowHeight;
+        if (entry.cashAmount !== undefined && entry.onlineAmount !== undefined) {
+          const splitRowHeight = 10;
+          doc.setFillColor(250, 250, 250);
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "F");
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "S");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(0, 0, 0);
+          doc.text("Payment Type:", paymentBoxX + 3, currentPaymentY + 4);
+          
+          const splitBoxX = paymentBoxX + paymentBoxWidth / 2;
+          const splitBoxWidth = paymentBoxWidth / 2 - 3;
+          const splitBoxY = currentPaymentY + 1;
+          const splitBoxHeight = 8;
+          
+          doc.setFillColor(240, 248, 255);
+          doc.setDrawColor(180, 180, 180);
+          doc.setLineWidth(0.2);
+          doc.rect(splitBoxX, splitBoxY, splitBoxWidth, splitBoxHeight, "FD");
+          
+          doc.setFontSize(6.5);
+          doc.setTextColor(50, 50, 50);
+          doc.text("Cash:", splitBoxX + 2, splitBoxY + 3);
+          doc.text(`₹${entry.cashAmount.toFixed(2)}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 3, { align: "right" });
+          
+          doc.text("Online:", splitBoxX + 2, splitBoxY + 6.5);
+          doc.text(`₹${entry.onlineAmount.toFixed(2)}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
+          
+          currentPaymentY += splitRowHeight;
+        } else {
+          doc.setFillColor(250, 250, 250);
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(0, 0, 0);
+          doc.text("Payment Type:", paymentBoxX + 3, currentPaymentY + 5);
+          doc.text(entry.paymentType, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+          currentPaymentY += rowHeight;
+        }
 
         if (i < paymentHistory.length - 1) {
           doc.setDrawColor(180, 180, 180);
@@ -918,23 +949,52 @@ export async function generateInvoicePDF(data: InvoiceData) {
       doc.text(paidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
       currentPaymentY += rowHeight;
       
-      doc.setFillColor(250, 250, 250);
-      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
-      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(0, 0, 0);
-      doc.text("Paid Type:", paymentBoxX + 3, currentPaymentY + 5);
-      let paymentTypeText = "";
-      if (data.paymentMethod === "cash") {
-        paymentTypeText = "Cash";
-      } else if (data.paymentMethod === "online") {
-        paymentTypeText = "Online Payment";
-      } else if (data.paymentMethod === "partial") {
-        paymentTypeText = `Cash: ₹${data.cashAmount?.toFixed(2) || "0.00"}, Online: ₹${data.onlineAmount?.toFixed(2) || "0.00"}`;
+      if (data.paymentMethod === "partial" && (data.cashAmount || data.onlineAmount)) {
+        const splitRowHeight = 10;
+        doc.setFillColor(250, 250, 250);
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "F");
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text("Paid Type:", paymentBoxX + 3, currentPaymentY + 4);
+        
+        const splitBoxX = paymentBoxX + paymentBoxWidth / 2;
+        const splitBoxWidth = paymentBoxWidth / 2 - 3;
+        const splitBoxY = currentPaymentY + 1;
+        const splitBoxHeight = 8;
+        
+        doc.setFillColor(240, 248, 255);
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.2);
+        doc.rect(splitBoxX, splitBoxY, splitBoxWidth, splitBoxHeight, "FD");
+        
+        doc.setFontSize(7);
+        doc.setTextColor(50, 50, 50);
+        doc.text("Cash:", splitBoxX + 2, splitBoxY + 3);
+        doc.text(`₹${data.cashAmount?.toFixed(2) || "0.00"}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 3, { align: "right" });
+        
+        doc.text("Online:", splitBoxX + 2, splitBoxY + 6.5);
+        doc.text(`₹${data.onlineAmount?.toFixed(2) || "0.00"}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
+        
+        currentPaymentY += splitRowHeight;
+      } else {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text("Paid Type:", paymentBoxX + 3, currentPaymentY + 5);
+        let paymentTypeText = "";
+        if (data.paymentMethod === "cash") {
+          paymentTypeText = "Cash";
+        } else if (data.paymentMethod === "online") {
+          paymentTypeText = "Online Payment";
+        }
+        doc.text(paymentTypeText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+        currentPaymentY += rowHeight;
       }
-      doc.text(paymentTypeText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
-      currentPaymentY += rowHeight;
     } else {
       const isSameDate = data.paymentDate === data.billDate;
       
