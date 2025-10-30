@@ -667,8 +667,17 @@ export async function generateInvoicePDF(data: InvoiceData) {
     const paymentHistoryCalc = data.paymentHistory || [];
     const totalPaidFromHistoryCalc = paymentHistoryCalc.reduce((sum, entry) => sum + entry.amount, 0);
     const roundedTotalCalc = Math.round(data.grandTotal);
-    const totalPaidCalc = paymentHistoryCalc.length > 0 ? totalPaidFromHistoryCalc : (data.paidAmount || 0);
-    const isFullyPaidCalc = totalPaidCalc >= roundedTotalCalc;
+    
+    let isFullyPaidCalc = false;
+    if (paymentHistoryCalc.length > 0) {
+      isFullyPaidCalc = totalPaidFromHistoryCalc >= roundedTotalCalc;
+    } else if (data.paymentStatus === "full_paid") {
+      isFullyPaidCalc = true;
+    } else if (data.paymentStatus === "partial_paid") {
+      isFullyPaidCalc = (data.paidAmount || 0) >= roundedTotalCalc;
+    } else {
+      isFullyPaidCalc = false;
+    }
     
     summarySpaceNeeded += 7;
     
@@ -886,8 +895,24 @@ export async function generateInvoicePDF(data: InvoiceData) {
 
     const paymentHistory = data.paymentHistory || [];
     const totalPaidFromHistory = paymentHistory.reduce((sum, entry) => sum + entry.amount, 0);
-    const totalPaid = paymentHistory.length > 0 ? totalPaidFromHistory : (data.paidAmount || 0);
-    const isFullyPaid = totalPaid >= roundedTotal;
+    
+    let totalPaid = 0;
+    let isFullyPaid = false;
+    
+    if (paymentHistory.length > 0) {
+      totalPaid = totalPaidFromHistory;
+      isFullyPaid = totalPaid >= roundedTotal;
+    } else if (data.paymentStatus === "full_paid") {
+      totalPaid = roundedTotal;
+      isFullyPaid = true;
+    } else if (data.paymentStatus === "partial_paid") {
+      totalPaid = data.paidAmount || 0;
+      isFullyPaid = totalPaid >= roundedTotal;
+    } else {
+      totalPaid = 0;
+      isFullyPaid = false;
+    }
+    
     const remainingBalance = roundedTotal - totalPaid;
 
     const statusRowHeight = 7;
@@ -1032,7 +1057,8 @@ export async function generateInvoicePDF(data: InvoiceData) {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(0, 0, 0);
-        doc.text("Partial Date:", paymentBoxX + 3, currentPaymentY + 5);
+        const dateLabel = data.paymentStatus === "full_paid" ? "Payment Date:" : "Partial Date:";
+        doc.text(dateLabel, paymentBoxX + 3, currentPaymentY + 5);
         doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
         currentPaymentY += rowHeight;
       }
@@ -1044,7 +1070,7 @@ export async function generateInvoicePDF(data: InvoiceData) {
       doc.setFontSize(9);
       doc.setTextColor(0, 0, 0);
       doc.text("Paid:", paymentBoxX + 3, currentPaymentY + 5);
-      const paidAmountText = (data.paidAmount || 0).toFixed(2);
+      const paidAmountText = totalPaid.toFixed(2);
       const paidAmountTextWidth = doc.getTextWidth(paidAmountText);
       doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - paidAmountTextWidth - rupeeIconSize - iconSpacing, currentPaymentY + 2.5, rupeeIconSize, rupeeIconSize);
       doc.text(paidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
