@@ -78,3 +78,11 @@ Key architectural decisions include:
   - **Balance Credit Display**: Prominently shows balance credit amount in both payment dialog and current bill summary when applicable
   - **Payment Information in Current Bill**: Displays payment method, cash/online split amounts, and balance credit directly in the bill summary
   - **Schema Enhancements**: Added cashAmount, onlineAmount, and roundOff fields to invoices table for comprehensive payment tracking
+
+- [2025-10-30] Added product sorting functionality in billing page:
+  - **Sort Filter Component**: New "Sort By" combobox filter added after GST Rate filter in the product selection step
+  - **Alphabetical Sorting**: Options to sort products "A to Z" or "Z to A" by product name using locale-aware comparison
+  - **Date-based Sorting**: Options to sort products "New to Old" or "Old to New" based on creation date
+  - **Integration**: Sort filter seamlessly integrates with existing filter system, maintaining consistency with other filters
+  - **Clear Filters**: Updated "Clear Filters" button to include clearing the sort option
+  - **UI Consistency**: Follows established Popover/Command combobox pattern with proper state management and accessibility attributes
