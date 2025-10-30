@@ -273,6 +273,9 @@ export const invoices = pgTable("invoices", {
   paymentDate: text("payment_date"),
   paidAmount: decimal("paid_amount", { precision: 10, scale: 2 }).default("0"),
   balanceAmount: decimal("balance_amount", { precision: 10, scale: 2 }).default("0"),
+  cashAmount: decimal("cash_amount", { precision: 10, scale: 2 }).default("0"),
+  onlineAmount: decimal("online_amount", { precision: 10, scale: 2 }).default("0"),
+  roundOff: decimal("round_off", { precision: 10, scale: 2 }).default("0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
