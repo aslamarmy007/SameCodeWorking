@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Download, Eye, Trash2, ShoppingBag, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Invoice } from "@shared/schema";
+import type { PurchaseInvoice } from "@shared/schema";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
 import { format } from "date-fns";
 import logoImage from "@assets/cocologo_1761383042737.png";
@@ -23,33 +23,31 @@ export default function PurchasePage() {
     endDate: "",
   });
 
-  const { data: allInvoices = [], isLoading: invoicesLoading } = useQuery<Invoice[]>({
+  const { data: purchaseInvoices = [], isLoading: invoicesLoading } = useQuery<PurchaseInvoice[]>({
     queryKey: billDateRange.startDate && billDateRange.endDate 
-      ? ["/api/invoices/filter/date-range", billDateRange.startDate, billDateRange.endDate]
-      : ["/api/invoices"],
+      ? ["/api/purchase-bills/filter/date-range", billDateRange.startDate, billDateRange.endDate]
+      : ["/api/purchase-bills"],
     queryFn: async () => {
       if (billDateRange.startDate && billDateRange.endDate) {
         const response = await fetch(
-          `/api/invoices/filter/date-range?startDate=${billDateRange.startDate}&endDate=${billDateRange.endDate}`
+          `/api/purchase-bills/filter/date-range?startDate=${billDateRange.startDate}&endDate=${billDateRange.endDate}`
         );
-        if (!response.ok) throw new Error("Failed to fetch invoices");
+        if (!response.ok) throw new Error("Failed to fetch purchase bills");
         return response.json();
       }
-      const response = await fetch("/api/invoices");
-      if (!response.ok) throw new Error("Failed to fetch invoices");
+      const response = await fetch("/api/purchase-bills");
+      if (!response.ok) throw new Error("Failed to fetch purchase bills");
       return response.json();
     },
   });
 
-  const purchaseInvoices = allInvoices.filter(invoice => invoice.billType === "purchase" && !invoice.isDraft);
-
   const deleteInvoiceMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("DELETE", `/api/invoices/${id}`),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/purchase-bills/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ 
         predicate: (query) => {
           const key = query.queryKey;
-          return Array.isArray(key) && key.some(k => typeof k === 'string' && k.includes('/api/invoices'));
+          return Array.isArray(key) && key.some(k => typeof k === 'string' && k.includes('/api/purchase-bills'));
         }
       });
       toast({ title: "Purchase bill deleted successfully" });
@@ -60,9 +58,9 @@ export default function PurchasePage() {
     },
   });
 
-  const handleViewPDF = async (invoice: Invoice) => {
+  const handleViewPDF = async (invoice: PurchaseInvoice) => {
     try {
-      const itemsResponse = await fetch(`/api/invoices/${invoice.id}/items`);
+      const itemsResponse = await fetch(`/api/purchase-bills/${invoice.id}/items`);
       if (!itemsResponse.ok) throw new Error("Failed to fetch items");
       const items = await itemsResponse.json();
 
@@ -72,18 +70,18 @@ export default function PurchasePage() {
       await generateInvoicePDF({
         invoiceNumber: invoice.invoiceNumber,
         billDate: invoice.billDate,
-        billType: invoice.billType as "sale" | "purchase",
+        billType: "purchase",
         shippingToMyself: invoice.shippingToMyself || false,
         customer: {
-          name: invoice.customerName || "",
-          shopName: invoice.shopName || "",
-          phone: invoice.phone || "",
-          email: invoice.email || "",
-          gstin: invoice.gstin || "",
-          address: invoice.address || "",
-          city: invoice.city || "",
-          state: invoice.state || "",
-          postalCode: invoice.postalCode || "",
+          name: invoice.buyerName || "",
+          shopName: invoice.buyerShopName || "",
+          phone: invoice.buyerPhone || "",
+          email: invoice.buyerEmail || "",
+          gstin: invoice.buyerGstin || "",
+          address: invoice.buyerAddress || "",
+          city: invoice.buyerCity || "",
+          state: invoice.buyerState || "",
+          postalCode: invoice.buyerPostalCode || "",
         },
         shipping: {
           name: invoice.shippingName || "",
@@ -191,8 +189,8 @@ export default function PurchasePage() {
                       <TableRow key={invoice.id} data-testid={`row-invoice-${invoice.id}`}>
                         <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                         <TableCell>{format(new Date(invoice.billDate), "dd MMM yyyy")}</TableCell>
-                        <TableCell>{invoice.shopName || invoice.customerName || "N/A"}</TableCell>
-                        <TableCell>{invoice.city}</TableCell>
+                        <TableCell>{invoice.buyerShopName || invoice.buyerName || "N/A"}</TableCell>
+                        <TableCell>{invoice.buyerCity || "N/A"}</TableCell>
                         <TableCell className="text-right">₹{parseFloat(invoice.grandTotal).toFixed(2)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
