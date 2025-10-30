@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import BillingPage from "@/pages/billing";
 import Dashboard from "@/pages/dashboard";
 import PurchasePage from "@/pages/purchase";
+import PurchaseCreatePage from "@/pages/purchase-create";
 import NotFound from "@/pages/not-found";
 import { FileText, LayoutDashboard, ShoppingBag } from "lucide-react";
 
@@ -59,6 +60,7 @@ function Router() {
         <Route path="/" component={BillingPage} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/purchase" component={PurchasePage} />
+        <Route path="/purchase/create" component={PurchaseCreatePage} />
         <Route component={NotFound} />
       </Switch>
     </>

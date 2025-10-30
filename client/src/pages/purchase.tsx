@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Download, Eye, Trash2, ShoppingBag } from "lucide-react";
+import { Download, Eye, Trash2, ShoppingBag, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Invoice } from "@shared/schema";
 import { generateInvoicePDF } from "@/lib/pdf-generator";
 import { format } from "date-fns";
 import logoImage from "@assets/cocologo_1761383042737.png";
+import { useLocation } from "wouter";
 
 export default function PurchasePage() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [deleteInvoiceId, setDeleteInvoiceId] = useState<string | null>(null);
   const [billDateRange, setBillDateRange] = useState({
     startDate: "",
@@ -132,9 +134,15 @@ export default function PurchasePage() {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-4 sm:pb-8">
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="h-6 w-6 text-primary" />
-              <CardTitle>Purchase Bills</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-6 w-6 text-primary" />
+                <CardTitle>Purchase Bills</CardTitle>
+              </div>
+              <Button onClick={() => setLocation("/purchase/create")} data-testid="button-create-purchase">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Purchase Bill
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
