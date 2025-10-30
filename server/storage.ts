@@ -10,11 +10,20 @@ import {
   type InsertInvoiceItem,
   type Location,
   type InsertLocation,
+  type Supplier,
+  type InsertSupplier,
+  type PurchaseInvoice,
+  type InsertPurchaseInvoice,
+  type PurchaseInvoiceItem,
+  type InsertPurchaseInvoiceItem,
   customers,
   products,
   invoices,
   invoiceItems,
   locations,
+  suppliers,
+  purchaseInvoices,
+  purchaseInvoiceItems,
 } from "@shared/schema";
 import { db } from "../db/index";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
@@ -54,6 +63,30 @@ export interface IStorage {
   // Location operations
   getLocations(type: "city" | "state"): Promise<string[]>;
   addLocation(location: InsertLocation): Promise<Location>;
+
+  // Supplier operations (for purchase bills)
+  getAllSuppliers(): Promise<Supplier[]>;
+  getSupplier(id: string): Promise<Supplier | undefined>;
+  createSupplier(supplier: InsertSupplier): Promise<Supplier>;
+  updateSupplier(id: string, supplier: Partial<InsertSupplier>): Promise<Supplier | undefined>;
+  deleteSupplier(id: string): Promise<boolean>;
+  findDuplicateSupplier(name: string | undefined, shopName: string | null): Promise<Supplier | undefined>;
+
+  // Purchase Invoice operations
+  getAllPurchaseInvoices(): Promise<PurchaseInvoice[]>;
+  getDraftPurchaseInvoices(): Promise<PurchaseInvoice[]>;
+  getPendingPaymentPurchaseInvoices(): Promise<PurchaseInvoice[]>;
+  getPurchaseInvoice(id: string): Promise<PurchaseInvoice | undefined>;
+  createPurchaseInvoice(invoice: InsertPurchaseInvoice): Promise<PurchaseInvoice>;
+  updatePurchaseInvoice(id: string, invoice: Partial<InsertPurchaseInvoice>): Promise<PurchaseInvoice | undefined>;
+  deletePurchaseInvoice(id: string): Promise<boolean>;
+  getPurchaseInvoicesByDateRange(startDate: string, endDate: string): Promise<PurchaseInvoice[]>;
+  getNextPurchaseInvoiceNumber(): Promise<string>;
+
+  // Purchase Invoice items operations
+  createPurchaseInvoiceItem(item: InsertPurchaseInvoiceItem): Promise<PurchaseInvoiceItem>;
+  getPurchaseInvoiceItems(invoiceId: string): Promise<PurchaseInvoiceItem[]>;
+  deletePurchaseInvoiceItems(invoiceId: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -354,6 +387,153 @@ export class DbStorage implements IStorage {
 
     const result = await db.insert(locations).values(insertLocation).returning();
     return result[0];
+  }
+
+  // Supplier operations
+  async getAllSuppliers(): Promise<Supplier[]> {
+    return await db.select().from(suppliers);
+  }
+
+  async getSupplier(id: string): Promise<Supplier | undefined> {
+    const result = await db.select().from(suppliers).where(eq(suppliers.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
+    const result = await db.insert(suppliers).values(insertSupplier).returning();
+    return result[0];
+  }
+
+  async updateSupplier(
+    id: string,
+    updates: Partial<InsertSupplier>
+  ): Promise<Supplier | undefined> {
+    const result = await db
+      .update(suppliers)
+      .set(updates)
+      .where(eq(suppliers.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteSupplier(id: string): Promise<boolean> {
+    const result = await db.delete(suppliers).where(eq(suppliers.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async findDuplicateSupplier(name: string | undefined, shopName: string | null): Promise<Supplier | undefined> {
+    if (!shopName || !shopName.trim()) {
+      return undefined;
+    }
+    
+    const normalizedShopName = shopName.trim().toLowerCase();
+    
+    const allSuppliers = await db.select().from(suppliers);
+    return allSuppliers.find(supplier => {
+      const supplierShopName = supplier.shopName?.trim().toLowerCase() || null;
+      return supplierShopName === normalizedShopName;
+    });
+  }
+
+  // Purchase Invoice operations
+  async getAllPurchaseInvoices(): Promise<PurchaseInvoice[]> {
+    return await db.select().from(purchaseInvoices).where(eq(purchaseInvoices.isDraft, false));
+  }
+
+  async getDraftPurchaseInvoices(): Promise<PurchaseInvoice[]> {
+    return await db.select().from(purchaseInvoices).where(eq(purchaseInvoices.isDraft, true));
+  }
+
+  async getPendingPaymentPurchaseInvoices(): Promise<PurchaseInvoice[]> {
+    return await db.select().from(purchaseInvoices).where(
+      and(
+        eq(purchaseInvoices.isDraft, false),
+        sql`${purchaseInvoices.paymentStatus} IN ('full_credit', 'partial_paid')`
+      )
+    );
+  }
+
+  async getPurchaseInvoice(id: string): Promise<PurchaseInvoice | undefined> {
+    const result = await db.select().from(purchaseInvoices).where(eq(purchaseInvoices.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createPurchaseInvoice(insertInvoice: InsertPurchaseInvoice): Promise<PurchaseInvoice> {
+    const result = await db.insert(purchaseInvoices).values(insertInvoice).returning();
+    return result[0];
+  }
+
+  async updatePurchaseInvoice(
+    id: string,
+    updates: Partial<InsertPurchaseInvoice>
+  ): Promise<PurchaseInvoice | undefined> {
+    const result = await db
+      .update(purchaseInvoices)
+      .set(updates)
+      .where(eq(purchaseInvoices.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deletePurchaseInvoice(id: string): Promise<boolean> {
+    await this.deletePurchaseInvoiceItems(id);
+    const result = await db.delete(purchaseInvoices).where(eq(purchaseInvoices.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getPurchaseInvoicesByDateRange(startDate: string, endDate: string): Promise<PurchaseInvoice[]> {
+    return await db
+      .select()
+      .from(purchaseInvoices)
+      .where(
+        and(
+          gte(purchaseInvoices.billDate, startDate),
+          lte(purchaseInvoices.billDate, endDate)
+        )
+      );
+  }
+
+  async getNextPurchaseInvoiceNumber(): Promise<string> {
+    // Get the latest purchase invoice to determine the next number
+    const latestInvoice = await db
+      .select()
+      .from(purchaseInvoices)
+      .orderBy(sql`${purchaseInvoices.createdAt} DESC`)
+      .limit(1);
+    
+    const year = new Date().getFullYear();
+    
+    if (latestInvoice.length === 0) {
+      return `PUR-${year}-00001`;
+    }
+    
+    // Extract the number from the latest invoice number
+    const latestNumber = latestInvoice[0].invoiceNumber;
+    const match = latestNumber.match(/PUR-\d{4}-(\d+)$/);
+    
+    if (match) {
+      const nextNumber = parseInt(match[1]) + 1;
+      return `PUR-${year}-${String(nextNumber).padStart(5, "0")}`;
+    }
+    
+    return `PUR-${year}-00001`;
+  }
+
+  // Purchase Invoice items operations
+  async createPurchaseInvoiceItem(insertItem: InsertPurchaseInvoiceItem): Promise<PurchaseInvoiceItem> {
+    const result = await db.insert(purchaseInvoiceItems).values(insertItem).returning();
+    return result[0];
+  }
+
+  async getPurchaseInvoiceItems(invoiceId: string): Promise<PurchaseInvoiceItem[]> {
+    return await db
+      .select()
+      .from(purchaseInvoiceItems)
+      .where(eq(purchaseInvoiceItems.invoiceId, invoiceId));
+  }
+
+  async deletePurchaseInvoiceItems(invoiceId: string): Promise<void> {
+    await db.delete(purchaseInvoiceItems).where(eq(purchaseInvoiceItems.invoiceId, invoiceId));
   }
 }
 
