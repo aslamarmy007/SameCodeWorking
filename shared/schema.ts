@@ -75,10 +75,10 @@ export const insertCustomerSchema = createInsertSchema(customers).omit({
     .optional()
     .refine((val) => {
       if (!val) return true;
-      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF\s()[\]\\/;:\-"'&,.]+$/;
+      const allowedChars = /^[a-zA-Z\u0B80-\u0BFF0-9\s()[\]\\/;:\-"'&,.]+$/;
       return allowedChars.test(val);
     }, {
-      message: "Address can only contain letters, spaces and these characters: ( ) [ ] \\ / : ; - \" ' & , ."
+      message: "Address contains invalid characters"
     })
     .refine((val) => {
       if (!val) return true;
