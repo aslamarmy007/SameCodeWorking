@@ -532,6 +532,10 @@ export default function Dashboard() {
           return (a.shopName || "").localeCompare(b.shopName || "");
         case "z-a":
           return (b.shopName || "").localeCompare(a.shopName || "");
+        case "new-old":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "old-new":
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         default:
           return 0;
       }
@@ -544,6 +548,10 @@ export default function Dashboard() {
           return (a.shopName || "").localeCompare(b.shopName || "");
         case "z-a":
           return (b.shopName || "").localeCompare(a.shopName || "");
+        case "new-old":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "old-new":
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         default:
           return 0;
       }
@@ -975,6 +983,8 @@ export default function Dashboard() {
                           <SelectContent>
                             <SelectItem value="a-z" data-testid="sort-option-a-z">A to Z</SelectItem>
                             <SelectItem value="z-a" data-testid="sort-option-z-a">Z to A</SelectItem>
+                            <SelectItem value="new-old" data-testid="sort-option-new-old">New to Old</SelectItem>
+                            <SelectItem value="old-new" data-testid="sort-option-old-new">Old to New</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -2087,6 +2097,18 @@ export default function Dashboard() {
                     <Label className="text-sm font-medium text-gray-500">Address</Label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-address">{viewingCustomer.address || "-"}</p>
                   </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Created On</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-created-at">
+                      {viewingCustomer.createdAt ? format(new Date(viewingCustomer.createdAt), "dd/MM/yyyy hh:mm a") : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Last Updated</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-updated-at">
+                      {viewingCustomer.updatedAt ? format(new Date(viewingCustomer.updatedAt), "dd/MM/yyyy hh:mm a") : "-"}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -2146,6 +2168,18 @@ export default function Dashboard() {
                     <div className="col-span-2">
                       <Label className="text-sm font-medium text-gray-500">Address</Label>
                       <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{customer.address || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Created On</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                        {customer.createdAt ? format(new Date(customer.createdAt), "dd/MM/yyyy hh:mm a") : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Last Updated</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                        {customer.updatedAt ? format(new Date(customer.updatedAt), "dd/MM/yyyy hh:mm a") : "-"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -2213,6 +2247,18 @@ export default function Dashboard() {
                     <Label className="text-sm font-medium text-gray-500">Description</Label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-description">{viewingProduct.description || "-"}</p>
                   </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Created On</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-created-at">
+                      {viewingProduct.createdAt ? format(new Date(viewingProduct.createdAt), "dd/MM/yyyy hh:mm a") : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Last Updated</Label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100" data-testid="view-product-updated-at">
+                      {viewingProduct.updatedAt ? format(new Date(viewingProduct.updatedAt), "dd/MM/yyyy hh:mm a") : "-"}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -2264,6 +2310,18 @@ export default function Dashboard() {
                     <div className="col-span-2">
                       <Label className="text-sm font-medium text-gray-500">Description</Label>
                       <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{product.description || "-"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Created On</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                        {product.createdAt ? format(new Date(product.createdAt), "dd/MM/yyyy hh:mm a") : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Last Updated</Label>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                        {product.updatedAt ? format(new Date(product.updatedAt), "dd/MM/yyyy hh:mm a") : "-"}
+                      </p>
                     </div>
                   </div>
                 </div>

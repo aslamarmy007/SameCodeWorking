@@ -16,11 +16,13 @@ export const customers = pgTable("customers", {
   state: text("state"),
   postalCode: text("postal_code"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({ 
   id: true,
-  createdAt: true 
+  createdAt: true,
+  updatedAt: true
 }).extend({
   name: z.string()
     .max(50, "Contact name must be maximum 50 characters")
@@ -135,9 +137,14 @@ export const products = pgTable("products", {
   gstRate: decimal("gst_rate", { precision: 5, scale: 2 }).notNull().default("0"),
   stock: decimal("stock", { precision: 10, scale: 2 }).default("0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({ id: true }).extend({
+export const insertProductSchema = createInsertSchema(products).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+}).extend({
   name: z.string()
     .min(1, "Product name is required")
     .max(30, "Product name must be maximum 30 characters")
