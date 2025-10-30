@@ -1118,6 +1118,7 @@ export default function BillingPage() {
                       id="billDate"
                       type="date"
                       value={billConfig.billDate}
+                      max={new Date().toISOString().split("T")[0]}
                       onChange={(e) =>
                         setBillConfig({ ...billConfig, billDate: e.target.value })
                       }

@@ -321,6 +321,7 @@ export function PaymentDialog({
               <Input
                 type="date"
                 value={paymentDate}
+                max={billDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 data-testid="input-payment-date"
               />
