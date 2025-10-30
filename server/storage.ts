@@ -10,11 +10,14 @@ import {
   type InsertInvoiceItem,
   type Location,
   type InsertLocation,
+  type LorryService,
+  type InsertLorryService,
   customers,
   products,
   invoices,
   invoiceItems,
   locations,
+  lorryServices,
 } from "@shared/schema";
 import { db } from "../db/index";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
@@ -54,6 +57,12 @@ export interface IStorage {
   // Location operations
   getLocations(type: "city" | "state" | "lorry_service"): Promise<string[]>;
   addLocation(location: InsertLocation): Promise<Location>;
+
+  // Lorry Service operations
+  getAllLorryServices(): Promise<LorryService[]>;
+  getLorryServiceByName(name: string): Promise<LorryService | undefined>;
+  createLorryService(lorryService: InsertLorryService): Promise<LorryService>;
+  updateLorryService(id: string, lorryService: Partial<InsertLorryService>): Promise<LorryService | undefined>;
 }
 
 export class DbStorage implements IStorage {
@@ -353,6 +362,45 @@ export class DbStorage implements IStorage {
     }
 
     const result = await db.insert(locations).values(insertLocation).returning();
+    return result[0];
+  }
+
+  // Lorry Service operations
+  async getAllLorryServices(): Promise<LorryService[]> {
+    return await db.select().from(lorryServices).orderBy(lorryServices.name);
+  }
+
+  async getLorryServiceByName(name: string): Promise<LorryService | undefined> {
+    const result = await db
+      .select()
+      .from(lorryServices)
+      .where(sql`LOWER(${lorryServices.name}) = LOWER(${name})`);
+    return result[0];
+  }
+
+  async createLorryService(insertLorryService: InsertLorryService): Promise<LorryService> {
+    // Check if lorry service already exists (case-insensitive)
+    const existing = await this.getLorryServiceByName(insertLorryService.name);
+    
+    if (existing) {
+      // Update phone if provided
+      if (insertLorryService.phone && insertLorryService.phone !== existing.phone) {
+        const updated = await this.updateLorryService(existing.id, { phone: insertLorryService.phone });
+        return updated!;
+      }
+      return existing;
+    }
+
+    const result = await db.insert(lorryServices).values(insertLorryService).returning();
+    return result[0];
+  }
+
+  async updateLorryService(id: string, insertLorryService: Partial<InsertLorryService>): Promise<LorryService | undefined> {
+    const result = await db
+      .update(lorryServices)
+      .set(insertLorryService)
+      .where(eq(lorryServices.id, id))
+      .returning();
     return result[0];
   }
 

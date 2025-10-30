@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCustomerSchema, insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema, insertLocationSchema } from "@shared/schema";
+import { insertCustomerSchema, insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema, insertLocationSchema, insertLorryServiceSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Customer routes
@@ -324,6 +324,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       res.status(400).json({ error: "Invalid location data" });
+    }
+  });
+
+  // Lorry Service routes
+  app.get("/api/lorry-services", async (_req, res) => {
+    try {
+      const lorryServices = await storage.getAllLorryServices();
+      res.json(lorryServices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lorry services" });
+    }
+  });
+
+  app.post("/api/lorry-services", async (req, res) => {
+    try {
+      const validated = insertLorryServiceSchema.parse(req.body);
+      const lorryService = await storage.createLorryService(validated);
+      res.status(201).json(lorryService);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Validation error",
+          message: error.errors[0]?.message || "Invalid lorry service data",
+          details: error.errors
+        });
+      }
+      res.status(400).json({ error: "Invalid lorry service data" });
     }
   });
 
