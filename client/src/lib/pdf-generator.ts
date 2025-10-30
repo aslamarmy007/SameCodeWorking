@@ -890,10 +890,18 @@ export async function generateInvoicePDF(data: InvoiceData) {
           doc.setFontSize(6.5);
           doc.setTextColor(50, 50, 50);
           doc.text("Cash:", splitBoxX + 2, splitBoxY + 3);
-          doc.text(`₹${entry.cashAmount.toFixed(2)}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 3, { align: "right" });
+          const cashAmountText = entry.cashAmount.toFixed(2);
+          const cashAmountTextWidth = doc.getTextWidth(cashAmountText);
+          const smallRupeeIconSize = 2;
+          const smallIconSpacing = 0.5;
+          doc.addImage(rupeeIconBlack, 'PNG', splitBoxX + splitBoxWidth - 2 - cashAmountTextWidth - smallRupeeIconSize - smallIconSpacing, splitBoxY + 1.2, smallRupeeIconSize, smallRupeeIconSize);
+          doc.text(cashAmountText, splitBoxX + splitBoxWidth - 2, splitBoxY + 3, { align: "right" });
           
           doc.text("Online:", splitBoxX + 2, splitBoxY + 6.5);
-          doc.text(`₹${entry.onlineAmount.toFixed(2)}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
+          const onlineAmountText = entry.onlineAmount.toFixed(2);
+          const onlineAmountTextWidth = doc.getTextWidth(onlineAmountText);
+          doc.addImage(rupeeIconBlack, 'PNG', splitBoxX + splitBoxWidth - 2 - onlineAmountTextWidth - smallRupeeIconSize - smallIconSpacing, splitBoxY + 4.7, smallRupeeIconSize, smallRupeeIconSize);
+          doc.text(onlineAmountText, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
           
           currentPaymentY += splitRowHeight;
         } else {
@@ -972,10 +980,18 @@ export async function generateInvoicePDF(data: InvoiceData) {
         doc.setFontSize(7);
         doc.setTextColor(50, 50, 50);
         doc.text("Cash:", splitBoxX + 2, splitBoxY + 3);
-        doc.text(`₹${data.cashAmount?.toFixed(2) || "0.00"}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 3, { align: "right" });
+        const cashText = (data.cashAmount?.toFixed(2) || "0.00");
+        const cashTextWidth = doc.getTextWidth(cashText);
+        const smallRupeeIconSize = 2.2;
+        const smallIconSpacing = 0.5;
+        doc.addImage(rupeeIconBlack, 'PNG', splitBoxX + splitBoxWidth - 2 - cashTextWidth - smallRupeeIconSize - smallIconSpacing, splitBoxY + 1.2, smallRupeeIconSize, smallRupeeIconSize);
+        doc.text(cashText, splitBoxX + splitBoxWidth - 2, splitBoxY + 3, { align: "right" });
         
         doc.text("Online:", splitBoxX + 2, splitBoxY + 6.5);
-        doc.text(`₹${data.onlineAmount?.toFixed(2) || "0.00"}`, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
+        const onlineText = (data.onlineAmount?.toFixed(2) || "0.00");
+        const onlineTextWidth = doc.getTextWidth(onlineText);
+        doc.addImage(rupeeIconBlack, 'PNG', splitBoxX + splitBoxWidth - 2 - onlineTextWidth - smallRupeeIconSize - smallIconSpacing, splitBoxY + 4.7, smallRupeeIconSize, smallRupeeIconSize);
+        doc.text(onlineText, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
         
         currentPaymentY += splitRowHeight;
       } else {
