@@ -1522,7 +1522,6 @@ export default function BillingPage() {
                         </div>
                       </div>
                     )}
-                      </div>
 
                   {isNewCustomer === true && (
                   <div>
@@ -1703,6 +1702,7 @@ export default function BillingPage() {
                     </Button>
                   </div>
                   )}
+                  </div>
                   </div>
 
                   <div className="border-t-2 pt-6 mt-6">
