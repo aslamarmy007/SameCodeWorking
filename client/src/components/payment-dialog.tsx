@@ -45,11 +45,11 @@ export function PaymentDialog({
   const [paidAmount, setPaidAmount] = useState<string>("");
   const [cashAmount, setCashAmount] = useState<string>("");
   const [onlineAmount, setOnlineAmount] = useState<string>("");
-  const [manualOnlineEdit, setManualOnlineEdit] = useState(false);
+  const [lastEdited, setLastEdited] = useState<"cash" | "online" | null>(null);
 
   const handleCashAmountChange = (value: string) => {
     setCashAmount(value);
-    setManualOnlineEdit(false);
+    setLastEdited("cash");
     if (value && !isNaN(parseFloat(value))) {
       const cash = parseFloat(value);
       const totalRequired = paymentOption === "full_paid" ? grandTotal : grandTotal;
@@ -62,7 +62,15 @@ export function PaymentDialog({
 
   const handleOnlineAmountChange = (value: string) => {
     setOnlineAmount(value);
-    setManualOnlineEdit(true);
+    setLastEdited("online");
+    if (value && !isNaN(parseFloat(value))) {
+      const online = parseFloat(value);
+      const totalRequired = paymentOption === "full_paid" ? grandTotal : grandTotal;
+      const remainingCash = Math.max(0, totalRequired - online);
+      setCashAmount(remainingCash.toFixed(2));
+    } else {
+      setCashAmount("");
+    }
   };
 
   const handleConfirm = () => {
@@ -236,7 +244,11 @@ export function PaymentDialog({
               <Label className="text-sm font-semibold">Split Payment Details</Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cash_amount" className="text-sm font-medium">Cash Amount</Label>
+                  <Label htmlFor="cash_amount" className="text-sm font-medium">
+                    Cash Amount {lastEdited === "online" && onlineAmount && (
+                      <span className="text-xs text-muted-foreground font-normal">(Auto-calculated)</span>
+                    )}
+                  </Label>
                   <Input
                     id="cash_amount"
                     type="number"
@@ -244,14 +256,14 @@ export function PaymentDialog({
                     min="0"
                     value={cashAmount}
                     onChange={(e) => handleCashAmountChange(e.target.value)}
-                    placeholder="Enter cash amount"
+                    placeholder="Enter cash or auto-fills"
                     data-testid="input-cash-amount"
                     className="text-base"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="online_amount" className="text-sm font-medium">
-                    Online Amount {!manualOnlineEdit && cashAmount && (
+                    Online Amount {lastEdited === "cash" && cashAmount && (
                       <span className="text-xs text-muted-foreground font-normal">(Auto-calculated)</span>
                     )}
                   </Label>
@@ -262,7 +274,7 @@ export function PaymentDialog({
                     min="0"
                     value={onlineAmount}
                     onChange={(e) => handleOnlineAmountChange(e.target.value)}
-                    placeholder="Auto-fills from cash"
+                    placeholder="Enter online or auto-fills"
                     data-testid="input-online-amount"
                     className="text-base"
                   />
