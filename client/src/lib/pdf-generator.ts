@@ -294,7 +294,7 @@ function drawInvoiceDetails(doc: jsPDF, pageWidth: number, margin: number, yPos:
 }
 
 async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any, shippingToMyself?: boolean): Promise<number> {
-  const showShipping = !shippingToMyself;
+  const showShipping = true;
   const boxWidth = showShipping ? (pageWidth - (2 * margin) - 4) / 2 : (pageWidth - (2 * margin));
   const leftBoxX = margin;
   const rightBoxX = margin + boxWidth + 4;
