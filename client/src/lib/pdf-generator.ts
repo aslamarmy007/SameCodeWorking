@@ -14,7 +14,6 @@ import { tamilFontBase64 } from "./tamil-font";
 interface InvoiceData {
   invoiceNumber: string;
   billDate: string;
-  billType?: "sale" | "purchase";
   shippingToMyself?: boolean;
   customer: {
     name: string;
@@ -256,93 +255,8 @@ function drawCompanyHeader(doc: jsPDF, pageWidth: number, margin: number, yPos: 
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
+  
   doc.text("CASH/CREDIT BILL", billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
-
-  return yPos + 46;
-}
-
-function drawCompanyHeaderWithBillType(doc: jsPDF, pageWidth: number, margin: number, yPos: number, billType: string): number {
-  const logoWidth = 30;
-  const logoHeight = 30;
-  doc.addImage(logoImage, 'PNG', margin, yPos - 2, logoWidth, logoHeight);
-
-  const centerStartY = yPos + 12;
-  doc.setFontSize(45);
-  doc.setTextColor(51, 74, 94);
-  doc.setFont("times", "bold");
-  doc.text("AYESHA", pageWidth / 2, centerStartY, { align: "center" });
-  
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text("COCO PITH & FIBER INDUSTRIES", pageWidth / 2, centerStartY + 11, { align: "center" });
-  
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("SF NO. 460 - 2B1 - 460, 1473, UDALYAR STREET, NEMMAKKOTTAI", pageWidth / 2, centerStartY + 18, { align: "center" });
-  doc.text("ALANGUDI, PUDUKKOTTAI, TAMIL NADU, INDIA - 622301.", pageWidth / 2, centerStartY + 23, { align: "center" });
-  
-  const phoneIconSize = 3;
-  const phoneTextY = centerStartY + 29;
-  const phoneNumbersText = "89409 30276 | 94443 70934";
-  const emailText = "ayeshaacf@gmail.com";
-  const gstinLabel = "GSTIN : ";
-  const gstinNumber = "33DMEPM1042M1Z5";
-  const billBoxWidth = 30;
-  
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  const normalTextWidth = doc.getTextWidth(phoneNumbersText);
-  doc.setFont("helvetica", "bold");
-  const gstinLabelWidth = doc.getTextWidth(gstinLabel);
-  doc.setFont("helvetica", "normal");
-  const gstinNumberWidth = doc.getTextWidth(gstinNumber);
-  
-  const totalLineWidth = phoneIconSize + 1 + normalTextWidth + 3 + 
-                         doc.getTextWidth("•") + 3 + 
-                         phoneIconSize + 1 + doc.getTextWidth(emailText) + 3 + 
-                         doc.getTextWidth("•") + 3 + 
-                         gstinLabelWidth + gstinNumberWidth;
-  
-  const phoneStartX = (pageWidth - totalLineWidth) / 2;
-  doc.addImage(phoneIcon, 'PNG', phoneStartX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
-  doc.text(phoneNumbersText, phoneStartX + phoneIconSize + 1, phoneTextY);
-  
-  const phoneEndX = phoneStartX + phoneIconSize + 1 + doc.getTextWidth(phoneNumbersText);
-  const separator1X = phoneEndX + 3;
-  doc.text("•", separator1X, phoneTextY);
-  
-  const emailIconX = separator1X + doc.getTextWidth("•") + 3;
-  doc.addImage(emailIcon, 'PNG', emailIconX, phoneTextY - 2.5, phoneIconSize, phoneIconSize);
-  const emailTextX = emailIconX + phoneIconSize + 1;
-  doc.text(emailText, emailTextX, phoneTextY);
-  
-  const emailEndX = emailTextX + doc.getTextWidth(emailText);
-  const separator2X = emailEndX + 3;
-  doc.text("•", separator2X, phoneTextY);
-  
-  const gstinLabelX = separator2X + doc.getTextWidth("•") + 3;
-  doc.setFont("helvetica", "bold");
-  doc.text(gstinLabel, gstinLabelX, phoneTextY);
-  doc.setFont("helvetica", "normal");
-  doc.text(gstinNumber, gstinLabelX + gstinLabelWidth, phoneTextY);
-
-  const billBoxHeight = 8;
-  const billBoxX = pageWidth - margin - billBoxWidth;
-  const billBoxY = yPos - 1;
-  
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.4);
-  doc.roundedRect(billBoxX, billBoxY, billBoxWidth, billBoxHeight, 2, 2, 'S');
-  doc.setLineWidth(0.4);
-  doc.roundedRect(billBoxX + 1.5, billBoxY + 1.5, billBoxWidth - 3, billBoxHeight - 3, 1.5, 1.5, 'S');
-  
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  
-  const billTypeText = billType === "purchase" ? "PURCHASE BILL" : "CASH/CREDIT BILL";
-  doc.text(billTypeText, billBoxX + billBoxWidth / 2, billBoxY + billBoxHeight / 2 + 1, { align: "center" });
 
   return yPos + 46;
 }
@@ -379,7 +293,7 @@ function drawInvoiceDetails(doc: jsPDF, pageWidth: number, margin: number, yPos:
   return yPos;
 }
 
-async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any, billType?: "sale" | "purchase", shippingToMyself?: boolean): Promise<number> {
+async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number, yPos: number, customer: any, shipping: any, shippingToMyself?: boolean): Promise<number> {
   const showShipping = !shippingToMyself;
   const boxWidth = showShipping ? (pageWidth - (2 * margin) - 4) / 2 : (pageWidth - (2 * margin));
   const leftBoxX = margin;
@@ -579,8 +493,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(52, 73, 94);
-  const billToLabel = billType === "purchase" ? (showShipping ? "From:" : "From:") : "BILL TO:";
-  doc.text(billToLabel, leftBoxX + 3, boxStartY + 5);
+  doc.text("BILL TO:", leftBoxX + 3, boxStartY + 5);
   
   if (showShipping) {
     doc.setDrawColor(200, 200, 200);
@@ -593,8 +506,7 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(52, 73, 94);
-    const shipToLabel = billType === "purchase" ? "To:" : "SHIP TO:";
-    doc.text(shipToLabel, rightBoxX + 3, boxStartY + 5);
+    doc.text("SHIP TO:", rightBoxX + 3, boxStartY + 5);
   }
   
   return boxStartY + boxHeight + 4;
@@ -603,9 +515,9 @@ async function drawCustomerDetails(doc: jsPDF, pageWidth: number, margin: number
 async function drawCompletePageHeader(doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, data: InvoiceData, startY: number): Promise<number> {
   drawPageBorder(doc, pageWidth, pageHeight);
   let yPos = startY;
-  yPos = drawCompanyHeaderWithBillType(doc, pageWidth, margin, yPos, data.billType || "sale");
+  yPos = drawCompanyHeader(doc, pageWidth, margin, yPos);
   yPos = drawInvoiceDetails(doc, pageWidth, margin, yPos, data.invoiceNumber, data.billDate);
-  yPos = await drawCustomerDetails(doc, pageWidth, margin, yPos, data.customer, data.shipping, data.billType, data.shippingToMyself);
+  yPos = await drawCustomerDetails(doc, pageWidth, margin, yPos, data.customer, data.shipping, data.shippingToMyself);
   return yPos;
 }
 
