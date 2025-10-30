@@ -27,6 +27,7 @@ interface BillSummaryProps {
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onUpdatePrice: (productId: string, price: number) => void;
   onRemoveItem: (productId: string) => void;
+  onUpdateBillDate?: (date: string) => void;
 }
 
 export function BillSummary({
@@ -41,6 +42,7 @@ export function BillSummary({
   onUpdateQuantity,
   onUpdatePrice,
   onRemoveItem,
+  onUpdateBillDate,
 }: BillSummaryProps) {
   return (
     <Card className="p-3 sm:p-4 md:p-6 rounded-[15px] sm:rounded-[20px] shadow-xl" data-testid="card-summary">
@@ -57,9 +59,19 @@ export function BillSummary({
             </div>
           )}
           {billDate && (
-            <div className="text-sm">
+            <div className="text-sm flex items-center gap-2">
               <span className="font-semibold">Date:</span>{" "}
-              <span className="text-muted-foreground">{new Date(billDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              {onUpdateBillDate ? (
+                <Input
+                  type="date"
+                  value={billDate}
+                  onChange={(e) => onUpdateBillDate(e.target.value)}
+                  className="h-7 text-xs w-36"
+                  data-testid="input-bill-date-summary"
+                />
+              ) : (
+                <span className="text-muted-foreground">{new Date(billDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              )}
             </div>
           )}
         </div>

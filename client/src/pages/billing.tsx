@@ -3028,6 +3028,7 @@ export default function BillingPage() {
               onUpdateQuantity={handleUpdateQuantity}
               onUpdatePrice={handleUpdatePrice}
               onRemoveItem={handleRemoveItem}
+              onUpdateBillDate={(date) => setBillConfig({ ...billConfig, billDate: date })}
             />
           </div>
         </div>
