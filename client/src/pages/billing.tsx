@@ -128,6 +128,8 @@ export default function BillingPage() {
     paymentDate?: string;
     paidAmount?: number;
     balanceAmount?: number;
+    cashAmount?: number;
+    onlineAmount?: number;
   }>({});
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
@@ -472,6 +474,9 @@ export default function BillingPage() {
         paymentDate: paymentData.paymentDate,
         paidAmount: paymentData.paidAmount?.toString(),
         balanceAmount: paymentData.balanceAmount?.toString(),
+        cashAmount: paymentData.cashAmount?.toString() || "0",
+        onlineAmount: paymentData.onlineAmount?.toString() || "0",
+        roundOff: roundOff.toString(),
         items: billItems.map((item) => ({
           productId: item.productId,
           productName: item.productName,
@@ -604,7 +609,9 @@ export default function BillingPage() {
   const totalCharges = additionalCharges.transport + additionalCharges.packaging + additionalCharges.other;
   const itemsGstAmount = billItems.reduce((sum, item) => sum + (item.gstAmount || 0), 0);
   const gstAmount = billConfig.gstEnabled ? itemsGstAmount : 0;
-  const grandTotal = subtotal + totalCharges + gstAmount;
+  const grandTotalBeforeRounding = subtotal + totalCharges + gstAmount;
+  const roundOff = Math.round(grandTotalBeforeRounding) - grandTotalBeforeRounding;
+  const grandTotal = Math.round(grandTotalBeforeRounding);
 
   const handleCustomerSelect = (customerId: string) => {
     const customer = customers.find((c) => c.id === customerId);
@@ -729,7 +736,8 @@ export default function BillingPage() {
   const hasValidProducts = billItems.length > 0 && allItemsHaveValidQuantity;
   const hasAnyCharges = additionalCharges.transport > 0 || additionalCharges.packaging > 0 || additionalCharges.other > 0;
   const canProceedFromProducts = billItems.length === 0 || allItemsHaveValidQuantity;
-  const canGeneratePDF = hasValidProducts || hasAnyCharges;
+  const hasTransportType = additionalCharges.transportType.trim() !== "";
+  const canGeneratePDF = (hasValidProducts || hasAnyCharges) && hasTransportType;
 
   const handleSaveCustomer = () => {
     const phoneRegex = /^\d{10}$/;
@@ -1023,6 +1031,8 @@ export default function BillingPage() {
     paymentMethod?: string;
     paymentDate: string;
     paidAmount?: number;
+    cashAmount?: number;
+    onlineAmount?: number;
   }) => {
     const balanceAmount = data.paidAmount 
       ? grandTotal - data.paidAmount 
@@ -1036,6 +1046,8 @@ export default function BillingPage() {
       paymentDate: data.paymentDate,
       paidAmount: data.paidAmount,
       balanceAmount,
+      cashAmount: data.cashAmount,
+      onlineAmount: data.onlineAmount,
     });
 
     setShowPaymentDialog(false);
@@ -2981,7 +2993,7 @@ export default function BillingPage() {
                   </div>
                   <div>
                     <Label htmlFor="transportType" className="text-base font-semibold mb-2 block">
-                      Transport Type
+                      Transport Type <span className="text-destructive">*</span>
                     </Label>
                     <Select
                       value={additionalCharges.transportType}
@@ -3117,11 +3129,19 @@ export default function BillingPage() {
               items={billItems}
               subtotal={subtotal}
               charges={totalCharges}
+              transportCharge={additionalCharges.transport}
+              packingCharge={additionalCharges.packaging}
+              otherCharges={additionalCharges.other}
               gstAmount={gstAmount}
+              roundOff={roundOff}
               grandTotal={grandTotal}
               gstEnabled={billConfig.gstEnabled}
               customerShopName={customerData.shopName}
               billDate={billConfig.billDate}
+              paymentMethod={paymentData.paymentMethod}
+              cashAmount={paymentData.cashAmount}
+              onlineAmount={paymentData.onlineAmount}
+              balanceCredit={paymentData.balanceAmount}
               onUpdateQuantity={handleUpdateQuantity}
               onUpdatePrice={handleUpdatePrice}
               onRemoveItem={handleRemoveItem}

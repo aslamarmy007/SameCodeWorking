@@ -19,11 +19,19 @@ interface BillSummaryProps {
   items: BillItem[];
   subtotal: number;
   charges: number;
+  transportCharge?: number;
+  packingCharge?: number;
+  otherCharges?: number;
   gstAmount: number;
+  roundOff?: number;
   grandTotal: number;
   gstEnabled: boolean;
   customerShopName?: string;
   billDate?: string;
+  paymentMethod?: string;
+  cashAmount?: number;
+  onlineAmount?: number;
+  balanceCredit?: number;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onUpdatePrice: (productId: string, price: number) => void;
   onRemoveItem: (productId: string) => void;
@@ -34,11 +42,19 @@ export function BillSummary({
   items,
   subtotal,
   charges,
+  transportCharge = 0,
+  packingCharge = 0,
+  otherCharges = 0,
   gstAmount,
+  roundOff = 0,
   grandTotal,
   gstEnabled,
   customerShopName,
   billDate,
+  paymentMethod,
+  cashAmount = 0,
+  onlineAmount = 0,
+  balanceCredit = 0,
   onUpdateQuantity,
   onUpdatePrice,
   onRemoveItem,
@@ -267,12 +283,30 @@ export function BillSummary({
             ₹{subtotal.toFixed(2)}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-xs sm:text-base">Charges:</span>
-          <span className="font-semibold text-xs sm:text-base" data-testid="text-charges">
-            ₹{charges.toFixed(2)}
-          </span>
-        </div>
+        {packingCharge > 0 && (
+          <div className="flex justify-between">
+            <span className="font-medium text-xs sm:text-base">Packing Charge:</span>
+            <span className="font-semibold text-xs sm:text-base" data-testid="text-packing-charge">
+              ₹{packingCharge.toFixed(2)}
+            </span>
+          </div>
+        )}
+        {transportCharge > 0 && (
+          <div className="flex justify-between">
+            <span className="font-medium text-xs sm:text-base">Transport Charge:</span>
+            <span className="font-semibold text-xs sm:text-base" data-testid="text-transport-charge">
+              ₹{transportCharge.toFixed(2)}
+            </span>
+          </div>
+        )}
+        {otherCharges > 0 && (
+          <div className="flex justify-between">
+            <span className="font-medium text-xs sm:text-base">Other Charges:</span>
+            <span className="font-semibold text-xs sm:text-base" data-testid="text-other-charges">
+              ₹{otherCharges.toFixed(2)}
+            </span>
+          </div>
+        )}
         {gstEnabled && items.length > 0 && (
           <>
             <div className="flex justify-between">
@@ -299,10 +333,56 @@ export function BillSummary({
             </div>
           </>
         )}
+        {roundOff !== 0 && (
+          <div className="flex justify-between">
+            <span className="font-medium text-xs sm:text-base">Round Off:</span>
+            <span className={`font-semibold text-xs sm:text-base ${roundOff > 0 ? 'text-green-600' : 'text-red-600'}`} data-testid="text-round-off">
+              {roundOff > 0 ? '+' : ''}₹{roundOff.toFixed(2)}
+            </span>
+          </div>
+        )}
         <div className="flex justify-between pt-2 sm:pt-3 border-t-2 text-base sm:text-xl font-bold">
           <span>Grand Total:</span>
           <span data-testid="text-grand-total">₹{grandTotal.toFixed(2)}</span>
         </div>
+        {paymentMethod && (
+          <div className="mt-3 pt-3 border-t space-y-1">
+            <div className="flex justify-between">
+              <span className="font-medium text-xs sm:text-sm">Payment Method:</span>
+              <span className="font-semibold text-xs sm:text-sm capitalize" data-testid="text-payment-method">
+                {paymentMethod.replace('_', ' ')}
+              </span>
+            </div>
+            {paymentMethod === 'partial' && (
+              <>
+                {cashAmount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="font-medium text-xs sm:text-sm text-muted-foreground pl-4">Cash:</span>
+                    <span className="font-semibold text-xs sm:text-sm" data-testid="text-cash-amount">
+                      ₹{cashAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {onlineAmount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="font-medium text-xs sm:text-sm text-muted-foreground pl-4">Online:</span>
+                    <span className="font-semibold text-xs sm:text-sm" data-testid="text-online-amount">
+                      ₹{onlineAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+            {balanceCredit > 0 && (
+              <div className="flex justify-between pt-1 border-t">
+                <span className="font-medium text-xs sm:text-sm text-orange-600 dark:text-orange-400">Balance Credit:</span>
+                <span className="font-bold text-xs sm:text-sm text-orange-600 dark:text-orange-400" data-testid="text-balance-credit">
+                  ₹{balanceCredit.toFixed(2)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Card>
   );
