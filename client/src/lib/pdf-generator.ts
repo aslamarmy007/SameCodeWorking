@@ -627,7 +627,13 @@ export async function generateInvoicePDF(data: InvoiceData) {
     }
 
     doc.text(String(index + 1), col1, yPos + 5);
-    doc.text(item.productName, col2, yPos + 5);
+    
+    if (hasTamilCharacters(item.productName)) {
+      await addTamilText(doc, item.productName, col2, yPos + 5, 9, "normal", "#000000", "left");
+    } else {
+      doc.text(item.productName, col2, yPos + 5);
+    }
+    
     doc.text(item.hsn, col3, yPos + 5);
     doc.text(String(item.quantity), col4, yPos + 5, { align: "center" });
     doc.text(item.price.toFixed(2), col5, yPos + 5, { align: "right" });
@@ -1042,9 +1048,7 @@ export async function generateInvoicePDF(data: InvoiceData) {
         }
       }
     } else if (data.paymentStatus !== "full_credit") {
-      const isSameDate = data.paymentDate === data.billDate;
-      
-      if (isSameDate && data.paymentDate) {
+      if (data.paymentDate) {
         const formattedPaymentDate = new Date(data.paymentDate).toLocaleDateString('en-IN', { 
           day: '2-digit', 
           month: 'short', 

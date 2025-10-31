@@ -52,7 +52,7 @@ export function PaymentDialog({
     setLastEdited("cash");
     if (value && !isNaN(parseFloat(value))) {
       const cash = parseFloat(value);
-      const totalRequired = paymentOption === "full_paid" ? grandTotal : grandTotal;
+      const totalRequired = paymentOption === "full_paid" ? grandTotal : parseFloat(paidAmount || "0");
       const remainingOnline = Math.max(0, totalRequired - cash);
       setOnlineAmount(remainingOnline.toFixed(2));
     } else {
@@ -65,7 +65,7 @@ export function PaymentDialog({
     setLastEdited("online");
     if (value && !isNaN(parseFloat(value))) {
       const online = parseFloat(value);
-      const totalRequired = paymentOption === "full_paid" ? grandTotal : grandTotal;
+      const totalRequired = paymentOption === "full_paid" ? grandTotal : parseFloat(paidAmount || "0");
       const remainingCash = Math.max(0, totalRequired - online);
       setCashAmount(remainingCash.toFixed(2));
     } else {
@@ -184,7 +184,7 @@ export function PaymentDialog({
             </RadioGroup>
           </div>
 
-          {paymentOption === "partial_paid" && paymentMethod !== "partial" && (
+          {paymentOption === "partial_paid" && (
             <div className="space-y-2">
               <Label htmlFor="paid_amount">Paid Amount</Label>
               <Input
@@ -239,7 +239,8 @@ export function PaymentDialog({
             </div>
           )}
 
-          {paymentOption !== "full_credit" && paymentMethod === "partial" && (
+          {paymentOption !== "full_credit" && paymentMethod === "partial" && 
+           (paymentOption === "full_paid" || (paymentOption === "partial_paid" && paidAmount && parseFloat(paidAmount) > 0)) && (
             <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
               <Label className="text-sm font-semibold">Split Payment Details</Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -286,7 +287,7 @@ export function PaymentDialog({
                     {paymentOption === "full_paid" ? "Total to Pay:" : "Total Paying Now:"}
                   </span>
                   <span className="font-semibold">
-                    {paymentOption === "full_paid" ? `₹${grandTotal.toFixed(2)}` : `(From ₹${grandTotal.toFixed(2)})`}
+                    {paymentOption === "full_paid" ? `₹${grandTotal.toFixed(2)}` : `₹${parseFloat(paidAmount || "0").toFixed(2)}`}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -296,8 +297,7 @@ export function PaymentDialog({
                       ? (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) === grandTotal
                         ? "text-green-600"
                         : "text-destructive"
-                      : (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) > 0 &&
-                        (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) < grandTotal
+                      : Math.abs((parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) - parseFloat(paidAmount || "0")) < 0.01
                         ? "text-green-600"
                         : "text-destructive"
                   }`}>
@@ -366,13 +366,12 @@ export function PaymentDialog({
             className="flex-1"
             data-testid="button-confirm-payment"
             disabled={
-              (paymentOption === "partial_paid" && paymentMethod !== "partial" &&
+              (paymentOption === "partial_paid" &&
                 (!paidAmount || parseFloat(paidAmount) <= 0 || parseFloat(paidAmount) >= grandTotal)) ||
               (paymentMethod === "partial" && paymentOption === "full_paid" &&
                 (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) !== grandTotal) ||
-              (paymentMethod === "partial" && paymentOption === "partial_paid" &&
-                ((parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) <= 0 ||
-                 (parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) >= grandTotal))
+              (paymentMethod === "partial" && paymentOption === "partial_paid" && !!paidAmount &&
+                Math.abs((parseFloat(cashAmount || "0") + parseFloat(onlineAmount || "0")) - parseFloat(paidAmount)) >= 0.01)
             }
           >
             Confirm & Download PDF
