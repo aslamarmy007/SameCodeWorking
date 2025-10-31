@@ -1372,76 +1372,110 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const margin = 15;
   let yPos = 18;
 
-  // Header: "Estimate Bill" and "ACF"
-  doc.setFontSize(20);
+  // Professional Header
+  doc.setFillColor(41, 98, 255);
+  doc.rect(0, 0, pageWidth, 35, "F");
+  
+  doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(51, 74, 94);
-  doc.text("Estimate Bill", pageWidth / 2, yPos, { align: "center" });
+  doc.setTextColor(255, 255, 255);
+  doc.text("ESTIMATE", pageWidth / 2, yPos, { align: "center" });
   yPos += 8;
   
-  doc.setFontSize(14);
-  doc.text("ACF", pageWidth / 2, yPos, { align: "center" });
-  yPos += 10;
-
-  // Bill No and Date
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
+  doc.text("AYESHA COCO PITH & FIBER INDUSTRIES", pageWidth / 2, yPos, { align: "center" });
+  yPos += 12;
+
+  // Bill No and Date - Professional Layout
   doc.setTextColor(0, 0, 0);
-  doc.text(`Bill No: ${data.invoiceNumber}`, margin, yPos);
+  doc.setFillColor(245, 247, 250);
+  doc.rect(margin, yPos, pageWidth - 2 * margin, 9, "F");
+  doc.setDrawColor(220, 225, 230);
+  doc.setLineWidth(0.3);
+  doc.rect(margin, yPos, pageWidth - 2 * margin, 9, "S");
+  
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Estimate No:", margin + 3, yPos + 6);
+  doc.setFont("helvetica", "normal");
+  doc.text(data.invoiceNumber, margin + 28, yPos + 6);
+  
   const formattedDate = new Date(data.billDate).toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'short',
     year: 'numeric'
   });
-  doc.text(`Date: ${formattedDate}`, pageWidth - margin, yPos, { align: "right" });
-  yPos += 8;
+  doc.setFont("helvetica", "bold");
+  doc.text("Date:", pageWidth - margin - 38, yPos + 6);
+  doc.setFont("helvetica", "normal");
+  doc.text(formattedDate, pageWidth - margin - 3, yPos + 6, { align: "right" });
+  yPos += 12;
 
-  // To (Customer Details) - Full Width
+  // To (Customer Details) - Dynamic Height with 5px padding
   const customerBoxX = margin;
   const customerBoxWidth = pageWidth - 2 * margin;
-  const customerBoxHeight = 40;
+  const padding = 5;
+  let customerContentY = yPos + padding + 5;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  
+  let lineCount = 1;
+  if (data.customer.shopName) lineCount++;
+  if (data.customer.name) lineCount++;
+  if (data.customer.address) {
+    const addressLines = doc.splitTextToSize(data.customer.address, customerBoxWidth - (2 * padding));
+    lineCount += addressLines.length;
+  }
+  lineCount++;
+  
+  const lineHeight = 4.5;
+  const customerBoxHeight = (lineCount * lineHeight) + (2 * padding);
 
-  // Draw box with border
-  doc.setFillColor(240, 240, 240);
-  doc.rect(customerBoxX, yPos, customerBoxWidth, customerBoxHeight, "F");
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.rect(customerBoxX, yPos, customerBoxWidth, customerBoxHeight, "S");
+  const customerBoxStartY = yPos;
+  doc.setFillColor(248, 250, 252);
+  doc.rect(customerBoxX, customerBoxStartY, customerBoxWidth, customerBoxHeight, "F");
+  doc.setDrawColor(200, 210, 220);
+  doc.setLineWidth(0.4);
+  doc.rect(customerBoxX, customerBoxStartY, customerBoxWidth, customerBoxHeight, "S");
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.text("To:", customerBoxX + 3, yPos + 5);
+  doc.setTextColor(52, 73, 94);
+  doc.text("To:", customerBoxX + padding, customerContentY);
+  customerContentY += lineHeight;
   
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  let customerY = yPos + 10;
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
   if (data.customer.shopName) {
-    doc.text(data.customer.shopName, customerBoxX + 3, customerY);
-    customerY += 4;
+    doc.text(data.customer.shopName, customerBoxX + padding, customerContentY);
+    customerContentY += lineHeight;
   }
   if (data.customer.name) {
-    doc.text(data.customer.name, customerBoxX + 3, customerY);
-    customerY += 4;
+    doc.text(data.customer.name, customerBoxX + padding, customerContentY);
+    customerContentY += lineHeight;
   }
   if (data.customer.address) {
-    const addressLines = doc.splitTextToSize(data.customer.address, customerBoxWidth - 6);
-    doc.text(addressLines, customerBoxX + 3, customerY);
-    customerY += addressLines.length * 4;
+    const addressLines = doc.splitTextToSize(data.customer.address, customerBoxWidth - (2 * padding));
+    doc.text(addressLines, customerBoxX + padding, customerContentY);
+    customerContentY += addressLines.length * lineHeight;
   }
-  doc.text(`${data.customer.city}, ${data.customer.state}`, customerBoxX + 3, customerY);
+  doc.text(`${data.customer.city}, ${data.customer.state}`, customerBoxX + padding, customerContentY);
   
   yPos += customerBoxHeight + 8;
 
-  // Items Table Header
-  doc.setFillColor(52, 73, 94);
-  doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "S");
+  // Items Table Header - Professional Style
+  doc.setFillColor(41, 98, 255);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "F");
+  doc.setDrawColor(41, 98, 255);
+  doc.setLineWidth(0.4);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "S");
   
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   
   const col1 = margin + 3;
   const col2 = margin + 15;
@@ -1449,220 +1483,260 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const col4 = pageWidth / 2 + 50;
   const col5 = pageWidth - margin - 3;
   
-  const rateIconSize = 3;
+  const rateIconSize = 2.5;
   
-  doc.text("S.No", col1, yPos + 6);
-  doc.text("Description", col2, yPos + 6);
-  doc.text("Qty/Kg", col3, yPos + 6, { align: "center" });
+  doc.text("S.No", col1, yPos + 5.5);
+  doc.text("Description", col2, yPos + 5.5);
+  doc.text("Qty/Kg", col3, yPos + 5.5, { align: "center" });
   
   const rateTextWidth = doc.getTextWidth("Rate");
-  doc.addImage(rupeeIcon, 'PNG', col4 - rateTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
-  doc.text("Rate", col4, yPos + 6, { align: "right" });
+  doc.addImage(rupeeIcon, 'PNG', col4 - rateTextWidth - rateIconSize - 1, yPos + 3, rateIconSize, rateIconSize);
+  doc.text("Rate", col4, yPos + 5.5, { align: "right" });
   
   const amountTextWidth = doc.getTextWidth("Amount");
-  doc.addImage(rupeeIcon, 'PNG', col5 - amountTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
-  doc.text("Amount", col5, yPos + 6, { align: "right" });
-  yPos += 9;
+  doc.addImage(rupeeIcon, 'PNG', col5 - amountTextWidth - rateIconSize - 1, yPos + 3, rateIconSize, rateIconSize);
+  doc.text("Amount", col5, yPos + 5.5, { align: "right" });
+  yPos += 8;
 
-  // Items
+  // Items - Professional Table
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   
   for (let index = 0; index < data.items.length; index++) {
     const item = data.items[index];
     
     if (index % 2 === 0) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(margin, yPos, pageWidth - (2 * margin), 7, "F");
+      doc.setFillColor(249, 250, 251);
+      doc.rect(margin, yPos, pageWidth - (2 * margin), 6.5, "F");
     }
 
-    doc.text(String(index + 1), col1, yPos + 5);
+    doc.text(String(index + 1), col1, yPos + 4.5);
     
     if (hasTamilCharacters(item.productName)) {
-      await addTamilText(doc, item.productName, col2, yPos + 5, 9, "normal", "#000000", "left");
+      await addTamilText(doc, item.productName, col2, yPos + 4.5, 8.5, "normal", "#000000", "left");
     } else {
-      doc.text(item.productName, col2, yPos + 5);
+      doc.text(item.productName, col2, yPos + 4.5);
     }
     
-    doc.text(String(item.quantity), col3, yPos + 5, { align: "center" });
-    doc.text(item.price.toFixed(2), col4, yPos + 5, { align: "right" });
-    doc.text(item.total.toFixed(2), col5, yPos + 5, { align: "right" });
+    doc.text(String(item.quantity), col3, yPos + 4.5, { align: "center" });
+    doc.text(item.price.toFixed(2), col4, yPos + 4.5, { align: "right" });
+    doc.text(item.total.toFixed(2), col5, yPos + 4.5, { align: "right" });
     
-    yPos += 7;
+    yPos += 6.5;
     
-    doc.setDrawColor(230, 230, 230);
-    doc.setLineWidth(0.1);
+    doc.setDrawColor(235, 238, 242);
+    doc.setLineWidth(0.2);
     doc.line(margin, yPos, pageWidth - margin, yPos);
   }
 
-  yPos += 6;
+  yPos += 5;
 
-  // Summary Section
-  const summaryX = pageWidth - margin - 60;
-  const summaryWidth = 60;
-  const rowHeight = 7;
+  // Summary Section - Professional Style
+  const summaryX = pageWidth - margin - 65;
+  const summaryWidth = 65;
+  const rowHeight = 6.5;
 
   // Subtotal
-  doc.setFillColor(250, 250, 250);
+  doc.setFillColor(248, 250, 252);
   doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-  doc.setDrawColor(0, 0, 0);
+  doc.setDrawColor(220, 225, 230);
   doc.setLineWidth(0.3);
   doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text("Subtotal:", summaryX + 3, yPos + 5);
-  doc.text(data.subtotal.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+  doc.text("Subtotal:", summaryX + 3, yPos + 4.5);
+  doc.setTextColor(0, 0, 0);
+  doc.text(data.subtotal.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
   yPos += rowHeight;
 
-  // Transport Charge
-  if (data.transport > 0) {
-    doc.setFillColor(250, 250, 250);
-    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.3);
-    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
-    doc.text("Transport Charge:", summaryX + 3, yPos + 5);
-    doc.text(data.transport.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
-    yPos += rowHeight;
-  }
+  // Transport Charge - Always show
+  doc.setFillColor(248, 250, 252);
+  doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+  doc.setDrawColor(220, 225, 230);
+  doc.setLineWidth(0.3);
+  doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
+  doc.setTextColor(60, 60, 60);
+  doc.text("Transport:", summaryX + 3, yPos + 4.5);
+  doc.setTextColor(0, 0, 0);
+  doc.text((data.transport || 0).toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
+  yPos += rowHeight;
 
   // Packaging Charge
   if (data.packaging > 0) {
-    doc.setFillColor(250, 250, 250);
+    doc.setFillColor(248, 250, 252);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(0, 0, 0);
+    doc.setDrawColor(220, 225, 230);
     doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
-    doc.text("Packaging Charge:", summaryX + 3, yPos + 5);
-    doc.text(data.packaging.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+    doc.setTextColor(60, 60, 60);
+    doc.text("Packaging:", summaryX + 3, yPos + 4.5);
+    doc.setTextColor(0, 0, 0);
+    doc.text(data.packaging.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
     yPos += rowHeight;
   }
 
   // Other Charge
   if (data.other > 0) {
-    doc.setFillColor(250, 250, 250);
+    doc.setFillColor(248, 250, 252);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(0, 0, 0);
+    doc.setDrawColor(220, 225, 230);
     doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
-    doc.text("Other Charge:", summaryX + 3, yPos + 5);
-    doc.text(data.other.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+    doc.setTextColor(60, 60, 60);
+    doc.text("Other:", summaryX + 3, yPos + 4.5);
+    doc.setTextColor(0, 0, 0);
+    doc.text(data.other.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
     yPos += rowHeight;
   }
 
   // Round Off (only if data.roundOff is provided)
   if (data.roundOff !== undefined && data.roundOff !== null && Number(data.roundOff) !== 0) {
-    doc.setFillColor(250, 250, 250);
+    doc.setFillColor(248, 250, 252);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(0, 0, 0);
+    doc.setDrawColor(220, 225, 230);
     doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Round Off:", summaryX + 3, yPos + 5);
+    doc.setFontSize(8.5);
+    doc.setTextColor(60, 60, 60);
+    doc.text("Round Off:", summaryX + 3, yPos + 4.5);
     const roundOffValue = Number(data.roundOff);
     const roundOffText = (roundOffValue >= 0 ? "+" : "") + roundOffValue.toFixed(2);
-    doc.text(roundOffText, summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+    doc.setTextColor(0, 0, 0);
+    doc.text(roundOffText, summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
     yPos += rowHeight;
   }
 
-  // Grand Total
-  const grandRowHeight = 9;
-  doc.setFillColor(52, 73, 94);
+  // Grand Total - Professional Style
+  const grandRowHeight = 8;
+  doc.setFillColor(41, 98, 255);
   doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "F");
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
+  doc.setDrawColor(41, 98, 255);
+  doc.setLineWidth(0.4);
   doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "S");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(255, 255, 255);
-  doc.text("Grand Total:", summaryX + 3, yPos + 6);
-  const rupeeIconSize2 = 3;
+  doc.text("Grand Total:", summaryX + 3, yPos + 5.5);
+  const rupeeIconSize2 = 2.8;
   const iconSpacing = 1;
   const grandTotalText = data.grandTotal.toFixed(2);
   const grandTotalTextWidth = doc.getTextWidth(grandTotalText);
-  doc.addImage(rupeeIcon, 'PNG', summaryX + summaryWidth - 3 - grandTotalTextWidth - rupeeIconSize2 - iconSpacing, yPos + 3.5, rupeeIconSize2, rupeeIconSize2);
-  doc.text(grandTotalText, summaryX + summaryWidth - 3, yPos + 6, { align: "right" });
-  yPos += grandRowHeight + 5;
+  doc.addImage(rupeeIcon, 'PNG', summaryX + summaryWidth - 3 - grandTotalTextWidth - rupeeIconSize2 - iconSpacing, yPos + 3, rupeeIconSize2, rupeeIconSize2);
+  doc.text(grandTotalText, summaryX + summaryWidth - 3, yPos + 5.5, { align: "right" });
+  yPos += grandRowHeight + 6;
 
-  // Amount in Words
-  doc.setTextColor(0, 0, 0);
+  // Amount in Words - Professional Style
+  doc.setFillColor(252, 252, 253);
+  doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "F");
+  doc.setDrawColor(220, 225, 230);
+  doc.setLineWidth(0.3);
+  doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "S");
+  
+  doc.setTextColor(50, 50, 50);
   doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Amount in Words:", margin + 3, yPos + 5.5);
+  
   doc.setFont("helvetica", "italic");
+  doc.setTextColor(0, 0, 0);
   const roundedTotal = Math.round(data.grandTotal);
   const amountInWords = numberToWords(roundedTotal);
-  doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
-  yPos += 10;
+  doc.text(amountInWords + " only", margin + 32, yPos + 5.5);
+  yPos += 12;
 
-  // Payment Table (if payment data exists)
+  // Payment Information Section - Professional Style
   if (data.paymentStatus && data.paymentDate) {
-    const paymentBoxX = pageWidth - margin - 70;
-    const paymentBoxWidth = 70;
+    const paymentBoxX = pageWidth - margin - 75;
+    const paymentBoxWidth = 75;
     let currentPaymentY = yPos;
     const paymentRowHeight = 7;
     
     const rupeeIconBlackSize = 2.5;
     const rupeeIconBlackSpacing = 1;
     
-    // Payment Status
-    doc.setDrawColor(0, 0, 0);
+    // Payment Status Header
+    doc.setDrawColor(220, 225, 230);
     doc.setLineWidth(0.3);
     if (data.paymentStatus === "full_paid") {
-      doc.setFillColor(200, 255, 200);
+      doc.setFillColor(34, 197, 94);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(0, 150, 0);
-      doc.text("PAID FULLY", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+      doc.setTextColor(255, 255, 255);
+      doc.text("FULLY PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     } else if (data.paymentStatus === "full_credit") {
-      doc.setFillColor(255, 200, 200);
+      doc.setFillColor(239, 68, 68);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(220, 0, 0);
-      doc.text("NOT PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+      doc.setTextColor(255, 255, 255);
+      doc.text("UNPAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     } else {
-      doc.setFillColor(255, 255, 200);
+      doc.setFillColor(251, 191, 36);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(180, 140, 0);
-      doc.text("PARTIAL PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+      doc.setTextColor(255, 255, 255);
+      doc.text("PARTIALLY PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     }
     currentPaymentY += paymentRowHeight;
 
-    // Payment Type (Cash/Online/Partial)
+    // Payment Type (Cash/Online/Partial) - Professional Design
     if (data.paymentStatus !== "full_credit") {
       const cashAmt = Number(data.cashAmount || 0);
       const onlineAmt = Number(data.onlineAmount || 0);
-      let paymentTypeText = "";
       
-      if (cashAmt > 0 && onlineAmt > 0) {
-        paymentTypeText = `Cash + Online (₹${cashAmt.toFixed(2)} + ₹${onlineAmt.toFixed(2)})`;
-      } else if (cashAmt > 0) {
-        paymentTypeText = "Cash Payment";
-      } else if (onlineAmt > 0) {
-        paymentTypeText = "Online Payment";
-      }
-      
-      if (paymentTypeText) {
-        doc.setFillColor(250, 250, 250);
+      if (cashAmt > 0 || onlineAmt > 0) {
+        doc.setFillColor(248, 250, 252);
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(0, 0, 0);
-        doc.text(paymentTypeText, paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.5);
+        doc.setTextColor(41, 98, 255);
+        doc.text("PAYMENT METHOD", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
         currentPaymentY += paymentRowHeight;
+        
+        // Display payment breakdown
+        if (cashAmt > 0 && onlineAmt > 0) {
+          // Partial: Cash + Online
+          doc.setFillColor(255, 255, 255);
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(0, 0, 0);
+          doc.text("Cash:", paymentBoxX + 3, currentPaymentY + 4.5);
+          doc.text(`₹${cashAmt.toFixed(2)}`, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.5, { align: "right" });
+          currentPaymentY += paymentRowHeight;
+          
+          doc.setFillColor(255, 255, 255);
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+          doc.text("Online:", paymentBoxX + 3, currentPaymentY + 4.5);
+          doc.text(`₹${onlineAmt.toFixed(2)}`, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.5, { align: "right" });
+          currentPaymentY += paymentRowHeight;
+        } else {
+          // Single payment method
+          const paymentMethod = cashAmt > 0 ? "Cash Payment" : "Online Payment";
+          doc.setFillColor(255, 255, 255);
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(0, 0, 0);
+          doc.text(paymentMethod, paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
+          currentPaymentY += paymentRowHeight;
+        }
       }
     }
 
-    // Payment Date
+    // Payment Date - Professional Style
     if (data.paymentDate) {
       const formattedPaymentDate = new Date(data.paymentDate).toLocaleDateString('en-IN', {
         day: '2-digit',
@@ -1670,47 +1744,52 @@ export async function generateEstimatePDF(data: InvoiceData) {
         year: 'numeric'
       });
       
-      doc.setFillColor(250, 250, 250);
+      doc.setFillColor(248, 250, 252);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
       const dateLabel = data.paymentStatus === "full_paid" ? "Payment Date:" : "Partial Date:";
-      doc.text(dateLabel, paymentBoxX + 3, currentPaymentY + 5);
-      doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      doc.text(dateLabel, paymentBoxX + 3, currentPaymentY + 4.8);
+      doc.setTextColor(0, 0, 0);
+      doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
       currentPaymentY += paymentRowHeight;
     }
 
-    // Paid Amount
+    // Paid Amount - Professional Style
     if (data.paymentStatus !== "full_credit") {
-      doc.setFillColor(250, 250, 250);
+      doc.setFillColor(248, 250, 252);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text("Paid:", paymentBoxX + 3, currentPaymentY + 5);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(34, 197, 94);
+      doc.text("Paid Amount:", paymentBoxX + 3, currentPaymentY + 4.8);
+      doc.setTextColor(0, 0, 0);
       const paidAmountText = (data.paidAmount || roundedTotal).toFixed(2);
       const paidAmountTextWidth = doc.getTextWidth(paidAmountText);
       doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - paidAmountTextWidth - rupeeIconBlackSize - rupeeIconBlackSpacing, currentPaymentY + 2.5, rupeeIconBlackSize, rupeeIconBlackSize);
-      doc.text(paidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      doc.text(paidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
       currentPaymentY += paymentRowHeight;
     }
 
-    // Balance (if partial)
+    // Balance (if partial) - Professional Style
     if (data.paymentStatus === "partial_paid" && data.paidAmount) {
       const balanceAmount = roundedTotal - data.paidAmount;
       if (balanceAmount > 0) {
-        doc.setFillColor(250, 250, 250);
+        doc.setFillColor(254, 226, 226);
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.text("Balance:", paymentBoxX + 3, currentPaymentY + 5);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(239, 68, 68);
+        doc.text("Balance Due:", paymentBoxX + 3, currentPaymentY + 4.8);
+        doc.setTextColor(0, 0, 0);
         const balanceAmountText = balanceAmount.toFixed(2);
         const balanceAmountTextWidth = doc.getTextWidth(balanceAmountText);
         doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - balanceAmountTextWidth - rupeeIconBlackSize - rupeeIconBlackSpacing, currentPaymentY + 2.5, rupeeIconBlackSize, rupeeIconBlackSize);
-        doc.text(balanceAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+        doc.text(balanceAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
         currentPaymentY += paymentRowHeight;
       }
     }
