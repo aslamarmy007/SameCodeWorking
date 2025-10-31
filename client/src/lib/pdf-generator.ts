@@ -1667,7 +1667,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
   yPos += 10;
 
   // Transport Details (Lorry Service)
-  if (data.lorryServiceName || data.lorryNumber) {
+  if (data.lorryServiceName || data.lorryServicePhone) {
     doc.setFillColor(250, 252, 253);
     doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "F");
     doc.setDrawColor(220, 225, 230);
@@ -1685,8 +1685,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
     if (data.lorryServiceName) {
       transportText = data.lorryServiceName;
     }
-    if (data.lorryNumber) {
-      transportText += (transportText ? " | " : "") + data.lorryNumber;
+    if (data.lorryServicePhone) {
+      transportText += (transportText ? " | " : "") + data.lorryServicePhone;
     }
     doc.text(transportText, margin + 25, yPos + 5.5);
     yPos += 10;
