@@ -64,6 +64,7 @@ interface InvoiceData {
   paidAmount?: number;
   cashAmount?: number;
   onlineAmount?: number;
+  roundOff?: number;
   paymentHistory?: Array<{
     date: string;
     amount: number;
@@ -1395,75 +1396,48 @@ export async function generateEstimatePDF(data: InvoiceData) {
   doc.text(`Date: ${formattedDate}`, pageWidth - margin, yPos, { align: "right" });
   yPos += 8;
 
-  // Bill To and Ship To
-  const leftBoxX = margin;
-  const rightBoxX = pageWidth / 2 + 2;
-  const boxWidth = (pageWidth - 2 * margin - 4) / 2;
-  const boxHeight = 40;
+  // To (Customer Details) - Full Width
+  const customerBoxX = margin;
+  const customerBoxWidth = pageWidth - 2 * margin;
+  const customerBoxHeight = 40;
 
-  // Bill To
+  // Draw box with border
   doc.setFillColor(240, 240, 240);
-  doc.rect(leftBoxX, yPos, boxWidth, boxHeight, "F");
-  doc.setDrawColor(200, 200, 200);
-  doc.rect(leftBoxX, yPos, boxWidth, boxHeight, "S");
+  doc.rect(customerBoxX, yPos, customerBoxWidth, customerBoxHeight, "F");
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(customerBoxX, yPos, customerBoxWidth, customerBoxHeight, "S");
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.text("Bill To:", leftBoxX + 3, yPos + 5);
+  doc.text("To:", customerBoxX + 3, yPos + 5);
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  let billToY = yPos + 10;
+  let customerY = yPos + 10;
   if (data.customer.shopName) {
-    doc.text(data.customer.shopName, leftBoxX + 3, billToY);
-    billToY += 4;
+    doc.text(data.customer.shopName, customerBoxX + 3, customerY);
+    customerY += 4;
   }
   if (data.customer.name) {
-    doc.text(data.customer.name, leftBoxX + 3, billToY);
-    billToY += 4;
+    doc.text(data.customer.name, customerBoxX + 3, customerY);
+    customerY += 4;
   }
   if (data.customer.address) {
-    const addressLines = doc.splitTextToSize(data.customer.address, boxWidth - 6);
-    doc.text(addressLines, leftBoxX + 3, billToY);
-    billToY += addressLines.length * 4;
+    const addressLines = doc.splitTextToSize(data.customer.address, customerBoxWidth - 6);
+    doc.text(addressLines, customerBoxX + 3, customerY);
+    customerY += addressLines.length * 4;
   }
-  doc.text(`${data.customer.city}, ${data.customer.state}`, leftBoxX + 3, billToY);
-
-  // Ship To
-  if (!data.shippingToMyself) {
-    doc.setFillColor(240, 240, 240);
-    doc.rect(rightBoxX, yPos, boxWidth, boxHeight, "F");
-    doc.setDrawColor(200, 200, 200);
-    doc.rect(rightBoxX, yPos, boxWidth, boxHeight, "S");
-    
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("Ship To:", rightBoxX + 3, yPos + 5);
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    let shipToY = yPos + 10;
-    if (data.shipping.shopName) {
-      doc.text(data.shipping.shopName, rightBoxX + 3, shipToY);
-      shipToY += 4;
-    }
-    if (data.shipping.name) {
-      doc.text(data.shipping.name, rightBoxX + 3, shipToY);
-      shipToY += 4;
-    }
-    if (data.shipping.address) {
-      const addressLines = doc.splitTextToSize(data.shipping.address, boxWidth - 6);
-      doc.text(addressLines, rightBoxX + 3, shipToY);
-      shipToY += addressLines.length * 4;
-    }
-    doc.text(`${data.shipping.city}, ${data.shipping.state}`, rightBoxX + 3, shipToY);
-  }
+  doc.text(`${data.customer.city}, ${data.customer.state}`, customerBoxX + 3, customerY);
   
-  yPos += boxHeight + 8;
+  yPos += customerBoxHeight + 8;
 
   // Items Table Header
   doc.setFillColor(52, 73, 94);
   doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "S");
   
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
@@ -1532,6 +1506,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
   // Subtotal
   doc.setFillColor(250, 250, 250);
   doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
   doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -1543,6 +1519,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
   if (data.transport > 0) {
     doc.setFillColor(250, 250, 250);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
     doc.text("Transport Charge:", summaryX + 3, yPos + 5);
     doc.text(data.transport.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
@@ -1553,6 +1531,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
   if (data.packaging > 0) {
     doc.setFillColor(250, 250, 250);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
     doc.text("Packaging Charge:", summaryX + 3, yPos + 5);
     doc.text(data.packaging.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
@@ -1563,9 +1543,28 @@ export async function generateEstimatePDF(data: InvoiceData) {
   if (data.other > 0) {
     doc.setFillColor(250, 250, 250);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
     doc.text("Other Charge:", summaryX + 3, yPos + 5);
     doc.text(data.other.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
+  }
+
+  // Round Off (only if data.roundOff is provided)
+  if (data.roundOff !== undefined && data.roundOff !== null && Number(data.roundOff) !== 0) {
+    doc.setFillColor(250, 250, 250);
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Round Off:", summaryX + 3, yPos + 5);
+    const roundOffValue = Number(data.roundOff);
+    const roundOffText = (roundOffValue >= 0 ? "+" : "") + roundOffValue.toFixed(2);
+    doc.text(roundOffText, summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
     yPos += rowHeight;
   }
 
@@ -1573,6 +1572,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const grandRowHeight = 9;
   doc.setFillColor(52, 73, 94);
   doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "F");
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
   doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "S");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -1606,6 +1607,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
     const rupeeIconBlackSpacing = 1;
     
     // Payment Status
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
     if (data.paymentStatus === "full_paid") {
       doc.setFillColor(200, 255, 200);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
@@ -1632,6 +1635,32 @@ export async function generateEstimatePDF(data: InvoiceData) {
       doc.text("PARTIAL PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
     }
     currentPaymentY += paymentRowHeight;
+
+    // Payment Type (Cash/Online/Partial)
+    if (data.paymentStatus !== "full_credit") {
+      const cashAmt = Number(data.cashAmount || 0);
+      const onlineAmt = Number(data.onlineAmount || 0);
+      let paymentTypeText = "";
+      
+      if (cashAmt > 0 && onlineAmt > 0) {
+        paymentTypeText = `Cash + Online (₹${cashAmt.toFixed(2)} + ₹${onlineAmt.toFixed(2)})`;
+      } else if (cashAmt > 0) {
+        paymentTypeText = "Cash Payment";
+      } else if (onlineAmt > 0) {
+        paymentTypeText = "Online Payment";
+      }
+      
+      if (paymentTypeText) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(0, 0, 0);
+        doc.text(paymentTypeText, paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+        currentPaymentY += paymentRowHeight;
+      }
+    }
 
     // Payment Date
     if (data.paymentDate) {
