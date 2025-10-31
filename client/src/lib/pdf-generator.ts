@@ -1372,52 +1372,34 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const margin = 15;
   let yPos = 18;
 
-  // Professional Header
-  doc.setFillColor(41, 98, 255);
-  doc.rect(0, 0, pageWidth, 35, "F");
+  // Page Border - Soft color
+  doc.setDrawColor(180, 190, 200);
+  doc.setLineWidth(0.5);
+  doc.rect(5, 5, pageWidth - 10, pageHeight - 10, "S");
+
+  // Professional Header - Soft colors
+  doc.setFillColor(100, 140, 180);
+  doc.rect(0, 0, pageWidth, 32, "F");
   
-  doc.setFontSize(24);
+  doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(255, 255, 255);
   doc.text("ESTIMATE", pageWidth / 2, yPos, { align: "center" });
   yPos += 8;
   
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text("AYESHA COCO PITH & FIBER INDUSTRIES", pageWidth / 2, yPos, { align: "center" });
-  yPos += 12;
+  yPos += 10;
 
-  // Bill No and Date - Professional Layout
-  doc.setTextColor(0, 0, 0);
-  doc.setFillColor(245, 247, 250);
-  doc.rect(margin, yPos, pageWidth - 2 * margin, 9, "F");
-  doc.setDrawColor(220, 225, 230);
-  doc.setLineWidth(0.3);
-  doc.rect(margin, yPos, pageWidth - 2 * margin, 9, "S");
-  
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("Estimate No:", margin + 3, yPos + 6);
-  doc.setFont("helvetica", "normal");
-  doc.text(data.invoiceNumber, margin + 28, yPos + 6);
-  
-  const formattedDate = new Date(data.billDate).toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-  doc.setFont("helvetica", "bold");
-  doc.text("Date:", pageWidth - margin - 38, yPos + 6);
-  doc.setFont("helvetica", "normal");
-  doc.text(formattedDate, pageWidth - margin - 3, yPos + 6, { align: "right" });
-  yPos += 12;
-
-  // To (Customer Details) - Dynamic Height with 5px padding
-  const customerBoxX = margin;
-  const customerBoxWidth = pageWidth - 2 * margin;
+  // Two Column Layout: Address (Left) | Bill No & Date (Right)
+  const leftColX = margin;
+  const leftColWidth = (pageWidth - 2 * margin) * 0.55;
+  const rightColX = leftColX + leftColWidth + 5;
+  const rightColWidth = (pageWidth - 2 * margin) * 0.45 - 5;
   const padding = 5;
-  let customerContentY = yPos + padding + 5;
   
+  // Calculate address box height
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   
@@ -1425,52 +1407,87 @@ export async function generateEstimatePDF(data: InvoiceData) {
   if (data.customer.shopName) lineCount++;
   if (data.customer.name) lineCount++;
   if (data.customer.address) {
-    const addressLines = doc.splitTextToSize(data.customer.address, customerBoxWidth - (2 * padding));
+    const addressLines = doc.splitTextToSize(data.customer.address, leftColWidth - (2 * padding));
     lineCount += addressLines.length;
   }
   lineCount++;
   
   const lineHeight = 4.5;
-  const customerBoxHeight = (lineCount * lineHeight) + (2 * padding);
+  const boxHeight = Math.max((lineCount * lineHeight) + (2 * padding), 28);
 
-  const customerBoxStartY = yPos;
-  doc.setFillColor(248, 250, 252);
-  doc.rect(customerBoxX, customerBoxStartY, customerBoxWidth, customerBoxHeight, "F");
+  // Left Column: Address - Soft colors
+  doc.setFillColor(250, 252, 253);
+  doc.rect(leftColX, yPos, leftColWidth, boxHeight, "F");
   doc.setDrawColor(200, 210, 220);
-  doc.setLineWidth(0.4);
-  doc.rect(customerBoxX, customerBoxStartY, customerBoxWidth, customerBoxHeight, "S");
+  doc.setLineWidth(0.3);
+  doc.rect(leftColX, yPos, leftColWidth, boxHeight, "S");
   
+  let customerContentY = yPos + padding + 5;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.setTextColor(52, 73, 94);
-  doc.text("To:", customerBoxX + padding, customerContentY);
+  doc.setTextColor(70, 90, 110);
+  doc.text("To:", leftColX + padding, customerContentY);
   customerContentY += lineHeight;
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   if (data.customer.shopName) {
-    doc.text(data.customer.shopName, customerBoxX + padding, customerContentY);
+    doc.text(data.customer.shopName, leftColX + padding, customerContentY);
     customerContentY += lineHeight;
   }
   if (data.customer.name) {
-    doc.text(data.customer.name, customerBoxX + padding, customerContentY);
+    doc.text(data.customer.name, leftColX + padding, customerContentY);
     customerContentY += lineHeight;
   }
   if (data.customer.address) {
-    const addressLines = doc.splitTextToSize(data.customer.address, customerBoxWidth - (2 * padding));
-    doc.text(addressLines, customerBoxX + padding, customerContentY);
+    const addressLines = doc.splitTextToSize(data.customer.address, leftColWidth - (2 * padding));
+    doc.text(addressLines, leftColX + padding, customerContentY);
     customerContentY += addressLines.length * lineHeight;
   }
-  doc.text(`${data.customer.city}, ${data.customer.state}`, customerBoxX + padding, customerContentY);
-  
-  yPos += customerBoxHeight + 8;
+  doc.text(`${data.customer.city}, ${data.customer.state}`, leftColX + padding, customerContentY);
 
-  // Items Table Header - Professional Style
-  doc.setFillColor(41, 98, 255);
+  // Right Column: Bill No & Date - Soft colors
+  doc.setFillColor(250, 252, 253);
+  doc.rect(rightColX, yPos, rightColWidth, boxHeight, "F");
+  doc.setDrawColor(200, 210, 220);
+  doc.setLineWidth(0.3);
+  doc.rect(rightColX, yPos, rightColWidth, boxHeight, "S");
+  
+  let billInfoY = yPos + padding + 5;
+  const formattedDate = new Date(data.billDate).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(70, 90, 110);
+  doc.text("Estimate No:", rightColX + padding, billInfoY);
+  billInfoY += lineHeight;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.text(data.invoiceNumber, rightColX + padding, billInfoY);
+  billInfoY += lineHeight + 2;
+  
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(70, 90, 110);
+  doc.text("Date:", rightColX + padding, billInfoY);
+  billInfoY += lineHeight;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.text(formattedDate, rightColX + padding, billInfoY);
+  
+  yPos += boxHeight + 8;
+
+  // Items Table Header - Soft colors
+  doc.setFillColor(100, 140, 180);
   doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "F");
-  doc.setDrawColor(41, 98, 255);
-  doc.setLineWidth(0.4);
+  doc.setDrawColor(100, 140, 180);
+  doc.setLineWidth(0.3);
   doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "S");
   
   doc.setTextColor(255, 255, 255);
@@ -1551,17 +1568,19 @@ export async function generateEstimatePDF(data: InvoiceData) {
   doc.text(data.subtotal.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
   yPos += rowHeight;
 
-  // Transport Charge - Always show
-  doc.setFillColor(248, 250, 252);
-  doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-  doc.setDrawColor(220, 225, 230);
-  doc.setLineWidth(0.3);
-  doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
-  doc.setTextColor(60, 60, 60);
-  doc.text("Transport:", summaryX + 3, yPos + 4.5);
-  doc.setTextColor(0, 0, 0);
-  doc.text((data.transport || 0).toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
-  yPos += rowHeight;
+  // Transport Charge - Only show if > 0
+  if (data.transport && data.transport > 0) {
+    doc.setFillColor(248, 250, 252);
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.3);
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
+    doc.setTextColor(60, 60, 60);
+    doc.text("Transport:", summaryX + 3, yPos + 4.5);
+    doc.setTextColor(0, 0, 0);
+    doc.text(data.transport.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
+    yPos += rowHeight;
+  }
 
   // Packaging Charge
   if (data.packaging > 0) {
@@ -1609,12 +1628,12 @@ export async function generateEstimatePDF(data: InvoiceData) {
     yPos += rowHeight;
   }
 
-  // Grand Total - Professional Style
+  // Grand Total - Soft colors
   const grandRowHeight = 8;
-  doc.setFillColor(41, 98, 255);
+  doc.setFillColor(100, 140, 180);
   doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "F");
-  doc.setDrawColor(41, 98, 255);
-  doc.setLineWidth(0.4);
+  doc.setDrawColor(100, 140, 180);
+  doc.setLineWidth(0.3);
   doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "S");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
@@ -1628,7 +1647,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
   doc.text(grandTotalText, summaryX + summaryWidth - 3, yPos + 5.5, { align: "right" });
   yPos += grandRowHeight + 6;
 
-  // Amount in Words - Professional Style
+  // Amount in Words - Soft colors
   doc.setFillColor(252, 252, 253);
   doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "F");
   doc.setDrawColor(220, 225, 230);
@@ -1645,9 +1664,37 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const roundedTotal = Math.round(data.grandTotal);
   const amountInWords = numberToWords(roundedTotal);
   doc.text(amountInWords + " only", margin + 32, yPos + 5.5);
-  yPos += 12;
+  yPos += 10;
 
-  // Payment Information Section - Professional Style
+  // Transport Details (Lorry Service)
+  if (data.lorryServiceName || data.lorryNumber) {
+    doc.setFillColor(250, 252, 253);
+    doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "F");
+    doc.setDrawColor(220, 225, 230);
+    doc.setLineWidth(0.3);
+    doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "S");
+    
+    doc.setTextColor(70, 90, 110);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("Transport:", margin + 3, yPos + 5.5);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
+    let transportText = "";
+    if (data.lorryServiceName) {
+      transportText = data.lorryServiceName;
+    }
+    if (data.lorryNumber) {
+      transportText += (transportText ? " | " : "") + data.lorryNumber;
+    }
+    doc.text(transportText, margin + 25, yPos + 5.5);
+    yPos += 10;
+  } else {
+    yPos += 2;
+  }
+
+  // Payment Information Section - Soft colors
   if (data.paymentStatus && data.paymentDate) {
     const paymentBoxX = pageWidth - margin - 75;
     const paymentBoxWidth = 75;
@@ -1657,11 +1704,11 @@ export async function generateEstimatePDF(data: InvoiceData) {
     const rupeeIconBlackSize = 2.5;
     const rupeeIconBlackSpacing = 1;
     
-    // Payment Status Header
+    // Payment Status Header - Soft colors
     doc.setDrawColor(220, 225, 230);
     doc.setLineWidth(0.3);
     if (data.paymentStatus === "full_paid") {
-      doc.setFillColor(34, 197, 94);
+      doc.setFillColor(134, 197, 154);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
@@ -1669,7 +1716,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
       doc.setTextColor(255, 255, 255);
       doc.text("FULLY PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     } else if (data.paymentStatus === "full_credit") {
-      doc.setFillColor(239, 68, 68);
+      doc.setFillColor(229, 138, 138);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
@@ -1677,7 +1724,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
       doc.setTextColor(255, 255, 255);
       doc.text("UNPAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     } else {
-      doc.setFillColor(251, 191, 36);
+      doc.setFillColor(231, 191, 116);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
@@ -1687,7 +1734,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
     }
     currentPaymentY += paymentRowHeight;
 
-    // Payment Type (Cash/Online/Partial) - Professional Design
+    // Payment Type (Cash/Online/Partial) - Like GST PDF
     if (data.paymentStatus !== "full_credit") {
       const cashAmt = Number(data.cashAmount || 0);
       const onlineAmt = Number(data.onlineAmount || 0);
@@ -1698,33 +1745,39 @@ export async function generateEstimatePDF(data: InvoiceData) {
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
         doc.setFont("helvetica", "bold");
         doc.setFontSize(7.5);
-        doc.setTextColor(41, 98, 255);
+        doc.setTextColor(100, 140, 180);
         doc.text("PAYMENT METHOD", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
         currentPaymentY += paymentRowHeight;
         
-        // Display payment breakdown
+        // Display payment type clearly
         if (cashAmt > 0 && onlineAmt > 0) {
           // Partial: Cash + Online
-          doc.setFillColor(255, 255, 255);
+          doc.setFillColor(250, 252, 253);
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
-          doc.setFont("helvetica", "normal");
+          doc.setFont("helvetica", "bold");
           doc.setFontSize(8);
-          doc.setTextColor(0, 0, 0);
+          doc.setTextColor(70, 90, 110);
           doc.text("Cash:", paymentBoxX + 3, currentPaymentY + 4.5);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(0, 0, 0);
           doc.text(`₹${cashAmt.toFixed(2)}`, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.5, { align: "right" });
           currentPaymentY += paymentRowHeight;
           
-          doc.setFillColor(255, 255, 255);
+          doc.setFillColor(250, 252, 253);
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(70, 90, 110);
           doc.text("Online:", paymentBoxX + 3, currentPaymentY + 4.5);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(0, 0, 0);
           doc.text(`₹${onlineAmt.toFixed(2)}`, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.5, { align: "right" });
           currentPaymentY += paymentRowHeight;
         } else {
           // Single payment method
           const paymentMethod = cashAmt > 0 ? "Cash Payment" : "Online Payment";
-          doc.setFillColor(255, 255, 255);
+          doc.setFillColor(250, 252, 253);
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
           doc.setFont("helvetica", "normal");
@@ -1757,14 +1810,14 @@ export async function generateEstimatePDF(data: InvoiceData) {
       currentPaymentY += paymentRowHeight;
     }
 
-    // Paid Amount - Professional Style
+    // Paid Amount - Soft colors
     if (data.paymentStatus !== "full_credit") {
       doc.setFillColor(248, 250, 252);
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
-      doc.setTextColor(34, 197, 94);
+      doc.setTextColor(134, 197, 154);
       doc.text("Paid Amount:", paymentBoxX + 3, currentPaymentY + 4.8);
       doc.setTextColor(0, 0, 0);
       const paidAmountText = (data.paidAmount || roundedTotal).toFixed(2);
@@ -1774,16 +1827,16 @@ export async function generateEstimatePDF(data: InvoiceData) {
       currentPaymentY += paymentRowHeight;
     }
 
-    // Balance (if partial) - Professional Style
+    // Balance (if partial) - Soft colors
     if (data.paymentStatus === "partial_paid" && data.paidAmount) {
       const balanceAmount = roundedTotal - data.paidAmount;
       if (balanceAmount > 0) {
-        doc.setFillColor(254, 226, 226);
+        doc.setFillColor(254, 236, 236);
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8.5);
-        doc.setTextColor(239, 68, 68);
+        doc.setTextColor(229, 138, 138);
         doc.text("Balance Due:", paymentBoxX + 3, currentPaymentY + 4.8);
         doc.setTextColor(0, 0, 0);
         const balanceAmountText = balanceAmount.toFixed(2);
