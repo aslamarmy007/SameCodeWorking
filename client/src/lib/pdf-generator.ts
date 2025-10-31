@@ -1118,7 +1118,7 @@ export async function generateInvoicePDF(data: InvoiceData) {
         doc.text(onlineText, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
         
         currentPaymentY += splitRowHeight;
-      } else {
+      } else if (data.paymentMethod) {
         doc.setFillColor(250, 250, 250);
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, rowHeight, "S");
@@ -1946,18 +1946,30 @@ export async function generateEstimatePDF(data: InvoiceData) {
         doc.text(onlineText, splitBoxX + splitBoxWidth - 2, splitBoxY + 6.5, { align: "right" });
         
         currentPaymentY += splitRowHeight;
-      } else if (data.cashAmount || data.onlineAmount) {
+      } else if (data.paymentMethod || data.cashAmount || data.onlineAmount) {
         // Show payment method if provided
-        const paymentMethod = (data.cashAmount && data.cashAmount > 0) ? "Cash" : "Online";
-        doc.setFillColor(250, 252, 253);
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(0, 0, 0);
-        doc.text("Payment Type:", paymentBoxX + 3, currentPaymentY + 4.8);
-        doc.text(paymentMethod, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
-        currentPaymentY += paymentRowHeight;
+        let paymentMethod = "";
+        if (data.paymentMethod === "cash") {
+          paymentMethod = "Cash";
+        } else if (data.paymentMethod === "online") {
+          paymentMethod = "Online";
+        } else if (data.cashAmount && data.cashAmount > 0) {
+          paymentMethod = "Cash";
+        } else if (data.onlineAmount && data.onlineAmount > 0) {
+          paymentMethod = "Online";
+        }
+        
+        if (paymentMethod) {
+          doc.setFillColor(250, 252, 253);
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(0, 0, 0);
+          doc.text("Payment Type:", paymentBoxX + 3, currentPaymentY + 4.8);
+          doc.text(paymentMethod, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
+          currentPaymentY += paymentRowHeight;
+        }
       }
     }
 
