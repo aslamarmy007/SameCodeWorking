@@ -1372,18 +1372,15 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const margin = 15;
   let yPos = 18;
 
-  // Page Border - Soft color
-  doc.setDrawColor(180, 190, 200);
+  // Page Border
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
   doc.rect(5, 5, pageWidth - 10, pageHeight - 10, "S");
 
-  // Professional Header - Soft colors
-  doc.setFillColor(100, 140, 180);
-  doc.rect(0, 0, pageWidth, 32, "F");
-  
+  // Professional Header
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0);
   doc.text("ESTIMATE", pageWidth / 2, yPos, { align: "center" });
   yPos += 8;
   
@@ -1415,17 +1412,15 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const lineHeight = 4.5;
   const boxHeight = Math.max((lineCount * lineHeight) + (2 * padding), 28);
 
-  // Left Column: Address - Soft colors
-  doc.setFillColor(250, 252, 253);
-  doc.rect(leftColX, yPos, leftColWidth, boxHeight, "F");
-  doc.setDrawColor(200, 210, 220);
+  // Left Column: Address
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
   doc.rect(leftColX, yPos, leftColWidth, boxHeight, "S");
   
   let customerContentY = yPos + padding + 5;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.setTextColor(70, 90, 110);
+  doc.setTextColor(0, 0, 0);
   doc.text("To:", leftColX + padding, customerContentY);
   customerContentY += lineHeight;
   
@@ -1466,10 +1461,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
     doc.text(cityStateText, leftColX + padding, customerContentY);
   }
 
-  // Right Column: Bill No & Date - Soft colors
-  doc.setFillColor(250, 252, 253);
-  doc.rect(rightColX, yPos, rightColWidth, boxHeight, "F");
-  doc.setDrawColor(200, 210, 220);
+  // Right Column: Bill No & Date
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
   doc.rect(rightColX, yPos, rightColWidth, boxHeight, "S");
   
@@ -1487,7 +1480,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.setTextColor(70, 90, 110);
+  doc.setTextColor(0, 0, 0);
   doc.text("Estimate No:", rightColX + padding, billInfoY);
   billInfoY += lineHeight;
   
@@ -1497,7 +1490,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
   billInfoY += lineHeight + 2;
   
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(70, 90, 110);
+  doc.setTextColor(0, 0, 0);
   doc.text("Date:", rightColX + padding, billInfoY);
   billInfoY += lineHeight;
   
@@ -1507,14 +1500,12 @@ export async function generateEstimatePDF(data: InvoiceData) {
   
   yPos += boxHeight + 8;
 
-  // Items Table Header - Soft colors
-  doc.setFillColor(100, 140, 180);
-  doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "F");
-  doc.setDrawColor(100, 140, 180);
+  // Items Table Header
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
   doc.rect(margin, yPos, pageWidth - (2 * margin), 8, "S");
   
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
   
@@ -1546,11 +1537,6 @@ export async function generateEstimatePDF(data: InvoiceData) {
   
   for (let index = 0; index < data.items.length; index++) {
     const item = data.items[index];
-    
-    if (index % 2 === 0) {
-      doc.setFillColor(249, 250, 251);
-      doc.rect(margin, yPos, pageWidth - (2 * margin), 6.5, "F");
-    }
 
     doc.text(String(index + 1), col1, yPos + 4.5);
     
@@ -1566,8 +1552,8 @@ export async function generateEstimatePDF(data: InvoiceData) {
     
     yPos += 6.5;
     
-    doc.setDrawColor(235, 238, 242);
-    doc.setLineWidth(0.2);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.1);
     doc.line(margin, yPos, pageWidth - margin, yPos);
   }
 
@@ -1579,14 +1565,12 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const rowHeight = 6.5;
 
   // Subtotal
-  doc.setFillColor(248, 250, 252);
-  doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-  doc.setDrawColor(220, 225, 230);
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
   doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(0, 0, 0);
   doc.text("Subtotal:", summaryX + 3, yPos + 4.5);
   doc.setTextColor(0, 0, 0);
   doc.text(data.subtotal.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
@@ -1594,12 +1578,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
 
   // Transport Charge - Only show if > 0
   if (data.transport && data.transport > 0) {
-    doc.setFillColor(248, 250, 252);
-    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(220, 225, 230);
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
     doc.text("Transport:", summaryX + 3, yPos + 4.5);
     doc.setTextColor(0, 0, 0);
     doc.text(data.transport.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
@@ -1608,12 +1590,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
 
   // Packaging Charge
   if (data.packaging > 0) {
-    doc.setFillColor(248, 250, 252);
-    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(220, 225, 230);
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
     doc.text("Packaging:", summaryX + 3, yPos + 4.5);
     doc.setTextColor(0, 0, 0);
     doc.text(data.packaging.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
@@ -1622,12 +1602,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
 
   // Other Charge
   if (data.other > 0) {
-    doc.setFillColor(248, 250, 252);
-    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(220, 225, 230);
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
     doc.text("Other:", summaryX + 3, yPos + 4.5);
     doc.setTextColor(0, 0, 0);
     doc.text(data.other.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
@@ -1636,14 +1614,12 @@ export async function generateEstimatePDF(data: InvoiceData) {
 
   // Round Off (only if data.roundOff is provided)
   if (data.roundOff !== undefined && data.roundOff !== null && Number(data.roundOff) !== 0) {
-    doc.setFillColor(248, 250, 252);
-    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
-    doc.setDrawColor(220, 225, 230);
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
     doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(0, 0, 0);
     doc.text("Round Off:", summaryX + 3, yPos + 4.5);
     const roundOffValue = Number(data.roundOff);
     const roundOffText = (roundOffValue >= 0 ? "+" : "") + roundOffValue.toFixed(2);
@@ -1652,16 +1628,14 @@ export async function generateEstimatePDF(data: InvoiceData) {
     yPos += rowHeight;
   }
 
-  // Grand Total - Soft colors
+  // Grand Total
   const grandRowHeight = 8;
-  doc.setFillColor(100, 140, 180);
-  doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "F");
-  doc.setDrawColor(100, 140, 180);
-  doc.setLineWidth(0.3);
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
   doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "S");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0);
   doc.text("Grand Total:", summaryX + 3, yPos + 5.5);
   const rupeeIconSize2 = 2.8;
   const iconSpacing = 1;
@@ -1671,14 +1645,12 @@ export async function generateEstimatePDF(data: InvoiceData) {
   doc.text(grandTotalText, summaryX + summaryWidth - 3, yPos + 5.5, { align: "right" });
   yPos += grandRowHeight + 6;
 
-  // Amount in Words - Soft colors
-  doc.setFillColor(252, 252, 253);
-  doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "F");
-  doc.setDrawColor(220, 225, 230);
+  // Amount in Words
+  doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
   doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "S");
   
-  doc.setTextColor(50, 50, 50);
+  doc.setTextColor(0, 0, 0);
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.text("Amount in Words:", margin + 3, yPos + 5.5);
@@ -1692,13 +1664,11 @@ export async function generateEstimatePDF(data: InvoiceData) {
 
   // Transport Details (Lorry Service)
   if (data.lorryServiceName || data.lorryServicePhone) {
-    doc.setFillColor(250, 252, 253);
-    doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "F");
-    doc.setDrawColor(220, 225, 230);
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
     doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "S");
     
-    doc.setTextColor(70, 90, 110);
+    doc.setTextColor(0, 0, 0);
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     doc.text("Transport:", margin + 3, yPos + 5.5);
@@ -1728,7 +1698,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
     const rupeeIconBlackSize = 2.5;
     const rupeeIconBlackSpacing = 1;
     
-    doc.setDrawColor(220, 225, 230);
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
     
     const paymentHistory = data.paymentHistory || [];
@@ -1753,30 +1723,24 @@ export async function generateEstimatePDF(data: InvoiceData) {
     
     const remainingBalance = roundedTotal - totalPaid;
     
-    // Payment Status Header - Soft colors
+    // Payment Status Header
     if (isFullyPaid) {
-      doc.setFillColor(134, 197, 154);
-      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(0, 0, 0);
       doc.text("PAID FULLY", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     } else if (data.paymentStatus === "full_credit") {
-      doc.setFillColor(229, 138, 138);
-      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(0, 0, 0);
       doc.text("NOT PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     } else {
-      doc.setFillColor(231, 191, 116);
-      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(0, 0, 0);
       doc.text("PARTIAL PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.8, { align: "center" });
     }
     currentPaymentY += paymentRowHeight;
@@ -1792,20 +1756,16 @@ export async function generateEstimatePDF(data: InvoiceData) {
           year: 'numeric' 
         });
 
-        doc.setFillColor(248, 250, 252);
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
-        doc.setTextColor(70, 90, 110);
+        doc.setTextColor(0, 0, 0);
         doc.text(`Date:`, paymentBoxX + 3, currentPaymentY + 4.8);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(0, 0, 0);
         doc.text(formattedEntryDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
         currentPaymentY += paymentRowHeight;
 
-        doc.setFillColor(250, 252, 253);
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
@@ -1819,8 +1779,6 @@ export async function generateEstimatePDF(data: InvoiceData) {
 
         if (entry.cashAmount !== undefined && entry.onlineAmount !== undefined) {
           const splitRowHeight = 10;
-          doc.setFillColor(250, 252, 253);
-          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "F");
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "S");
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
@@ -1832,13 +1790,12 @@ export async function generateEstimatePDF(data: InvoiceData) {
           const splitBoxY = currentPaymentY + 1;
           const splitBoxHeight = 8;
           
-          doc.setFillColor(240, 248, 255);
-          doc.setDrawColor(200, 210, 220);
+          doc.setDrawColor(0, 0, 0);
           doc.setLineWidth(0.2);
-          doc.rect(splitBoxX, splitBoxY, splitBoxWidth, splitBoxHeight, "FD");
+          doc.rect(splitBoxX, splitBoxY, splitBoxWidth, splitBoxHeight, "S");
           
           doc.setFontSize(6.5);
-          doc.setTextColor(50, 50, 50);
+          doc.setTextColor(0, 0, 0);
           doc.text("Cash:", splitBoxX + 2, splitBoxY + 3);
           const cashAmountText = entry.cashAmount.toFixed(2);
           const cashAmountTextWidth = doc.getTextWidth(cashAmountText);
@@ -1855,8 +1812,6 @@ export async function generateEstimatePDF(data: InvoiceData) {
           
           currentPaymentY += splitRowHeight;
         } else {
-          doc.setFillColor(250, 252, 253);
-          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
@@ -1867,7 +1822,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
         }
 
         if (i < paymentHistory.length - 1) {
-          doc.setDrawColor(200, 210, 220);
+          doc.setDrawColor(0, 0, 0);
           doc.setLineWidth(0.2);
           doc.line(paymentBoxX + 5, currentPaymentY, paymentBoxX + paymentBoxWidth - 5, currentPaymentY);
           currentPaymentY += 2;
@@ -1882,12 +1837,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
           year: 'numeric' 
         });
         
-        doc.setFillColor(248, 250, 252);
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(60, 60, 60);
+        doc.setTextColor(0, 0, 0);
         const dateLabel = data.paymentStatus === "full_paid" ? "Payment Date:" : "Partial Date:";
         doc.text(dateLabel, paymentBoxX + 3, currentPaymentY + 4.8);
         doc.setTextColor(0, 0, 0);
@@ -1895,12 +1848,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
         currentPaymentY += paymentRowHeight;
       }
       
-      doc.setFillColor(248, 250, 252);
-      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      doc.setTextColor(60, 60, 60);
+      doc.setTextColor(0, 0, 0);
       doc.text("Paid:", paymentBoxX + 3, currentPaymentY + 4.8);
       const paidAmountText = totalPaid.toFixed(2);
       const paidAmountTextWidth = doc.getTextWidth(paidAmountText);
@@ -1911,8 +1862,6 @@ export async function generateEstimatePDF(data: InvoiceData) {
       // Payment method breakdown
       if (data.paymentMethod === "partial" && (data.cashAmount || data.onlineAmount)) {
         const splitRowHeight = 10;
-        doc.setFillColor(250, 252, 253);
-        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "F");
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, splitRowHeight, "S");
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
@@ -1924,13 +1873,12 @@ export async function generateEstimatePDF(data: InvoiceData) {
         const splitBoxY = currentPaymentY + 1;
         const splitBoxHeight = 8;
         
-        doc.setFillColor(240, 248, 255);
-        doc.setDrawColor(200, 210, 220);
+        doc.setDrawColor(0, 0, 0);
         doc.setLineWidth(0.2);
-        doc.rect(splitBoxX, splitBoxY, splitBoxWidth, splitBoxHeight, "FD");
+        doc.rect(splitBoxX, splitBoxY, splitBoxWidth, splitBoxHeight, "S");
         
         doc.setFontSize(6.5);
-        doc.setTextColor(50, 50, 50);
+        doc.setTextColor(0, 0, 0);
         doc.text("Cash:", splitBoxX + 2, splitBoxY + 3);
         const cashText = (data.cashAmount?.toFixed(2) || "0.00");
         const cashTextWidth = doc.getTextWidth(cashText);
@@ -1960,8 +1908,6 @@ export async function generateEstimatePDF(data: InvoiceData) {
         }
         
         if (paymentMethod) {
-          doc.setFillColor(250, 252, 253);
-          doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
           doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
@@ -1975,12 +1921,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
 
     // Balance Due - if partial payment
     if (remainingBalance > 0 && !isFullyPaid) {
-      doc.setFillColor(254, 236, 236);
-      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
       doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
-      doc.setTextColor(229, 138, 138);
+      doc.setTextColor(0, 0, 0);
       doc.text("Balance Due:", paymentBoxX + 3, currentPaymentY + 4.8);
       doc.setTextColor(0, 0, 0);
       const balanceAmountText = remainingBalance.toFixed(2);
