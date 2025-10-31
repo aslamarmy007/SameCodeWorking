@@ -97,3 +97,11 @@ Key architectural decisions include:
   - **Tamil Text Support**: Estimate PDFs support Tamil characters in product descriptions using the same Tamil font rendering as regular bills
   - **Conditional PDF Generation**: Billing flow automatically uses estimate PDF generator when billEstimate is true, regular PDF otherwise
   - **Fixed Critical Regression**: Resolved issue where regular bills could not be created without GST by preserving GST setting when switching from estimate to regular mode
+
+- [2025-10-31] Enhanced Estimate PDF layout and features:
+  - **Removed Shipping Section**: Shipping details no longer displayed in estimate PDFs for cleaner layout
+  - **Full-Width Customer Details**: "To:" section (renamed from "Bill To:") now spans full page width with prominent border
+  - **Round-Off Display**: Conditional round-off row in grand total section displays only when roundOff value exists, showing exact value with +/- prefix
+  - **Payment Type Details**: Payment table now shows payment method (Cash Payment, Online Payment, or Partial Cash+Online with split amounts)
+  - **Enhanced Borders**: Added black borders (0.3-0.5pt) to customer box, items table header, all summary rows, grand total, and payment table for professional appearance
+  - **InvoiceData Type Update**: Added roundOff field to support round-off tracking in PDFs
