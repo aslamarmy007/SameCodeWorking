@@ -1433,19 +1433,38 @@ export async function generateEstimatePDF(data: InvoiceData) {
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   if (data.customer.shopName) {
-    doc.text(data.customer.shopName, leftColX + padding, customerContentY);
+    if (hasTamilCharacters(data.customer.shopName)) {
+      await addTamilText(doc, data.customer.shopName, leftColX + padding, customerContentY, 9, "normal", "#000000", "left");
+    } else {
+      doc.text(data.customer.shopName, leftColX + padding, customerContentY);
+    }
     customerContentY += lineHeight;
   }
   if (data.customer.name) {
-    doc.text(data.customer.name, leftColX + padding, customerContentY);
+    if (hasTamilCharacters(data.customer.name)) {
+      await addTamilText(doc, data.customer.name, leftColX + padding, customerContentY, 9, "normal", "#000000", "left");
+    } else {
+      doc.text(data.customer.name, leftColX + padding, customerContentY);
+    }
     customerContentY += lineHeight;
   }
   if (data.customer.address) {
-    const addressLines = doc.splitTextToSize(data.customer.address, leftColWidth - (2 * padding));
-    doc.text(addressLines, leftColX + padding, customerContentY);
-    customerContentY += addressLines.length * lineHeight;
+    if (hasTamilCharacters(data.customer.address)) {
+      await addTamilText(doc, data.customer.address, leftColX + padding, customerContentY, 9, "normal", "#000000", "left", (leftColWidth - (2 * padding)) * 3.78);
+      const addressLines = doc.splitTextToSize(data.customer.address, leftColWidth - (2 * padding));
+      customerContentY += addressLines.length * lineHeight;
+    } else {
+      const addressLines = doc.splitTextToSize(data.customer.address, leftColWidth - (2 * padding));
+      doc.text(addressLines, leftColX + padding, customerContentY);
+      customerContentY += addressLines.length * lineHeight;
+    }
   }
-  doc.text(`${data.customer.city}, ${data.customer.state}`, leftColX + padding, customerContentY);
+  const cityStateText = `${data.customer.city}, ${data.customer.state}`;
+  if (hasTamilCharacters(cityStateText)) {
+    await addTamilText(doc, cityStateText, leftColX + padding, customerContentY, 9, "normal", "#000000", "left");
+  } else {
+    doc.text(cityStateText, leftColX + padding, customerContentY);
+  }
 
   // Right Column: Bill No & Date - Soft colors
   doc.setFillColor(250, 252, 253);
