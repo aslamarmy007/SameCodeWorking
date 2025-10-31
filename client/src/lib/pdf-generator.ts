@@ -1356,3 +1356,338 @@ function numberToWords(num: number): string {
     return tens[Math.floor(n / 10)] + (n % 10 > 0 ? ' ' + ones[n % 10] : '');
   }
 }
+
+export async function generateEstimatePDF(data: InvoiceData) {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+  
+  setupTamilFont(doc);
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  let yPos = 18;
+
+  // Header: "Estimate Bill" and "ACF"
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(51, 74, 94);
+  doc.text("Estimate Bill", pageWidth / 2, yPos, { align: "center" });
+  yPos += 8;
+  
+  doc.setFontSize(14);
+  doc.text("ACF", pageWidth / 2, yPos, { align: "center" });
+  yPos += 10;
+
+  // Bill No and Date
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Bill No: ${data.invoiceNumber}`, margin, yPos);
+  const formattedDate = new Date(data.billDate).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+  doc.text(`Date: ${formattedDate}`, pageWidth - margin, yPos, { align: "right" });
+  yPos += 8;
+
+  // Bill To and Ship To
+  const leftBoxX = margin;
+  const rightBoxX = pageWidth / 2 + 2;
+  const boxWidth = (pageWidth - 2 * margin - 4) / 2;
+  const boxHeight = 40;
+
+  // Bill To
+  doc.setFillColor(240, 240, 240);
+  doc.rect(leftBoxX, yPos, boxWidth, boxHeight, "F");
+  doc.setDrawColor(200, 200, 200);
+  doc.rect(leftBoxX, yPos, boxWidth, boxHeight, "S");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Bill To:", leftBoxX + 3, yPos + 5);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  let billToY = yPos + 10;
+  if (data.customer.shopName) {
+    doc.text(data.customer.shopName, leftBoxX + 3, billToY);
+    billToY += 4;
+  }
+  if (data.customer.name) {
+    doc.text(data.customer.name, leftBoxX + 3, billToY);
+    billToY += 4;
+  }
+  if (data.customer.address) {
+    const addressLines = doc.splitTextToSize(data.customer.address, boxWidth - 6);
+    doc.text(addressLines, leftBoxX + 3, billToY);
+    billToY += addressLines.length * 4;
+  }
+  doc.text(`${data.customer.city}, ${data.customer.state}`, leftBoxX + 3, billToY);
+
+  // Ship To
+  if (!data.shippingToMyself) {
+    doc.setFillColor(240, 240, 240);
+    doc.rect(rightBoxX, yPos, boxWidth, boxHeight, "F");
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(rightBoxX, yPos, boxWidth, boxHeight, "S");
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Ship To:", rightBoxX + 3, yPos + 5);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    let shipToY = yPos + 10;
+    if (data.shipping.shopName) {
+      doc.text(data.shipping.shopName, rightBoxX + 3, shipToY);
+      shipToY += 4;
+    }
+    if (data.shipping.name) {
+      doc.text(data.shipping.name, rightBoxX + 3, shipToY);
+      shipToY += 4;
+    }
+    if (data.shipping.address) {
+      const addressLines = doc.splitTextToSize(data.shipping.address, boxWidth - 6);
+      doc.text(addressLines, rightBoxX + 3, shipToY);
+      shipToY += addressLines.length * 4;
+    }
+    doc.text(`${data.shipping.city}, ${data.shipping.state}`, rightBoxX + 3, shipToY);
+  }
+  
+  yPos += boxHeight + 8;
+
+  // Items Table Header
+  doc.setFillColor(52, 73, 94);
+  doc.rect(margin, yPos, pageWidth - (2 * margin), 9, "F");
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  
+  const col1 = margin + 3;
+  const col2 = margin + 15;
+  const col3 = pageWidth / 2 + 5;
+  const col4 = pageWidth / 2 + 50;
+  const col5 = pageWidth - margin - 3;
+  
+  const rateIconSize = 3;
+  
+  doc.text("S.No", col1, yPos + 6);
+  doc.text("Description", col2, yPos + 6);
+  doc.text("Qty/Kg", col3, yPos + 6, { align: "center" });
+  
+  const rateTextWidth = doc.getTextWidth("Rate");
+  doc.addImage(rupeeIcon, 'PNG', col4 - rateTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
+  doc.text("Rate", col4, yPos + 6, { align: "right" });
+  
+  const amountTextWidth = doc.getTextWidth("Amount");
+  doc.addImage(rupeeIcon, 'PNG', col5 - amountTextWidth - rateIconSize - 1, yPos + 3.5, rateIconSize, rateIconSize);
+  doc.text("Amount", col5, yPos + 6, { align: "right" });
+  yPos += 9;
+
+  // Items
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  
+  for (let index = 0; index < data.items.length; index++) {
+    const item = data.items[index];
+    
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(margin, yPos, pageWidth - (2 * margin), 7, "F");
+    }
+
+    doc.text(String(index + 1), col1, yPos + 5);
+    
+    if (hasTamilCharacters(item.productName)) {
+      await addTamilText(doc, item.productName, col2, yPos + 5, 9, "normal", "#000000", "left");
+    } else {
+      doc.text(item.productName, col2, yPos + 5);
+    }
+    
+    doc.text(String(item.quantity), col3, yPos + 5, { align: "center" });
+    doc.text(item.price.toFixed(2), col4, yPos + 5, { align: "right" });
+    doc.text(item.total.toFixed(2), col5, yPos + 5, { align: "right" });
+    
+    yPos += 7;
+    
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.1);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+  }
+
+  yPos += 6;
+
+  // Summary Section
+  const summaryX = pageWidth - margin - 60;
+  const summaryWidth = 60;
+  const rowHeight = 7;
+
+  // Subtotal
+  doc.setFillColor(250, 250, 250);
+  doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+  doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Subtotal:", summaryX + 3, yPos + 5);
+  doc.text(data.subtotal.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+  yPos += rowHeight;
+
+  // Transport Charge
+  if (data.transport > 0) {
+    doc.setFillColor(250, 250, 250);
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
+    doc.text("Transport Charge:", summaryX + 3, yPos + 5);
+    doc.text(data.transport.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
+  }
+
+  // Packaging Charge
+  if (data.packaging > 0) {
+    doc.setFillColor(250, 250, 250);
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
+    doc.text("Packaging Charge:", summaryX + 3, yPos + 5);
+    doc.text(data.packaging.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
+  }
+
+  // Other Charge
+  if (data.other > 0) {
+    doc.setFillColor(250, 250, 250);
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "F");
+    doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
+    doc.text("Other Charge:", summaryX + 3, yPos + 5);
+    doc.text(data.other.toFixed(2), summaryX + summaryWidth - 3, yPos + 5, { align: "right" });
+    yPos += rowHeight;
+  }
+
+  // Grand Total
+  const grandRowHeight = 9;
+  doc.setFillColor(52, 73, 94);
+  doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "F");
+  doc.rect(summaryX, yPos, summaryWidth, grandRowHeight, "S");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text("Grand Total:", summaryX + 3, yPos + 6);
+  const rupeeIconSize2 = 3;
+  const iconSpacing = 1;
+  const grandTotalText = data.grandTotal.toFixed(2);
+  const grandTotalTextWidth = doc.getTextWidth(grandTotalText);
+  doc.addImage(rupeeIcon, 'PNG', summaryX + summaryWidth - 3 - grandTotalTextWidth - rupeeIconSize2 - iconSpacing, yPos + 3.5, rupeeIconSize2, rupeeIconSize2);
+  doc.text(grandTotalText, summaryX + summaryWidth - 3, yPos + 6, { align: "right" });
+  yPos += grandRowHeight + 5;
+
+  // Amount in Words
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  const roundedTotal = Math.round(data.grandTotal);
+  const amountInWords = numberToWords(roundedTotal);
+  doc.text("Amount in words: " + amountInWords + " only", margin, yPos);
+  yPos += 10;
+
+  // Payment Table (if payment data exists)
+  if (data.paymentStatus && data.paymentDate) {
+    const paymentBoxX = pageWidth - margin - 70;
+    const paymentBoxWidth = 70;
+    let currentPaymentY = yPos;
+    const paymentRowHeight = 7;
+    
+    const rupeeIconBlackSize = 2.5;
+    const rupeeIconBlackSpacing = 1;
+    
+    // Payment Status
+    if (data.paymentStatus === "full_paid") {
+      doc.setFillColor(200, 255, 200);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 150, 0);
+      doc.text("PAID FULLY", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+    } else if (data.paymentStatus === "full_credit") {
+      doc.setFillColor(255, 200, 200);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(220, 0, 0);
+      doc.text("NOT PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+    } else {
+      doc.setFillColor(255, 255, 200);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(180, 140, 0);
+      doc.text("PARTIAL PAID", paymentBoxX + paymentBoxWidth / 2, currentPaymentY + 4.5, { align: "center" });
+    }
+    currentPaymentY += paymentRowHeight;
+
+    // Payment Date
+    if (data.paymentDate) {
+      const formattedPaymentDate = new Date(data.paymentDate).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+      
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      const dateLabel = data.paymentStatus === "full_paid" ? "Payment Date:" : "Partial Date:";
+      doc.text(dateLabel, paymentBoxX + 3, currentPaymentY + 5);
+      doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += paymentRowHeight;
+    }
+
+    // Paid Amount
+    if (data.paymentStatus !== "full_credit") {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+      doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Paid:", paymentBoxX + 3, currentPaymentY + 5);
+      const paidAmountText = (data.paidAmount || roundedTotal).toFixed(2);
+      const paidAmountTextWidth = doc.getTextWidth(paidAmountText);
+      doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - paidAmountTextWidth - rupeeIconBlackSize - rupeeIconBlackSpacing, currentPaymentY + 2.5, rupeeIconBlackSize, rupeeIconBlackSize);
+      doc.text(paidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+      currentPaymentY += paymentRowHeight;
+    }
+
+    // Balance (if partial)
+    if (data.paymentStatus === "partial_paid" && data.paidAmount) {
+      const balanceAmount = roundedTotal - data.paidAmount;
+      if (balanceAmount > 0) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "F");
+        doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text("Balance:", paymentBoxX + 3, currentPaymentY + 5);
+        const balanceAmountText = balanceAmount.toFixed(2);
+        const balanceAmountTextWidth = doc.getTextWidth(balanceAmountText);
+        doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - balanceAmountTextWidth - rupeeIconBlackSize - rupeeIconBlackSpacing, currentPaymentY + 2.5, rupeeIconBlackSize, rupeeIconBlackSize);
+        doc.text(balanceAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 5, { align: "right" });
+        currentPaymentY += paymentRowHeight;
+      }
+    }
+  }
+
+  // Save the PDF
+  const fileName = `Estimate_${data.invoiceNumber}.pdf`;
+  doc.save(fileName);
+}

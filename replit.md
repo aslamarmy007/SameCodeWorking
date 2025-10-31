@@ -86,3 +86,14 @@ Key architectural decisions include:
   - **State Management**: Separate state variables for name and date sorting (productNameSortOption, productDateSortOption) with individual combo open states
   - **Clear Filters Integration**: Updated "Clear Filters" button clears both sort options along with other filters
   - **UI Consistency**: Both filters follow established Popover/Command combobox pattern with proper accessibility attributes
+
+- [2025-10-31] Implemented Bill Estimate feature:
+  - **Schema Update**: Added billEstimate boolean field to invoices table to track estimate vs regular bills
+  - **Bill Estimate Toggle**: New toggle in Step 1 (Bill Configuration) to switch between Estimate and Regular bill modes
+  - **Automatic GST Handling**: When estimate mode is enabled, GST is automatically disabled and the GST toggle is hidden
+  - **Preserved Regular Bill Functionality**: GST toggle remains available for regular bills, allowing creation of bills with or without GST
+  - **Simplified Estimate PDF**: Created generateEstimatePDF function that generates clean, simplified bills without company logo, GSTIN, signatures, or terms
+  - **Estimate PDF Format**: Includes "Estimate Bill" header, "ACF" branding, bill number/date, bill to/ship to sections, items table (no GST), charges summary, amount in words, and payment table
+  - **Tamil Text Support**: Estimate PDFs support Tamil characters in product descriptions using the same Tamil font rendering as regular bills
+  - **Conditional PDF Generation**: Billing flow automatically uses estimate PDF generator when billEstimate is true, regular PDF otherwise
+  - **Fixed Critical Regression**: Resolved issue where regular bills could not be created without GST by preserving GST setting when switching from estimate to regular mode

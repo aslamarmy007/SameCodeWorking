@@ -242,6 +242,7 @@ export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   invoiceNumber: text("invoice_number").notNull(),
   billType: text("bill_type").notNull().default("sale"),
+  billEstimate: boolean("bill_estimate").notNull().default(false),
   billDate: text("bill_date").notNull(),
   customerId: varchar("customer_id").notNull(),
   customerName: text("customer_name").notNull(),
@@ -291,6 +292,7 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   createdAt: true 
 }).extend({
   billType: z.enum(["sale", "purchase"]).default("sale"),
+  billEstimate: z.boolean().default(false),
   city: z.string().min(1, "City is required"),
   state: z.string().min(1, "State is required"),
   shippingToMyself: z.boolean().default(false),

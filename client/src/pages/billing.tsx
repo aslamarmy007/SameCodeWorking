@@ -25,7 +25,7 @@ import { Settings, User, Package, FileCheck, Loader2, FileText, Save, Download, 
 import type { Customer, Product } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
-import { generateInvoicePDF } from "@/lib/pdf-generator";
+import { generateInvoicePDF, generateEstimatePDF } from "@/lib/pdf-generator";
 import { PaymentDialog } from "@/components/payment-dialog";
 import logoImage from "@assets/cocologo_1761383042737.png";
 import aslamSignature from "@assets/pngegg_1761410687109.png";
@@ -45,6 +45,7 @@ type BillItem = {
 
 type BillConfig = {
   billDate: string;
+  billEstimate: boolean;
   gstEnabled: boolean;
   eSignatureEnabled: boolean;
   signedBy: string;
@@ -78,6 +79,7 @@ export default function BillingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [billConfig, setBillConfig] = useState<BillConfig>({
     billDate: new Date().toISOString().split("T")[0],
+    billEstimate: false,
     gstEnabled: true,
     eSignatureEnabled: false,
     signedBy: "",
@@ -473,6 +475,7 @@ export default function BillingPage() {
       const invoiceData = {
         billDate: billConfig.billDate,
         billType: "sale",
+        billEstimate: billConfig.billEstimate,
         customerId: customerData.id || "",
         customerName: customerData.name,
         shopName: customerData.shopName,
@@ -532,7 +535,8 @@ export default function BillingPage() {
       
       // Only generate PDF if not a draft
       if (!isDraft) {
-        await generateInvoicePDF({
+        const pdfGeneratorFn = billConfig.billEstimate ? generateEstimatePDF : generateInvoicePDF;
+        await pdfGeneratorFn({
         invoiceNumber: invoice.invoiceNumber,
         billDate: billConfig.billDate,
         shippingToMyself: sameAsbilling,
@@ -599,6 +603,7 @@ export default function BillingPage() {
       setCurrentStep(1);
       setBillConfig({
         billDate: new Date().toISOString().split("T")[0],
+        billEstimate: false,
         gstEnabled: true,
         eSignatureEnabled: false,
         signedBy: "",
@@ -1162,27 +1167,56 @@ export default function BillingPage() {
                       data-testid="input-bill-date"
                     />
                   </div>
-                  <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl flex items-center justify-between">
+                  <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-xl flex items-center justify-between">
                     <div>
                       <span className="text-base font-semibold block">
-                        {billConfig.gstEnabled ? "With GST" : "Without GST"}
+                        {billConfig.billEstimate ? "Estimate Bill" : "Regular Bill"}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        GST rates vary by product (0%, 5%, etc.)
+                        {billConfig.billEstimate ? "Simplified format, GST optional" : "Full tax invoice format"}
                       </span>
                     </div>
                     <Switch
-                      checked={billConfig.gstEnabled}
+                      checked={billConfig.billEstimate}
                       onCheckedChange={(checked) => {
-                        setBillConfig({ ...billConfig, gstEnabled: checked });
-                        setBillItems(billItems.map(item => ({
-                          ...item,
-                          gstAmount: checked ? (item.total * item.gstRate) / 100 : 0,
-                        })));
+                        setBillConfig({ 
+                          ...billConfig, 
+                          billEstimate: checked,
+                          gstEnabled: checked ? false : billConfig.gstEnabled
+                        });
+                        if (checked) {
+                          setBillItems(billItems.map(item => ({
+                            ...item,
+                            gstAmount: 0,
+                          })));
+                        }
                       }}
-                      data-testid="switch-gst"
+                      data-testid="switch-estimate"
                     />
                   </div>
+                  {!billConfig.billEstimate && (
+                    <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="text-base font-semibold block">
+                          {billConfig.gstEnabled ? "With GST" : "Without GST"}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          GST rates vary by product (0%, 5%, etc.)
+                        </span>
+                      </div>
+                      <Switch
+                        checked={billConfig.gstEnabled}
+                        onCheckedChange={(checked) => {
+                          setBillConfig({ ...billConfig, gstEnabled: checked });
+                          setBillItems(billItems.map(item => ({
+                            ...item,
+                            gstAmount: checked ? (item.total * item.gstRate) / 100 : 0,
+                          })));
+                        }}
+                        data-testid="switch-gst"
+                      />
+                    </div>
+                  )}
                   <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-xl space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
