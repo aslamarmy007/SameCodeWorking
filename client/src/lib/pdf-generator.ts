@@ -1515,7 +1515,14 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const col4 = pageWidth / 2 + 50;
   const col5 = pageWidth - margin - 3;
   
+  // Column separator positions
+  const colSep1 = margin + 12;
+  const colSep2 = pageWidth / 2;
+  const colSep3 = pageWidth / 2 + 25;
+  const colSep4 = pageWidth / 2 + 70;
+  
   const rateIconSize = 2.5;
+  const headerY = yPos;
   
   doc.text("S.No", col1, yPos + 5.5);
   doc.text("Description", col2, yPos + 5.5);
@@ -1528,6 +1535,15 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const amountTextWidth = doc.getTextWidth("Amount");
   doc.addImage(rupeeIconBlack, 'PNG', col5 - amountTextWidth - rateIconSize - 1, yPos + 3, rateIconSize, rateIconSize);
   doc.text("Amount", col5, yPos + 5.5, { align: "right" });
+  
+  // Draw vertical column lines in header
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
+  doc.line(colSep1, headerY, colSep1, headerY + 8);
+  doc.line(colSep2, headerY, colSep2, headerY + 8);
+  doc.line(colSep3, headerY, colSep3, headerY + 8);
+  doc.line(colSep4, headerY, colSep4, headerY + 8);
+  
   yPos += 8;
 
   // Items - Professional Table
@@ -1559,9 +1575,16 @@ export async function generateEstimatePDF(data: InvoiceData) {
     doc.setLineWidth(0.1);
     doc.line(margin, yPos, pageWidth - margin, yPos);
     
+    // Draw left and right borders
     doc.setLineWidth(0.3);
     doc.line(margin, itemRowY, margin, yPos);
     doc.line(pageWidth - margin, itemRowY, pageWidth - margin, yPos);
+    
+    // Draw vertical column lines
+    doc.line(colSep1, itemRowY, colSep1, yPos);
+    doc.line(colSep2, itemRowY, colSep2, yPos);
+    doc.line(colSep3, itemRowY, colSep3, yPos);
+    doc.line(colSep4, itemRowY, colSep4, yPos);
   }
 
   yPos += 5;
