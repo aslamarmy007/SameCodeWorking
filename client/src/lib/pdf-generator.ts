@@ -1511,7 +1511,6 @@ export async function generateEstimatePDF(data: InvoiceData) {
   
   const col1 = margin + 3;
   const col2 = margin + 15;
-  const col3 = pageWidth / 2 + 5;
   const col4 = pageWidth / 2 + 50;
   const col5 = pageWidth - margin - 3;
   
@@ -1520,6 +1519,9 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const colSep2 = pageWidth / 2;
   const colSep3 = pageWidth / 2 + 25;
   const colSep4 = pageWidth / 2 + 70;
+  
+  // Center Qty/Kg between colSep2 and colSep3
+  const col3 = (colSep2 + colSep3) / 2;
   
   const rateIconSize = 2.5;
   const headerY = yPos;
@@ -1595,6 +1597,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const rowHeight = 6.5;
 
   // Subtotal
+  const summaryStartY = yPos;
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
   doc.rect(summaryX, yPos, summaryWidth, rowHeight, "S");
@@ -1604,6 +1607,11 @@ export async function generateEstimatePDF(data: InvoiceData) {
   doc.text("Subtotal:", summaryX + 3, yPos + 4.5);
   doc.setTextColor(0, 0, 0);
   doc.text(data.subtotal.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
+  
+  // Add vertical column line in subtotal
+  const summaryColSep = summaryX + 35;
+  doc.line(summaryColSep, yPos, summaryColSep, yPos + rowHeight);
+  
   yPos += rowHeight;
 
   // Transport Charge - Only show if > 0
@@ -1615,6 +1623,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
     doc.text("Transport:", summaryX + 3, yPos + 4.5);
     doc.setTextColor(0, 0, 0);
     doc.text(data.transport.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
+    
+    // Add vertical column line
+    doc.line(summaryColSep, yPos, summaryColSep, yPos + rowHeight);
+    
     yPos += rowHeight;
   }
 
@@ -1627,6 +1639,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
     doc.text("Packaging:", summaryX + 3, yPos + 4.5);
     doc.setTextColor(0, 0, 0);
     doc.text(data.packaging.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
+    
+    // Add vertical column line
+    doc.line(summaryColSep, yPos, summaryColSep, yPos + rowHeight);
+    
     yPos += rowHeight;
   }
 
@@ -1639,6 +1655,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
     doc.text("Other:", summaryX + 3, yPos + 4.5);
     doc.setTextColor(0, 0, 0);
     doc.text(data.other.toFixed(2), summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
+    
+    // Add vertical column line
+    doc.line(summaryColSep, yPos, summaryColSep, yPos + rowHeight);
+    
     yPos += rowHeight;
   }
 
@@ -1655,6 +1675,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
     const roundOffText = (roundOffValue >= 0 ? "+" : "") + roundOffValue.toFixed(2);
     doc.setTextColor(0, 0, 0);
     doc.text(roundOffText, summaryX + summaryWidth - 3, yPos + 4.5, { align: "right" });
+    
+    // Add vertical column line
+    doc.line(summaryColSep, yPos, summaryColSep, yPos + rowHeight);
+    
     yPos += rowHeight;
   }
 
@@ -1673,9 +1697,14 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const grandTotalTextWidth = doc.getTextWidth(grandTotalText);
   doc.addImage(rupeeIconBlack, 'PNG', summaryX + summaryWidth - 3 - grandTotalTextWidth - rupeeIconSize2 - iconSpacing, yPos + 3, rupeeIconSize2, rupeeIconSize2);
   doc.text(grandTotalText, summaryX + summaryWidth - 3, yPos + 5.5, { align: "right" });
+  
+  // Add vertical column line
+  doc.line(summaryColSep, yPos, summaryColSep, yPos + grandRowHeight);
+  
   yPos += grandRowHeight + 6;
 
   // Amount in Words
+  const amountInWordsY = yPos;
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
   doc.rect(margin, yPos, pageWidth - 2 * margin, 8, "S");
@@ -1690,6 +1719,11 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const roundedTotal = Math.round(data.grandTotal);
   const amountInWords = numberToWords(roundedTotal);
   doc.text(amountInWords + " only", margin + 32, yPos + 5.5);
+  
+  // Add vertical column line in Amount in Words
+  const amountWordsColSep = margin + 30;
+  doc.line(amountWordsColSep, amountInWordsY, amountWordsColSep, amountInWordsY + 8);
+  
   yPos += 10;
 
   // Transport Details (Lorry Service)
@@ -1724,9 +1758,13 @@ export async function generateEstimatePDF(data: InvoiceData) {
     const paymentBoxWidth = 75;
     let currentPaymentY = yPos;
     const paymentRowHeight = 7;
+    const paymentStartY = yPos;
     
     const rupeeIconBlackSize = 2.5;
     const rupeeIconBlackSpacing = 1;
+    
+    // Column separator for payment section
+    const paymentColSep = paymentBoxX + 35;
     
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
@@ -1794,6 +1832,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(0, 0, 0);
         doc.text(formattedEntryDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
+        
+        // Add column line
+        doc.line(paymentColSep, currentPaymentY, paymentColSep, currentPaymentY + paymentRowHeight);
+        
         currentPaymentY += paymentRowHeight;
 
         doc.rect(paymentBoxX, currentPaymentY, paymentBoxWidth, paymentRowHeight, "S");
@@ -1805,6 +1847,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
         const entryAmountTextWidth = doc.getTextWidth(entryAmountText);
         doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - entryAmountTextWidth - rupeeIconBlackSize - rupeeIconBlackSpacing, currentPaymentY + 2.5, rupeeIconBlackSize, rupeeIconBlackSize);
         doc.text(entryAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
+        
+        // Add column line
+        doc.line(paymentColSep, currentPaymentY, paymentColSep, currentPaymentY + paymentRowHeight);
+        
         currentPaymentY += paymentRowHeight;
 
         if (entry.cashAmount !== undefined && entry.onlineAmount !== undefined) {
@@ -1848,6 +1894,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
           doc.setTextColor(0, 0, 0);
           doc.text("Payment Type:", paymentBoxX + 3, currentPaymentY + 4.8);
           doc.text(entry.paymentType, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
+          
+          // Add column line
+          doc.line(paymentColSep, currentPaymentY, paymentColSep, currentPaymentY + paymentRowHeight);
+          
           currentPaymentY += paymentRowHeight;
         }
 
@@ -1875,6 +1925,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
         doc.text(dateLabel, paymentBoxX + 3, currentPaymentY + 4.8);
         doc.setTextColor(0, 0, 0);
         doc.text(formattedPaymentDate, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
+        
+        // Add column line
+        doc.line(paymentColSep, currentPaymentY, paymentColSep, currentPaymentY + paymentRowHeight);
+        
         currentPaymentY += paymentRowHeight;
       }
       
@@ -1887,6 +1941,10 @@ export async function generateEstimatePDF(data: InvoiceData) {
       const paidAmountTextWidth = doc.getTextWidth(paidAmountText);
       doc.addImage(rupeeIconBlack, 'PNG', paymentBoxX + paymentBoxWidth - 3 - paidAmountTextWidth - rupeeIconBlackSize - rupeeIconBlackSpacing, currentPaymentY + 2.5, rupeeIconBlackSize, rupeeIconBlackSize);
       doc.text(paidAmountText, paymentBoxX + paymentBoxWidth - 3, currentPaymentY + 4.8, { align: "right" });
+      
+      // Add column line
+      doc.line(paymentColSep, currentPaymentY, paymentColSep, currentPaymentY + paymentRowHeight);
+      
       currentPaymentY += paymentRowHeight;
       
       // Payment method breakdown
