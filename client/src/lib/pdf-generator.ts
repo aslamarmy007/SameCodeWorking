@@ -1522,11 +1522,11 @@ export async function generateEstimatePDF(data: InvoiceData) {
   doc.text("Qty/Kg", col3, yPos + 5.5, { align: "center" });
   
   const rateTextWidth = doc.getTextWidth("Rate");
-  doc.addImage(rupeeIcon, 'PNG', col4 - rateTextWidth - rateIconSize - 1, yPos + 3, rateIconSize, rateIconSize);
+  doc.addImage(rupeeIconBlack, 'PNG', col4 - rateTextWidth - rateIconSize - 1, yPos + 3, rateIconSize, rateIconSize);
   doc.text("Rate", col4, yPos + 5.5, { align: "right" });
   
   const amountTextWidth = doc.getTextWidth("Amount");
-  doc.addImage(rupeeIcon, 'PNG', col5 - amountTextWidth - rateIconSize - 1, yPos + 3, rateIconSize, rateIconSize);
+  doc.addImage(rupeeIconBlack, 'PNG', col5 - amountTextWidth - rateIconSize - 1, yPos + 3, rateIconSize, rateIconSize);
   doc.text("Amount", col5, yPos + 5.5, { align: "right" });
   yPos += 8;
 
@@ -1537,6 +1537,9 @@ export async function generateEstimatePDF(data: InvoiceData) {
   
   for (let index = 0; index < data.items.length; index++) {
     const item = data.items[index];
+    
+    const itemRowY = yPos;
+    const itemRowHeight = 6.5;
 
     doc.text(String(index + 1), col1, yPos + 4.5);
     
@@ -1550,11 +1553,15 @@ export async function generateEstimatePDF(data: InvoiceData) {
     doc.text(item.price.toFixed(2), col4, yPos + 4.5, { align: "right" });
     doc.text(item.total.toFixed(2), col5, yPos + 4.5, { align: "right" });
     
-    yPos += 6.5;
+    yPos += itemRowHeight;
     
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.1);
     doc.line(margin, yPos, pageWidth - margin, yPos);
+    
+    doc.setLineWidth(0.3);
+    doc.line(margin, itemRowY, margin, yPos);
+    doc.line(pageWidth - margin, itemRowY, pageWidth - margin, yPos);
   }
 
   yPos += 5;
@@ -1641,7 +1648,7 @@ export async function generateEstimatePDF(data: InvoiceData) {
   const iconSpacing = 1;
   const grandTotalText = data.grandTotal.toFixed(2);
   const grandTotalTextWidth = doc.getTextWidth(grandTotalText);
-  doc.addImage(rupeeIcon, 'PNG', summaryX + summaryWidth - 3 - grandTotalTextWidth - rupeeIconSize2 - iconSpacing, yPos + 3, rupeeIconSize2, rupeeIconSize2);
+  doc.addImage(rupeeIconBlack, 'PNG', summaryX + summaryWidth - 3 - grandTotalTextWidth - rupeeIconSize2 - iconSpacing, yPos + 3, rupeeIconSize2, rupeeIconSize2);
   doc.text(grandTotalText, summaryX + summaryWidth - 3, yPos + 5.5, { align: "right" });
   yPos += grandRowHeight + 6;
 
